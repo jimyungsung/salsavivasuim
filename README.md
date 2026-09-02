@@ -24,6 +24,18 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   Reads like a sales page, so it sits off to the side: linked from the plan as
   "About this module", and a candidate to fold into the landing page later.
 
+## Navigation
+
+Every signed-in screen renders the same bar from `renderNav()` in
+`assets/app.js` — **Masterplan · My training · Library · Progress**, logo to the
+masterplan, language switch and member chip — so it cannot drift. `program.html`
+is self-contained and carries a hand-matched copy of the same markup.
+
+Screens below the top level show one back link (`.crumb`) naming the screen
+above them: the module page goes back to *Masterplan*, a session and the module
+explainer go back to *Improvisation 01*, and register goes back to *suim.com*.
+`index.html` keeps its own logged-out marketing nav.
+
 ## Vocabulary
 
 **Section** (Improvisation) → **module** (Improvisation 01) → **session** (nine

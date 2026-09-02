@@ -13,12 +13,10 @@
   .head{background:var(--ink);color:#fff;padding:78px 0 0;position:relative;overflow:hidden}
   .head:before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:#c6ff0020;filter:blur(110px);right:-200px;top:-180px}
   .headin{position:relative;display:grid;grid-template-columns:1fr .8fr;gap:56px;padding:52px 0 60px;align-items:end}
+  .headin .crumb{margin-bottom:22px}
   .hello{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--lime)}
   .head h1{font-size:clamp(40px,5.4vw,74px);line-height:.94;letter-spacing:-.05em;font-weight:900;margin:14px 0 0}
   .head .sub{margin:16px 0 0;color:#ffffffb5;font-size:17px;line-height:1.6;max-width:52ch}
-
-  .crumb{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;color:#ffffffab;padding:8px 15px;border:1px solid #ffffff2e;border-radius:26px;transition:.2s;margin-bottom:20px}
-  .crumb:hover{color:#fff;border-color:#ffffff6b;background:#ffffff0f}
 
   /* nine sessions at a glance, along the bottom of the header */
   .ribbon{position:relative;border-top:1px solid #ffffff1f;padding:16px 0 22px}
@@ -81,28 +79,12 @@
 </style>
 </head>
 <body>
-<header class="nav"><div class="wrap">
-  <a class="logo" href="masterplan.html">SUIM<span class="dot">.</span></a>
-  <nav class="navlinks" aria-label="Main">
-    <a href="masterplan.html" data-t="nav0">All modules</a>
-    <a href="plan.html" aria-current="page" data-t="nav1">My training</a>
-    <a href="program.html" data-t="nav2">About this program</a>
-    <a href="#" data-t="nav3">Library</a>
-    <a href="#" data-t="nav4">Progress</a>
-  </nav>
-  <div class="tools">
-    <div class="lang"><span class="sr">Language</span>
-      <button data-lang="en" aria-pressed="true">EN</button>
-      <button data-lang="ko" aria-pressed="false">KO</button>
-    </div>
-    <div class="me"><span class="av" aria-hidden="true">JS</span><span data-t="member">Jimyung</span></div>
-  </div>
-</div></header>
+<header class="nav" id="appnav"></header>
 
 <main>
   <section class="head"><div class="wrap headin">
     <div>
-      <a class="crumb" href="masterplan.html"><span aria-hidden="true">←</span><span data-t="crumb">All modules</span></a>
+      <a class="crumb onink" href="masterplan.html"><span aria-hidden="true">←</span><span data-t="crumb">Masterplan</span></a>
       <div class="hello" data-t="hello">Module · Improver+</div>
       <h1 data-t="h1">IMPROVISATION 01</h1>
       <p class="sub" data-t="sub">Three weeks, nine sessions, three a week. Work through them in order — or pick whichever session you have time for today.</p>
@@ -149,8 +131,7 @@ import { SESSIONS, WEEKS, STATE, UNIT_COUNT, durationOf } from './assets/program
 
 const C = {
   en:{
-    nav0:'All modules', nav1:'My training', nav2:'About this module', nav3:'Library', nav4:'Progress', member:'Jimyung',
-    crumb:'All modules', ribbonLab:'All nine sessions',
+    crumb:'Masterplan', ribbonLab:'All nine sessions',
     hello:'Module · Improver+', h1:'IMPROVISATION 01',
     sub:'Three weeks, nine sessions, three a week. Work through them in order — or pick whichever session you have time for today.',
     nextLab:'Pick up here', nextCtaT:'Continue ↗', prog:'Program progress',
@@ -164,8 +145,7 @@ const C = {
     nextTitle: (n, t) => `Session ${n} · ${t}`
   },
   ko:{
-    nav0:'전체 모듈', nav1:'나의 트레이닝', nav2:'모듈 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
-    crumb:'전체 모듈', ribbonLab:'9개 세션 한눈에 보기',
+    crumb:'마스터플랜', ribbonLab:'9개 세션 한눈에 보기',
     hello:'모듈 · 초중급 이상', h1:'즉흥 01',
     sub:'3주, 9개 세션, 주 3회. 순서대로 진행해도 되고, 오늘 시간이 되는 세션을 골라도 됩니다.',
     nextLab:'여기서 이어서', nextCtaT:'이어서 하기 ↗', prog:'프로그램 진행률',
@@ -218,7 +198,7 @@ initLang(C, (c, lang) => {
   document.getElementById('nextSub').textContent = c.nextSub(Math.ceil(n / 3), durationOf(n - 1), STATE.unitsDone);
   document.getElementById('nextCta').href = `session.html?s=${n}`;
   carryLang();
-});
+}, 'training');
 </script>
 </body>
 </html>

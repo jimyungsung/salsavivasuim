@@ -92,22 +92,7 @@
 </style>
 </head>
 <body>
-<header class="nav"><div class="wrap">
-  <a class="logo" href="masterplan.html">SUIM<span class="dot">.</span></a>
-  <nav class="navlinks" aria-label="Main">
-    <a href="masterplan.html" aria-current="page" data-t="nav0">All modules</a>
-    <a href="plan.html" data-t="nav1">My training</a>
-    <a href="#" data-t="nav3">Library</a>
-    <a href="#" data-t="nav4">Progress</a>
-  </nav>
-  <div class="tools">
-    <div class="lang"><span class="sr">Language</span>
-      <button data-lang="en" aria-pressed="true">EN</button>
-      <button data-lang="ko" aria-pressed="false">KO</button>
-    </div>
-    <div class="me"><span class="av" aria-hidden="true">JS</span><span data-t="member">Jimyung</span></div>
-  </div>
-</div></header>
+<header class="nav" id="appnav"></header>
 
 <main>
   <section class="head"><div class="wrap headin">
@@ -145,12 +130,11 @@
 <footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span></div></footer>
 
 <script type="module">
-import { esc, initLang, carryLang } from './assets/app.js';
+import { esc, initLang, carryLang, renderNav } from './assets/app.js';
 import { SECTIONS, STATE, UNIT_COUNT } from './assets/program-data.js';
 
 const C = {
   en:{
-    nav0:'All modules', nav1:'My training', nav3:'Library', nav4:'Progress', member:'Jimyung',
     hello:'Your membership · Everything unlocked', h1:'THE MASTERPLAN',
     sub:'Seven sections, each a different part of your dancing. Inside every section the modules run in order — take one, finish it, move on.',
     tSectionsL:'sections', tModulesL:'modules', tSessionsL:'sessions', secWord:'Section',
@@ -161,7 +145,6 @@ const C = {
     rSub:(w, s, done) => `Week ${w} · Session ${s} of 9 · ${done} of ${UNIT_COUNT} videos done`
   },
   ko:{
-    nav0:'전체 모듈', nav1:'나의 트레이닝', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
     hello:'멤버십 · 전체 이용 가능', h1:'마스터플랜',
     sub:'일곱 개의 섹션이 각각 춤의 다른 부분을 다룹니다. 섹션 안의 모듈은 순서대로 이어집니다. 하나를 골라 끝내고, 다음으로 넘어가세요.',
     tSectionsL:'섹션', tModulesL:'모듈', tSessionsL:'세션', secWord:'섹션',
@@ -248,7 +231,7 @@ initLang(C, (c, l) => {
 
   paintTabs();
   paintPanel();
-});
+}, 'masterplan');
 </script>
 </body>
 </html>
