@@ -58,31 +58,92 @@ export const UNITS = {
 /* Where each step starts inside an 18-minute session. */
 export const STEP_STARTS = ['0:00', '0:20', '4:20', '7:20', '11:20', '15:00'];
 
-/* Everything on the shelf. Improvisation 01 is the one this prototype builds
-   out; the rest exist so module selection has something to select from.
-   [id, track, title, promise, weeks, sessions, level, state] */
-export const MODULES = {
+/* Everything on the shelf, grouped into the sections of the masterplan.
+   Improvisation 01 is the only module this prototype builds out; the rest exist
+   so each section has something in it.
+
+   section: [id, name, what it is for, modules[]]
+   module:  [id, title, subtitle, promise, weeks, sessions, level, state] */
+export const SECTIONS = {
   en: [
-    ['improvisation-01', 'Solo · Improvisation', 'Improvisation 01', 'Stop freezing. Improvise with what you already know, without memorising more shines.', '3 weeks', '9 sessions', 'Improver+', 'current'],
-    ['move-better', 'Solo · Foundations', 'Move Better', 'Clean up weight transfer, grounding, coordination and direction.', '3 weeks', '9 sessions', 'Improver', 'open'],
-    ['shine-language-01', 'Solo · Vocabulary', 'Shine Language 01', 'Turn eight to ten movement families into dozens of possibilities.', '3 weeks', '9 sessions', 'Improver+', 'open'],
-    ['flow', 'Solo · Connection', 'Flow', 'Entries, exits, transitions and phrasing, so steps start reading as dancing.', '2 weeks', '6 sessions', 'Improver+', 'open'],
-    ['choreo-lab-01', 'Lab · Choreography', 'Choreo Lab 01', 'Learn a full choreography, understand why it is built that way, then rewrite the last eight counts.', '2 weeks', '6 sessions', 'Advanced', 'open'],
-    ['roots-lab-01', 'Lab · Guest artist', 'Roots Lab 01', 'A specialist teaches Afro-Cuban principles; Suim shows how they enter salsa.', '2 weeks', '6 sessions', 'Improver+', 'open'],
-    ['musicality-01', 'Solo · Musicality', 'Musicality 01', 'Hear the cue, answer it, and hold a pause on purpose.', '3 weeks', '9 sessions', 'Improver+', 'soon'],
-    ['partnerwork-01', 'Partnerwork', 'Partnerwork 01', 'Lead and follow mechanics, connection and frame — filmed for solo practice first.', '3 weeks', '9 sessions', 'Improver+', 'soon'],
-    ['improvisation-02', 'Solo · Improvisation', 'Improvisation 02', 'Longer freestyles, harder constraints, and dancing a full song alone.', '3 weeks', '9 sessions', 'Advanced', 'soon']
+    ['improvisation', 'Improvisation', 'Stop copying and start choosing. Fewer movements, understood deeply enough to play with.', [
+      ['improvisation-01', 'Improvisation 01', 'Stop Freezing', 'Improvise with what you already know, without memorising more shines.', '3 weeks', '9 sessions', 'Improver+', 'current'],
+      ['flow-01', 'Flow 01', 'Connect Without Planning', 'Entries, exits and transitions, so separate movements start reading as dancing.', '2 weeks', '6 sessions', 'Improver+', 'open'],
+      ['improvisation-02', 'Improvisation 02', 'Build Phrases', 'Longer freestyles, harder constraints, and repetition that never looks repetitive.', '3 weeks', '9 sessions', 'Improver+', 'open'],
+      ['improvisation-03', 'Improvisation 03', 'Dance the Whole Song', 'Structure a full song alone: entrances, breaks, choruses and an ending.', '3 weeks', '9 sessions', 'Advanced', 'soon']
+    ]],
+    ['move-better', 'Move Better', 'The foundation everything else sits on. Make the salsa you already have look cleaner.', [
+      ['move-better-01', 'Move Better 01', 'Grounding and Weight', 'Weight transfer, grounding, coordination and direction.', '3 weeks', '9 sessions', 'Improver', 'open'],
+      ['move-better-02', 'Move Better 02', 'Lines and Posture', 'Posture, spine, shoulders, and where your eyes go.', '2 weeks', '6 sessions', 'Improver', 'open'],
+      ['move-better-03', 'Move Better 03', 'Speed and Control', 'Move faster without losing the floor, and stop exactly where you meant to.', '2 weeks', '6 sessions', 'Improver+', 'soon'],
+      ['move-better-04', 'Move Better 04', 'Arms That Belong', 'Arms that come out of the body instead of being added on top.', '2 weeks', '6 sessions', 'Improver+', 'soon']
+    ]],
+    ['shine-language', 'Shine Language', 'Vocabulary taught as families you can transform, not lists you memorise.', [
+      ['shine-01', 'Shine Language 01', 'Ten Families', 'Turn eight to ten movement families into dozens of possibilities.', '3 weeks', '9 sessions', 'Improver+', 'open'],
+      ['shine-02', 'Shine Language 02', 'Turns and Spins', 'Preparation, spot and exit — turning without losing the count.', '3 weeks', '9 sessions', 'Improver+', 'open'],
+      ['shine-03', 'Shine Language 03', 'Footwork Speed', 'Doubles, triples and syncopation that still land clean.', '2 weeks', '6 sessions', 'Advanced', 'soon'],
+      ['shine-04', 'Shine Language 04', 'Levels and Floor', 'Take the same vocabulary down, and bring it back up.', '2 weeks', '6 sessions', 'Advanced', 'soon']
+    ]],
+    ['musicality', 'Musicality', 'Stop dancing on top of the music and start answering it.', [
+      ['musicality-01', 'Musicality 01', 'Hear the Break', 'Recognise a cue, answer it, and hold a pause on purpose.', '3 weeks', '9 sessions', 'Improver+', 'open'],
+      ['musicality-02', 'Musicality 02', 'Answer the Instruments', 'Pick an instrument and let it decide what your body does.', '3 weeks', '9 sessions', 'Advanced', 'soon'],
+      ['musicality-03', 'Musicality 03', 'Son, Timba, Dura', 'Same steps, three feels — and knowing which one the song is asking for.', '2 weeks', '6 sessions', 'Advanced', 'soon']
+    ]],
+    ['choreo', 'Choreo Lab', 'Learn a full piece, understand why it is built that way, then change it.', [
+      ['choreo-01', 'Choreo Lab 01', 'Learn, Then Rewrite', 'A complete Suim choreography — then you replace the last eight counts.', '2 weeks', '6 sessions', 'Advanced', 'open'],
+      ['choreo-02', 'Choreo Lab 02', 'Performance Piece', 'A longer routine built for stage, with facings and a real ending.', '3 weeks', '9 sessions', 'Advanced', 'soon'],
+      ['choreo-03', 'Choreo Lab 03', 'Make Your Own 64', 'Build, cut and finish sixty-four counts that are yours.', '3 weeks', '9 sessions', 'Advanced', 'soon']
+    ]],
+    ['partnerwork', 'Partnerwork', 'Filmed for solo practice first: what your own body has to do before it meets anyone else.', [
+      ['partner-01', 'Partnerwork 01', 'Connection and Frame', 'Frame, tone, and the mechanics of leading and following.', '3 weeks', '9 sessions', 'Improver+', 'soon'],
+      ['partner-02', 'Partnerwork 02', 'Leading Shines', 'Open up, let go, and come back on the same count.', '2 weeks', '6 sessions', 'Improver+', 'soon'],
+      ['partner-03', 'Partnerwork 03', 'Musicality Together', 'Two people answering the same break.', '2 weeks', '6 sessions', 'Advanced', 'soon']
+    ]],
+    ['guest', 'Guest Labs', 'A specialist teaches their movement language; Suim shows how it enters salsa.', [
+      ['roots-01', 'Roots Lab 01', 'Afro-Cuban into Salsa', 'Where the body mechanic comes from, and how it survives the translation.', '2 weeks', '6 sessions', 'Improver+', 'open'],
+      ['roots-02', 'Roots Lab 02', 'Rumba and Guaguancó', 'Weight, hips and play, taken from rumba into a shine.', '2 weeks', '6 sessions', 'Advanced', 'soon'],
+      ['guest-lines', 'Guest Lab', 'Performance and Lines', 'Cleaner shapes and stronger transitions, for stage and competition.', '2 weeks', '6 sessions', 'Advanced', 'soon']
+    ]]
   ],
   ko: [
-    ['improvisation-01', '솔로 · 즉흥', '즉흥 01', '멈추지 않고 춤추기. 샤인을 더 외우지 않고 이미 아는 것으로 즉흥을 합니다.', '3주', '9개 세션', '초중급 이상', 'current'],
-    ['move-better', '솔로 · 기초', '더 잘 움직이기', '체중 이동, 중심, 협응과 방향을 정리합니다.', '3주', '9개 세션', '초중급', 'open'],
-    ['shine-language-01', '솔로 · 어휘', '샤인 랭귀지 01', '8~10개의 동작 계열을 수십 가지 가능성으로 바꿉니다.', '3주', '9개 세션', '초중급 이상', 'open'],
-    ['flow', '솔로 · 연결', '플로우', '진입과 마무리, 전환과 프레이징. 스텝이 춤으로 읽히기 시작합니다.', '2주', '6개 세션', '초중급 이상', 'open'],
-    ['choreo-lab-01', '랩 · 안무', '코레오 랩 01', '안무를 배우고, 그렇게 구성된 이유를 이해한 뒤, 마지막 8카운트를 직접 바꿉니다.', '2주', '6개 세션', '고급', 'open'],
-    ['roots-lab-01', '랩 · 게스트 아티스트', '루츠 랩 01', '전문가가 아프로쿠반 원리를 가르치고, Suim이 살사로 연결하는 법을 보여줍니다.', '2주', '6개 세션', '초중급 이상', 'open'],
-    ['musicality-01', '솔로 · 음악성', '뮤지컬리티 01', '신호를 듣고, 응답하고, 의도를 가지고 멈춥니다.', '3주', '9개 세션', '초중급 이상', 'soon'],
-    ['partnerwork-01', '파트너워크', '파트너워크 01', '리드와 팔로우의 메커니즘, 커넥션과 프레임. 솔로 연습을 우선으로 촬영합니다.', '3주', '9개 세션', '초중급 이상', 'soon'],
-    ['improvisation-02', '솔로 · 즉흥', '즉흥 02', '더 긴 프리스타일, 더 어려운 조건, 그리고 한 곡을 혼자 완주하기.', '3주', '9개 세션', '고급', 'soon']
+    ['improvisation', '즉흥', '따라 하기를 멈추고 스스로 고르기 시작합니다. 적은 동작을, 가지고 놀 수 있을 만큼 깊이.', [
+      ['improvisation-01', '즉흥 01', '멈추지 않고 춤추기', '샤인을 더 외우지 않고, 이미 아는 것으로 즉흥을 합니다.', '3주', '9개 세션', '초중급 이상', 'current'],
+      ['flow-01', '플로우 01', '계획 없이 연결하기', '진입과 마무리, 전환. 따로 놀던 동작이 춤으로 읽히기 시작합니다.', '2주', '6개 세션', '초중급 이상', 'open'],
+      ['improvisation-02', '즉흥 02', '프레이즈 만들기', '더 긴 프리스타일, 더 어려운 조건, 그리고 단조롭지 않은 반복.', '3주', '9개 세션', '초중급 이상', 'open'],
+      ['improvisation-03', '즉흥 03', '한 곡을 완주하기', '혼자서 한 곡을 구성합니다. 진입, 브레이크, 후렴, 그리고 마무리.', '3주', '9개 세션', '고급', 'soon']
+    ]],
+    ['move-better', '더 잘 움직이기', '나머지 전부가 올라앉는 토대. 이미 추고 있는 살사를 더 깔끔하게 만듭니다.', [
+      ['move-better-01', '더 잘 움직이기 01', '중심과 체중', '체중 이동, 중심, 협응과 방향.', '3주', '9개 세션', '초중급', 'open'],
+      ['move-better-02', '더 잘 움직이기 02', '라인과 자세', '자세와 척추, 어깨, 그리고 시선이 가는 곳.', '2주', '6개 세션', '초중급', 'open'],
+      ['move-better-03', '더 잘 움직이기 03', '속도와 컨트롤', '바닥을 놓치지 않고 빠르게, 그리고 의도한 지점에 정확히 멈추기.', '2주', '6개 세션', '초중급 이상', 'soon'],
+      ['move-better-04', '더 잘 움직이기 04', '몸에서 나오는 팔', '위에 얹는 팔이 아니라 몸에서 나오는 팔.', '2주', '6개 세션', '초중급 이상', 'soon']
+    ]],
+    ['shine-language', '샤인 랭귀지', '외우는 목록이 아니라, 변형할 수 있는 계열로 배우는 어휘.', [
+      ['shine-01', '샤인 랭귀지 01', '열 개의 계열', '8~10개의 동작 계열을 수십 가지 가능성으로 바꿉니다.', '3주', '9개 세션', '초중급 이상', 'open'],
+      ['shine-02', '샤인 랭귀지 02', '턴과 스핀', '준비, 스팟, 마무리. 카운트를 놓치지 않고 도는 법.', '3주', '9개 세션', '초중급 이상', 'open'],
+      ['shine-03', '샤인 랭귀지 03', '풋워크 스피드', '더블, 트리플, 싱코페이션을 깔끔하게 떨어뜨리기.', '2주', '6개 세션', '고급', 'soon'],
+      ['shine-04', '샤인 랭귀지 04', '높이와 플로어', '같은 어휘를 아래로 내렸다가 다시 올리기.', '2주', '6개 세션', '고급', 'soon']
+    ]],
+    ['musicality', '뮤지컬리티', '음악 위에서 추는 것을 멈추고, 음악에 답하기 시작합니다.', [
+      ['musicality-01', '뮤지컬리티 01', '브레이크 듣기', '신호를 알아채고, 응답하고, 의도를 가지고 멈춥니다.', '3주', '9개 세션', '초중급 이상', 'open'],
+      ['musicality-02', '뮤지컬리티 02', '악기에 답하기', '악기 하나를 골라 그 악기가 몸을 결정하게 합니다.', '3주', '9개 세션', '고급', 'soon'],
+      ['musicality-03', '뮤지컬리티 03', '손, 팀바, 두라', '같은 스텝, 세 가지 느낌. 그리고 곡이 원하는 쪽을 아는 것.', '2주', '6개 세션', '고급', 'soon']
+    ]],
+    ['choreo', '코레오 랩', '한 작품을 배우고, 그렇게 만들어진 이유를 이해한 뒤, 직접 바꿉니다.', [
+      ['choreo-01', '코레오 랩 01', '배우고, 다시 쓰기', 'Suim의 안무 전체를 배우고 마지막 8카운트를 직접 바꿉니다.', '2주', '6개 세션', '고급', 'open'],
+      ['choreo-02', '코레오 랩 02', '퍼포먼스 작품', '무대를 위한 더 긴 루틴. 방향 전환과 제대로 된 엔딩까지.', '3주', '9개 세션', '고급', 'soon'],
+      ['choreo-03', '코레오 랩 03', '나만의 64카운트', '직접 만들고, 덜어내고, 64카운트를 완성합니다.', '3주', '9개 세션', '고급', 'soon']
+    ]],
+    ['partnerwork', '파트너워크', '솔로 연습을 우선으로 촬영합니다. 상대를 만나기 전에 내 몸이 해야 할 일부터.', [
+      ['partner-01', '파트너워크 01', '커넥션과 프레임', '프레임과 텐션, 그리고 리드와 팔로우의 메커니즘.', '3주', '9개 세션', '초중급 이상', 'soon'],
+      ['partner-02', '파트너워크 02', '샤인 리드하기', '열어주고, 놓아주고, 같은 카운트로 돌아오기.', '2주', '6개 세션', '초중급 이상', 'soon'],
+      ['partner-03', '파트너워크 03', '함께하는 뮤지컬리티', '같은 브레이크에 두 사람이 함께 답하기.', '2주', '6개 세션', '고급', 'soon']
+    ]],
+    ['guest', '게스트 랩', '전문가가 자신의 움직임 언어를 가르치고, Suim이 그것이 살사로 들어오는 길을 보여줍니다.', [
+      ['roots-01', '루츠 랩 01', '아프로쿠반에서 살사로', '그 몸의 원리가 어디서 왔고, 어떻게 살사로 옮겨오는지.', '2주', '6개 세션', '초중급 이상', 'open'],
+      ['roots-02', '루츠 랩 02', '룸바와 구아구앙코', '룸바의 무게와 골반, 그 놀이를 샤인으로 가져옵니다.', '2주', '6개 세션', '고급', 'soon'],
+      ['guest-lines', '게스트 랩', '퍼포먼스와 라인', '무대와 대회를 위한 더 깨끗한 형태와 더 강한 전환.', '2주', '6개 세션', '고급', 'soon']
+    ]]
   ]
 };
 

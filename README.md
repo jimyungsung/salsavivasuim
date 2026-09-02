@@ -10,9 +10,11 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 
 - `index.html` — the public landing page. Every CTA goes to `register.html`.
 - `register.html` — account plus the two onboarding questions.
-- `masterplan.html` — **what you see right after registering.** Every module on
-  the shelf: Improvisation 01, Move Better, Musicality 01, Partnerwork 01 and so
-  on, split into what is open now and what is in production. Pick one.
+- `masterplan.html` — **what you see right after registering.** The catalogue,
+  split into seven sections as tabs (Improvisation, Move Better, Shine Language,
+  Musicality, Choreo Lab, Partnerwork, Guest Labs). Each tab swaps the panel
+  below for that section's modules, numbered in the order they are meant to be
+  taken. Pick one.
 - `plan.html` — one module (Improvisation 01) as nine selectable sessions
   grouped by week, with a nine-session ribbon along the bottom of the header so
   the whole shape is visible without scrolling.
@@ -24,8 +26,8 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 
 ## Vocabulary
 
-**Module** (Improvisation 01) → **session** (nine of them, 15–22 min each) →
-**video** (six per session, one per step of the method).
+**Section** (Improvisation) → **module** (Improvisation 01) → **session** (nine
+of them, 15–22 min each) → **video** (six per session, one per step).
 
 The method is six steps, and every session is those six steps in order:
 
@@ -39,8 +41,8 @@ inline JS, photos as base64 — so either can be shared on its own. The app page
 
 - `assets/app.css` — the design system
 - `assets/app.js` — language switch, link helpers, player toggles
-- `assets/program-data.js` — the module catalogue, the nine sessions, the three
-  weeks and the six method steps
+- `assets/program-data.js` — the seven sections and their modules, the nine
+  sessions, the three weeks and the six method steps
 
 If the design changes, the self-contained pages need the same change applied by
 hand. Fonts (Archivo + Noto Sans KR) load from Google Fonts.
@@ -72,8 +74,7 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
 - **Every session shares one video stack.** The six steps are the same in every
   session, so the videos list is generated per step rather than authored nine
   times over.
-- **Only Improvisation 01 is built out.** The other modules on the masterplan
-  exist so there is something to choose between; the open ones all lead to the
-  same module page.
+- **Only Improvisation 01 is built out.** The other 23 modules exist so each
+  section has something in it; every open one leads to the same module page.
 - **Pricing** ($16 monthly, $140 annual) is the indicative test range from the
   PRD, not confirmed pricing.
