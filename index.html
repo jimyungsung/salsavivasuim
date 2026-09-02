@@ -399,7 +399,7 @@ Stay if you train.</h2></div>
     document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
     methodRows.innerHTML=c.methods.map((x,i)=>`<div class="method-row"><span class="n">0${i+1}</span><h3>${esc(x[0])}</h3><p>${esc(x[1])}</p></div>`).join('');
     phases.innerHTML=c.phases.map((x,i)=>`<div class="phase ${i===2?'active':''}">${esc(x[0])}<span>${esc(x[1])}</span></div>`).join('');
-    cards.innerHTML=c.cards.map((x,i)=>`<article class="card"><div class="top"><span>0${i+1}</span><span>${esc(x[0])}</span></div><h3>${esc(x[1])}</h3><p>${esc(x[2])}</p><div class="meta">${esc(x[3])}</div></article>`).join('');
+    cards.innerHTML=c.cards.map((x,i)=>`<a class="card" href="${i===1?'program.html':'#plans'}"><div class="top"><span>0${i+1}</span><span>${esc(x[0])}</span></div><h3>${esc(x[1])}</h3><p>${esc(x[2])}</p><div class="meta">${esc(x[3])}</div></a>`).join('');
     checks.innerHTML=c.checks.map(x=>`<div class="check"><span class="tick" aria-hidden="true">✓</span><span>${esc(x)}</span></div>`).join('');
     planCards.innerHTML=c.plans.map((x,i)=>`<article class="plan${i===0?' hi':''}"><span class="tag">${esc(x[0])}</span><h3>${esc(x[1])}</h3><div class="price">${esc(x[2])}${x[3]?`<i>${esc(x[3])}</i>`:''}</div><p>${esc(x[4])}</p><a class="pill ${x[6]}" href="#">${esc(x[5])}</a></article>`).join('');
     try{localStorage.setItem('suim-lang',l)}catch(e){}
