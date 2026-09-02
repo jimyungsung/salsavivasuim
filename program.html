@@ -112,7 +112,7 @@
     .ctl[aria-pressed="true"]{background:var(--lime);border-color:var(--lime);color:var(--ink)}
 
     /* unit stack */
-    .units{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:20px}
+    .units{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
     .unit{border:1px solid #ffffff22;border-radius:18px;background:#141a17;padding:14px;display:flex;flex-direction:column;gap:11px;text-align:left;color:inherit;cursor:pointer;transition:.2s}
     .unit:hover{border-color:#ffffff5c;transform:translateY(-3px)}
     .unit.now{border-color:var(--lime);background:#171f14}
@@ -307,12 +307,12 @@
       f1:'3 weeks',f2:'9 sessions',f3:'3× per week',f4:'15–22 min each',
       enrolTag:'Your next session',enrolTitle:'Week 1 · Session 1',
       enrolSub:'One Step, Many Possibilities — transform a Suzie Q through direction and size. 18 minutes.',
-      enrolLeft:'2 of 5 units done',enrolRight:'Started today',enrolCta:'Continue training ↗',enrolAlt:'See the full plan',
+      enrolLeft:'2 of 6 videos done',enrolRight:'Started today',enrolCta:'Continue training ↗',enrolAlt:'See the full plan',
       c1a:'0 / 9',c1b:'sessions completed',c2a:'12 min',c2b:'practice time',c3a:'4',c3b:'loops and restarts',c4a:'1 day',c4b:'current streak',
       sessK:'Where you left off',sessT:'One Step, Many Possibilities',
-      sessB:'A session is a sequence of short units, not one long video. Work through them in order — the talking gets shorter and the practice gets longer as you go.',
-      phLabel:'Week 1 · Session 1 · Unit 3 of 5',phTitle:'Direction drill',phMeta:'4:00 · Follow view · Counts then music',
-      fake:'Video placeholder',now:'Up next',phaseName:'DRILL IT',instruction:'Keep the same step. Change only where you face.',
+      sessB:'A session is six short videos, one per step of the method — watch, understand, train, drill, transform, improvise. The talking gets shorter and the practice gets longer as you go.',
+      phLabel:'Week 1 · Session 1 · Step 3 of 6',phTitle:'Train the base',phMeta:'3:00 · Follow view · Counts, no music',
+      fake:'Video placeholder',now:'Up next',phaseName:'TRAIN IT',instruction:'Keep the same step. Change only where you face.',
       m1:'FOUNDATION 0:00',m2:'DIRECTION 1:28',m3:'MINI DRILL 3:17',
       ctlLoop:'LOOP 8',ctlMirror:'MIRROR',ctlCounts:'COUNTS',ctlCaps:'CAPTIONS',
       curK:'The full plan',curT:'Three weeks, nine sessions.',
@@ -322,11 +322,12 @@
       footer:'Solo salsa training · Built around practice',
       stDone:'Done',stNow:'In progress',stNext:'Not started',
       units:[
-        ['PREVIEW','Four transformations, then a short freestyle.','0:20','done'],
-        ['TEACH','The core idea: the step is not fixed.','4:55','done'],
-        ['DRILL','Direction drill, follow view, counts then music.','4:00','now'],
-        ['TRANSFORM','Size: small, normal, large — same step.','4:30','next'],
-        ['IMPROV','Challenge: basic and Suzie Q only, 3 rounds.','3:00','next']
+        ['WATCH','The whole thing danced to music, no explanation.','0:20','done'],
+        ['UNDERSTAND','The core idea: the step is not fixed.','4:00','done'],
+        ['TRAIN','Build the base slowly, styling stripped out.','3:00','now'],
+        ['DRILL','Direction drill, follow view, counts then music.','4:00','next'],
+        ['TRANSFORM','Size: small, normal, large — same step.','3:40','next'],
+        ['IMPROVISE','Challenge: basic and Suzie Q only, 3 rounds.','3:00','next']
       ],
       weeks:[
         ['Week 1','You already know enough',[
@@ -351,12 +352,12 @@
       f1:'3주',f2:'9개 세션',f3:'주 3회',f4:'회당 15~22분',
       enrolTag:'다음 세션',enrolTitle:'1주차 · 세션 1',
       enrolSub:'하나의 스텝, 여러 가능성 — 수지큐를 방향과 크기로 변형합니다. 18분.',
-      enrolLeft:'5개 중 2개 완료',enrolRight:'오늘 시작함',enrolCta:'이어서 트레이닝 ↗',enrolAlt:'전체 계획 보기',
+      enrolLeft:'영상 6개 중 2개 완료',enrolRight:'오늘 시작함',enrolCta:'이어서 트레이닝 ↗',enrolAlt:'전체 계획 보기',
       c1a:'0 / 9',c1b:'완료한 세션',c2a:'12분',c2b:'연습 시간',c3a:'4회',c3b:'반복과 되감기',c4a:'1일',c4b:'현재 연속 기록',
       sessK:'이어서 하기',sessT:'하나의 스텝, 여러 가능성',
-      sessB:'하나의 세션은 긴 영상 한 편이 아니라 짧은 유닛의 연속입니다. 순서대로 진행하세요. 뒤로 갈수록 설명은 짧아지고 연습은 길어집니다.',
-      phLabel:'1주차 · 세션 1 · 유닛 3 / 5',phTitle:'방향 드릴',phMeta:'4:00 · 후면 뷰 · 카운트 후 음악',
-      fake:'영상 자리 표시',now:'다음 순서',phaseName:'반복하기',instruction:'스텝은 그대로. 바라보는 방향만 바꿔보세요.',
+      sessB:'하나의 세션은 메소드의 여섯 단계에 하나씩 대응하는 짧은 영상 여섯 개입니다. 보기, 이해하기, 훈련하기, 반복하기, 변형하기, 즉흥하기. 뒤로 갈수록 설명은 짧아지고 연습은 길어집니다.',
+      phLabel:'1주차 · 세션 1 · 단계 3 / 6',phTitle:'기본 쌓기',phMeta:'3:00 · 후면 뷰 · 카운트, 음악 없음',
+      fake:'영상 자리 표시',now:'다음 순서',phaseName:'훈련하기',instruction:'스텝은 그대로. 바라보는 방향만 바꿔보세요.',
       m1:'기본 0:00',m2:'방향 1:28',m3:'미니 드릴 3:17',
       ctlLoop:'8카운트 반복',ctlMirror:'미러',ctlCounts:'카운트',ctlCaps:'자막',
       curK:'전체 계획',curT:'3주, 9개의 세션.',
@@ -366,11 +367,12 @@
       footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
       stDone:'완료',stNow:'진행 중',stNext:'시작 전',
       units:[
-        ['프리뷰','네 가지 변형과 짧은 프리스타일.','0:20','done'],
-        ['설명','핵심 아이디어: 스텝은 고정된 것이 아닙니다.','4:55','done'],
-        ['드릴','방향 드릴, 후면 뷰, 카운트 후 음악.','4:00','now'],
-        ['변형','크기: 작게, 보통, 크게 — 같은 스텝으로.','4:30','next'],
-        ['즉흥','과제: 기본과 수지큐만으로 3라운드.','3:00','next']
+        ['보기','설명 없이 음악에 맞춘 완성된 모습.','0:20','done'],
+        ['이해하기','핵심 아이디어: 스텝은 고정된 것이 아닙니다.','4:00','done'],
+        ['훈련하기','스타일링을 걷어내고 기본을 천천히 쌓습니다.','3:00','now'],
+        ['반복하기','방향 드릴, 후면 뷰, 카운트 후 음악.','4:00','next'],
+        ['변형하기','크기: 작게, 보통, 크게 — 같은 스텝으로.','3:40','next'],
+        ['즉흥하기','과제: 기본과 수지큐만으로 3라운드.','3:00','next']
       ],
       weeks:[
         ['1주차','이미 충분히 알고 있습니다',[

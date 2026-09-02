@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUIM — All modules</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body{display:flex;flex-direction:column;min-height:100vh}
+  .head{background:var(--ink);color:#fff;padding:78px 0 0;position:relative;overflow:hidden}
+  .head:before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:#c6ff0020;filter:blur(110px);left:-220px;top:-200px}
+  .headin{position:relative;padding:52px 0 56px}
+  .hello{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  .head h1{font-size:clamp(40px,5.6vw,78px);line-height:.94;letter-spacing:-.05em;font-weight:900;margin:14px 0 0}
+  .head .sub{margin:16px 0 0;color:#ffffffb5;font-size:17px;line-height:1.6;max-width:58ch}
+
+  /* the module you are in */
+  .resume{margin-top:34px;background:var(--panel);border:1px solid #ffffff26;border-radius:24px;padding:26px 28px;display:grid;grid-template-columns:1fr auto;gap:26px;align-items:center}
+  .resume .lab{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  .resume h2{margin:11px 0 0;font-size:30px;letter-spacing:-.04em;font-weight:900}
+  .resume p{margin:8px 0 0;color:#ffffffa8;font-size:15px;line-height:1.55;max-width:56ch}
+  .resume .bar{height:8px;border-radius:8px;background:#ffffff1f;overflow:hidden;margin-top:16px;max-width:420px}
+  .resume .bar i{display:block;height:100%;background:var(--lime);border-radius:8px}
+  .resume .go{display:flex;flex-direction:column;gap:10px;min-width:210px}
+  .resume .go .pill{width:100%}
+
+  .shelf{padding:80px 0 90px}
+  .grouphead{display:flex;align-items:baseline;gap:14px;margin:0 0 22px}
+  .grouphead h3{margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:800}
+  .grouphead span{font-size:13px;font-weight:700;color:#9aa09a}
+  .group+.group{margin-top:56px}
+  .mods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .mod{display:flex;flex-direction:column;gap:11px;padding:24px;border:1px solid #11111f22;border-radius:20px;background:var(--card);color:inherit;min-height:248px;transition:.22s}
+  .mod .track{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#7b807c}
+  .mod h4{margin:0;font-size:26px;line-height:1.04;letter-spacing:-.04em;font-weight:900}
+  .mod p{margin:0;font-size:14.5px;line-height:1.5;color:#4d534e;flex:1}
+  .mod .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #11111f24;padding-top:14px;font-size:12.5px;font-weight:700;color:#5b615c}
+  .mod .arrow{font-weight:900}
+  a.mod:hover{transform:translateY(-6px);background:var(--lime);border-color:var(--ink)}
+  a.mod:hover .track,a.mod:hover .foot{color:#2c3800}
+  a.mod:hover p{color:#28310a}
+  .mod.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .mod.on .track{color:var(--lime)}
+  .mod.on p{color:#ffffffa8}
+  .mod.on .foot{color:#ffffffa8;border-top-color:#ffffff24}
+  a.mod.on:hover{background:#141a17;border-color:var(--lime)}
+  a.mod.on:hover .track{color:var(--lime)}
+  a.mod.on:hover p,a.mod.on:hover .foot{color:#ffffffa8}
+  .mod.locked{opacity:.62;background:transparent;border-style:dashed;cursor:default}
+  .badge{font-size:10px;letter-spacing:.13em;font-weight:800;text-transform:uppercase;border-radius:20px;padding:6px 11px;border:1px solid var(--line);color:#7b807c;white-space:nowrap}
+  .badge.now{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+  @media(max-width:1080px){ .mods{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:900px){
+    .resume{grid-template-columns:1fr;gap:20px}
+    .resume .go{min-width:0}
+    .shelf{padding:60px 0 70px}
+  }
+  @media(max-width:640px){ .mods{grid-template-columns:1fr} .mod{min-height:0} }
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="masterplan.html">SUIM<span class="dot">.</span></a>
+  <nav class="navlinks" aria-label="Main">
+    <a href="masterplan.html" aria-current="page" data-t="nav0">All modules</a>
+    <a href="plan.html" data-t="nav1">My training</a>
+    <a href="#" data-t="nav3">Library</a>
+    <a href="#" data-t="nav4">Progress</a>
+  </nav>
+  <div class="tools">
+    <div class="lang"><span class="sr">Language</span>
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="ko" aria-pressed="false">KO</button>
+    </div>
+    <div class="me"><span class="av" aria-hidden="true">JS</span><span data-t="member">Jimyung</span></div>
+  </div>
+</div></header>
+
+<main>
+  <section class="head"><div class="wrap headin">
+    <div class="hello" data-t="hello">Your membership · Everything unlocked</div>
+    <h1 data-t="h1">THE MASTERPLAN</h1>
+    <p class="sub" data-t="sub">Every module is a two to three week change in your dancing, split into sessions of 15–22 minutes. Take one at a time. Pick the change you want to feel.</p>
+
+    <div class="resume">
+      <div>
+        <span class="lab" data-t="resumeLab">You are in the middle of</span>
+        <h2 id="rTitle">Improvisation 01</h2>
+        <p id="rSub">Week 1 · Session 1 of 9 · 2 of 6 videos done</p>
+        <div class="bar"><i style="width:4%"></i></div>
+      </div>
+      <div class="go">
+        <a class="pill primary" id="rGo" href="session.html?s=1" data-t="resumeGo">Continue ↗</a>
+        <a class="pill ghost" id="rPlan" href="plan.html" data-t="resumePlan">Open the module</a>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="shelf"><div class="wrap" id="groups"></div></section>
+</main>
+
+<footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span></div></footer>
+
+<script type="module">
+import { esc, initLang, carryLang } from './assets/app.js';
+import { MODULES, SESSIONS, STATE, UNIT_COUNT } from './assets/program-data.js';
+
+const C = {
+  en:{
+    nav0:'All modules', nav1:'My training', nav3:'Library', nav4:'Progress', member:'Jimyung',
+    hello:'Your membership · Everything unlocked', h1:'THE MASTERPLAN',
+    sub:'Every module is a two to three week change in your dancing, split into sessions of 15–22 minutes. Take one at a time. Pick the change you want to feel.',
+    resumeLab:'You are in the middle of', resumeGo:'Continue ↗', resumePlan:'Open the module',
+    footer:'Solo salsa training · Built around practice',
+    gOpen:'Open now', gOpenNote:'Start any of these today',
+    gSoon:'In production', gSoonNote:'Filming through the next content cycle',
+    stNow:'In progress', stOpen:'Not started', stSoon:'Soon',
+    open:'Open module', soon:'Coming soon',
+    rSub:(w, s, done) => `Week ${w} · Session ${s} of 9 · ${done} of ${UNIT_COUNT} videos done`
+  },
+  ko:{
+    nav0:'전체 모듈', nav1:'나의 트레이닝', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
+    hello:'멤버십 · 전체 이용 가능', h1:'마스터플랜',
+    sub:'각 모듈은 2~3주에 걸친 춤의 변화이며, 15~22분짜리 세션으로 나뉘어 있습니다. 한 번에 하나씩, 지금 느끼고 싶은 변화를 고르세요.',
+    resumeLab:'진행 중인 모듈', resumeGo:'이어서 하기 ↗', resumePlan:'모듈 열기',
+    footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
+    gOpen:'지금 이용 가능', gOpenNote:'오늘 바로 시작할 수 있습니다',
+    gSoon:'제작 중', gSoonNote:'다음 콘텐츠 사이클에 촬영 예정',
+    stNow:'진행 중', stOpen:'시작 전', stSoon:'준비 중',
+    open:'모듈 열기', soon:'준비 중',
+    rSub:(w, s, done) => `${w}주차 · 세션 ${s} / 9 · 영상 ${UNIT_COUNT}개 중 ${done}개 완료`
+  }
+};
+
+initLang(C, (c, lang) => {
+  const M = MODULES[lang];
+
+  const card = m => {
+    const [, track, title, promise, weeks, sessions, level, state] = m;
+    const now = state === 'current', soon = state === 'soon';
+    const badge = now ? c.stNow : (soon ? c.stSoon : c.stOpen);
+    const inner = `<span class="top"><span class="track">${esc(track)}</span>
+        <span class="badge ${now ? 'now' : ''}">${esc(badge)}</span></span>
+      <h4>${esc(title)}</h4>
+      <p>${esc(promise)}</p>
+      <span class="foot"><span>${esc(weeks)} · ${esc(sessions)} · ${esc(level)}</span>
+        <span class="arrow">${soon ? '' : '→'}</span></span>`;
+    return soon
+      ? `<div class="mod locked">${inner}</div>`
+      : `<a class="mod ${now ? 'on' : ''}" href="plan.html">${inner}</a>`;
+  };
+
+  const group = (key, note, list) => `<section class="group">
+      <div class="grouphead"><h3>${esc(key)}</h3><span>${esc(note)}</span></div>
+      <div class="mods">${list.map(card).join('')}</div>
+    </section>`;
+
+  document.getElementById('groups').innerHTML =
+    group(c.gOpen, c.gOpenNote, M.filter(m => m[7] !== 'soon')) +
+    group(c.gSoon, c.gSoonNote, M.filter(m => m[7] === 'soon'));
+
+  const cur = M.find(m => m[7] === 'current');
+  document.getElementById('rTitle').textContent = cur[2];
+  document.getElementById('rSub').textContent = c.rSub(Math.ceil(STATE.session / 3), STATE.session, STATE.unitsDone);
+  document.getElementById('rGo').href = `session.html?s=${STATE.session}`;
+  carryLang();
+});
+</script>
+</body>
+</html>

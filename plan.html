@@ -17,6 +17,22 @@
   .head h1{font-size:clamp(40px,5.4vw,74px);line-height:.94;letter-spacing:-.05em;font-weight:900;margin:14px 0 0}
   .head .sub{margin:16px 0 0;color:#ffffffb5;font-size:17px;line-height:1.6;max-width:52ch}
 
+  .crumb{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;color:#ffffffab;padding:8px 15px;border:1px solid #ffffff2e;border-radius:26px;transition:.2s;margin-bottom:20px}
+  .crumb:hover{color:#fff;border-color:#ffffff6b;background:#ffffff0f}
+
+  /* nine sessions at a glance, along the bottom of the header */
+  .ribbon{position:relative;border-top:1px solid #ffffff1f;padding:16px 0 22px}
+  .ribbon .lab{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#ffffff7a;margin:0 0 12px}
+  .rrow{display:grid;grid-template-columns:repeat(9,1fr);gap:8px}
+  .rit{display:flex;flex-direction:column;gap:5px;padding:11px 12px;border:1px solid #ffffff24;border-radius:14px;color:inherit;background:#ffffff08;transition:.2s;min-width:0}
+  .rit:hover{border-color:var(--lime);background:#ffffff12}
+  .rit.on{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+  .rit .rn{font-size:10px;letter-spacing:.14em;font-weight:800;color:#ffffff85}
+  .rit.on .rn{color:#2c3800}
+  .rit .rt{font-size:12.5px;font-weight:700;line-height:1.28;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .rit .rd{font-size:11px;font-weight:700;color:var(--lime);margin-top:auto}
+  .rit.on .rd{color:#2c3800}
+
   .next{background:var(--panel);border:1px solid #ffffff24;border-radius:24px;padding:26px}
   .next .lab{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--lime)}
   .next h2{margin:12px 0 0;font-size:24px;letter-spacing:-.03em;font-weight:900}
@@ -55,6 +71,7 @@
   .mod:hover .units5 i.on{background:var(--ink)}
 
   @media(max-width:1080px){ .mods{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:1080px){ .rrow{grid-template-columns:repeat(9,140px);overflow-x:auto;padding-bottom:6px} }
   @media(max-width:900px){
     .headin{grid-template-columns:1fr;gap:34px;align-items:start}
     .wk{grid-template-columns:1fr;gap:18px}
@@ -65,8 +82,9 @@
 </head>
 <body>
 <header class="nav"><div class="wrap">
-  <a class="logo" href="plan.html">SUIM<span class="dot">.</span></a>
+  <a class="logo" href="masterplan.html">SUIM<span class="dot">.</span></a>
   <nav class="navlinks" aria-label="Main">
+    <a href="masterplan.html" data-t="nav0">All modules</a>
     <a href="plan.html" aria-current="page" data-t="nav1">My training</a>
     <a href="program.html" data-t="nav2">About this program</a>
     <a href="#" data-t="nav3">Library</a>
@@ -84,7 +102,8 @@
 <main>
   <section class="head"><div class="wrap headin">
     <div>
-      <div class="hello" data-t="hello">You are in · Improver+</div>
+      <a class="crumb" href="masterplan.html"><span aria-hidden="true">←</span><span data-t="crumb">All modules</span></a>
+      <div class="hello" data-t="hello">Module · Improver+</div>
       <h1 data-t="h1">IMPROVISATION 01</h1>
       <p class="sub" data-t="sub">Three weeks, nine sessions, three a week. Work through them in order — or pick whichever session you have time for today.</p>
     </div>
@@ -96,6 +115,10 @@
       <div class="barmeta"><span data-t="prog">Program progress</span><span>2%</span></div>
       <a class="pill primary" id="nextCta" href="session.html?s=1" data-t="nextCtaT">Continue ↗</a>
     </aside>
+  </div>
+  <div class="wrap ribbon">
+    <p class="lab" data-t="ribbonLab">All nine sessions</p>
+    <div class="rrow" id="ribbon"></div>
   </div></section>
 
   <section class="strip"><div class="wrap">
@@ -122,35 +145,37 @@
 
 <script type="module">
 import { esc, initLang, carryLang } from './assets/app.js';
-import { SESSIONS, WEEKS, STATE, durationOf } from './assets/program-data.js';
+import { SESSIONS, WEEKS, STATE, UNIT_COUNT, durationOf } from './assets/program-data.js';
 
 const C = {
   en:{
-    nav1:'My training', nav2:'About this program', nav3:'Library', nav4:'Progress', member:'Jimyung',
-    hello:'You are in · Improver+', h1:'IMPROVISATION 01',
+    nav0:'All modules', nav1:'My training', nav2:'About this module', nav3:'Library', nav4:'Progress', member:'Jimyung',
+    crumb:'All modules', ribbonLab:'All nine sessions',
+    hello:'Module · Improver+', h1:'IMPROVISATION 01',
     sub:'Three weeks, nine sessions, three a week. Work through them in order — or pick whichever session you have time for today.',
     nextLab:'Pick up here', nextCtaT:'Continue ↗', prog:'Program progress',
     c1:'sessions completed', c2a:'12 min', c2:'practice time', c3:'loops and restarts', c4a:'1 day', c4:'current streak',
     planK:'Your plan', planT:'Nine sessions.',
-    planB:'Each session is five short videos: see it, learn it, drill it, change it, then use it on your own. Pick one to open its videos.',
-    planAbout:'What this program is for',
+    planB:'Each session is the same six steps — watch, understand, train, drill, transform, improvise — as six short videos. Pick a session to open them.',
+    planAbout:'What this module is for',
     footer:'Solo salsa training · Built around practice',
-    sessionWord:'Session', videos:'5 videos', open:'Open', stNow:'In progress', stNext:'Not started', stDone:'Done',
-    nextSub: (w, d, done) => `Week ${w} · ${d} · ${done} of 5 videos done`,
+    sessionWord:'Session', videos:'6 videos', open:'Open', stNow:'In progress', stNext:'Not started', stDone:'Done',
+    nextSub: (w, d, done) => `Week ${w} · ${d} · ${done} of 6 videos done`,
     nextTitle: (n, t) => `Session ${n} · ${t}`
   },
   ko:{
-    nav1:'나의 트레이닝', nav2:'프로그램 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
-    hello:'이용 중 · 초중급 이상', h1:'즉흥 01',
+    nav0:'전체 모듈', nav1:'나의 트레이닝', nav2:'모듈 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
+    crumb:'전체 모듈', ribbonLab:'9개 세션 한눈에 보기',
+    hello:'모듈 · 초중급 이상', h1:'즉흥 01',
     sub:'3주, 9개 세션, 주 3회. 순서대로 진행해도 되고, 오늘 시간이 되는 세션을 골라도 됩니다.',
     nextLab:'여기서 이어서', nextCtaT:'이어서 하기 ↗', prog:'프로그램 진행률',
     c1:'완료한 세션', c2a:'12분', c2:'연습 시간', c3:'반복과 되감기', c4a:'1일', c4:'현재 연속 기록',
     planK:'나의 플랜', planT:'9개의 세션.',
-    planB:'한 세션은 다섯 개의 짧은 영상입니다. 보고, 배우고, 반복하고, 바꾸고, 스스로 사용해 봅니다. 세션을 골라 영상을 여세요.',
-    planAbout:'이 프로그램에 대하여',
+    planB:'한 세션은 여섯 단계 — 보기, 이해하기, 훈련하기, 반복하기, 변형하기, 즉흥하기 — 여섯 개의 짧은 영상입니다. 세션을 골라 영상을 여세요.',
+    planAbout:'이 모듈에 대하여',
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
-    sessionWord:'세션', videos:'영상 5개', open:'열기', stNow:'진행 중', stNext:'시작 전', stDone:'완료',
-    nextSub: (w, d, done) => `${w}주차 · ${d} · 영상 5개 중 ${done}개 완료`,
+    sessionWord:'세션', videos:'영상 6개', open:'열기', stNow:'진행 중', stNext:'시작 전', stDone:'완료',
+    nextSub: (w, d, done) => `${w}주차 · ${d} · 영상 6개 중 ${done}개 완료`,
     nextTitle: (n, t) => `세션 ${n} · ${t}`
   }
 };
@@ -163,7 +188,7 @@ initLang(C, (c, lang) => {
       const n = wi * 3 + si + 1;
       const now = n === STATE.session;
       const done = now ? STATE.unitsDone : 0;
-      const bars = Array.from({ length: 5 }, (_, i) => `<i class="${i < done ? 'on' : ''}"></i>`).join('');
+      const bars = Array.from({ length: UNIT_COUNT }, (_, i) => `<i class="${i < done ? 'on' : ''}"></i>`).join('');
       return `<a class="mod" href="session.html?s=${n}">
         <span class="top"><span class="n">${esc(c.sessionWord)} ${String(n).padStart(2, '0')}</span>
           <span class="state ${now ? 'now' : ''}">${esc(now ? c.stNow : c.stNext)}</span></span>
@@ -177,6 +202,15 @@ initLang(C, (c, lang) => {
       <div class="wklab"><h3>${esc(w[0])}</h3><h4>${esc(w[1])}</h4><p class="cnt">${esc(c.sessionWord)} ${wi * 3 + 1}–${wi * 3 + 3}</p></div>
       <div class="mods">${mods}</div>
     </section>`;
+  }).join('');
+
+  document.getElementById('ribbon').innerHTML = S.map((s, i) => {
+    const n = i + 1;
+    return `<a class="rit ${n === STATE.session ? 'on' : ''}" href="session.html?s=${n}">
+      <span class="rn">${String(n).padStart(2, '0')}</span>
+      <span class="rt">${esc(s[0])}</span>
+      <span class="rd">${esc(durationOf(i))}</span>
+    </a>`;
   }).join('');
 
   const n = STATE.session, s = S[n - 1];

@@ -67,6 +67,32 @@
   .vmeta .s{margin:3px 0 0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ffffff70}
   .vid[aria-current="true"] .vmeta .s{color:var(--lime)}
 
+  /* the six steps of the method, along the bottom of the player */
+  .steps{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid #ffffff1a}
+  .step{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 8px;border:0;border-right:1px solid #ffffff12;background:none;color:#ffffff85;font:inherit;cursor:pointer;transition:.18s;min-width:0}
+  .step:last-child{border-right:0}
+  .step:hover{background:#ffffff0d;color:#fff}
+  .step .sn{font-size:9.5px;font-weight:800;letter-spacing:.1em;opacity:.7}
+  .step .st{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center;line-height:1.2}
+  .step .sd{font-size:10px;font-weight:700;opacity:.6}
+  .step[aria-current="true"]{background:var(--lime);color:var(--ink)}
+  .step[aria-current="true"] .sn,.step[aria-current="true"] .sd{opacity:.75}
+  .step.done{color:#ffffffb5}
+  .step.done .st{color:var(--lime)}
+
+  /* other sessions in this module */
+  .sibs{margin-top:18px;border:1px solid #ffffff24;border-radius:22px;background:#0f1412;overflow:hidden}
+  .sib{display:grid;grid-template-columns:30px 1fr auto;gap:11px;align-items:center;padding:11px 16px;border-bottom:1px solid #ffffff12;color:inherit;transition:background .18s}
+  .sib:last-child{border-bottom:0}
+  .sib:hover{background:#ffffff0d}
+  .sib[aria-current="page"]{background:#171f14;box-shadow:inset 3px 0 0 var(--lime)}
+  .sib .sn{font-size:10.5px;font-weight:800;color:#ffffff70}
+  .sib[aria-current="page"] .sn{color:var(--lime)}
+  .sib .sname{font-size:13.5px;font-weight:700;line-height:1.32;min-width:0}
+  .sib .sdur{font-size:11px;font-weight:700;color:#ffffff70;white-space:nowrap}
+  .sib.wkstart{border-top:1px solid #ffffff1f}
+  .wkband{padding:9px 16px 5px;font-size:10px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:#ffffff5c;background:#0c100e}
+
   .sfoot{padding:16px 20px;border-top:1px solid #ffffff1a;display:flex;flex-direction:column;gap:9px}
   .sfoot .pill{width:100%}
   .sfoot .note{margin:0;font-size:12.5px;color:#ffffff8a;line-height:1.5;text-align:center}
@@ -77,6 +103,8 @@
     .cues{grid-template-columns:1fr}
   }
   @media(max-width:640px){
+    .steps{grid-template-columns:repeat(3,1fr)}
+    .step{border-bottom:1px solid #ffffff12}
     .subnav{top:78px}
     .where h1{font-size:17px}
     .stack h3{font-size:23px}
@@ -86,8 +114,9 @@
 </head>
 <body>
 <header class="nav"><div class="wrap">
-  <a class="logo" href="plan.html">SUIM<span class="dot">.</span></a>
+  <a class="logo" href="masterplan.html">SUIM<span class="dot">.</span></a>
   <nav class="navlinks" aria-label="Main">
+    <a href="masterplan.html" data-t="nav0">All modules</a>
     <a href="plan.html" aria-current="page" data-t="nav1">My training</a>
     <a href="program.html" data-t="nav2">About this program</a>
     <a href="#" data-t="nav3">Library</a>
@@ -139,6 +168,7 @@
         <button class="ctl" id="counts" aria-pressed="true" data-t="cCounts">COUNTS</button>
         <button class="ctl" id="caps" aria-pressed="true" data-t="cCaps">CAPTIONS</button>
       </div>
+      <div class="steps" id="steps"></div>
       <div class="prevnext">
         <button class="pill ghost sm" id="prevU" type="button" data-t="prevU">← Previous video</button>
         <span class="sp"></span>
@@ -160,6 +190,11 @@
       <a class="pill ghost sm" href="plan.html" data-t="goPlan">Back to all sessions</a>
       <p class="note" data-t="note">Nothing plays — every video here is a placeholder.</p>
     </div>
+
+    <div class="sibs">
+      <div class="shead"><b data-t="sibsT">Other sessions in this module</b><a href="plan.html" style="font-size:12px;font-weight:700;color:var(--lime)" data-t="sibsAll">See all</a></div>
+      <div id="sibs"></div>
+    </div>
   </aside>
 </main>
 
@@ -167,11 +202,12 @@
 
 <script type="module">
 import { esc, initLang, carryLang, toggle, group } from './assets/app.js';
-import { SESSIONS, WEEKS, UNITS, STATE, durationOf, weekOf } from './assets/program-data.js';
+import { SESSIONS, WEEKS, UNITS, STATE, UNIT_COUNT, STEP_STARTS, durationOf, weekOf } from './assets/program-data.js';
 
 const C = {
   en:{
-    nav1:'My training', nav2:'About this program', nav3:'Library', nav4:'Progress', member:'Jimyung',
+    nav0:'All modules', nav1:'My training', nav2:'About this module', nav3:'Library', nav4:'Progress', member:'Jimyung',
+    sibsT:'Other sessions in this module', sibsAll:'See all',
     back:'All sessions', prevS:'← Previous', nextS:'Next session →',
     ph:'Video placeholder', m1:'FOUNDATION 0:00', m2:'DIRECTION 1:28', m3:'MINI DRILL 3:17',
     cLoop:'LOOP 8', cMirror:'MIRROR', cCounts:'COUNTS', cCaps:'CAPTIONS',
@@ -182,12 +218,13 @@ const C = {
     footer:'Solo salsa training · Built around practice',
     stDone:'Done', stNow:'Playing', stNext:'Not started',
     weekSess:(w, n) => `Week ${w} · Session ${n}`,
-    videoOf:(d, i) => `${d} · Video ${i} of 5`,
+    videoOf:(d, i) => `${d} · Video ${i} of 6`,
     last:'Last session', finish:'Finish the program →',
     cues:['Weight, weight, weight — change it fully before you turn.','Let chest and hips travel together; do not twist only the feet.','Direction is a volume knob, not a switch. Do not over-rotate.']
   },
   ko:{
-    nav1:'나의 트레이닝', nav2:'프로그램 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
+    nav0:'전체 모듈', nav1:'나의 트레이닝', nav2:'모듈 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
+    sibsT:'이 모듈의 다른 세션', sibsAll:'전체 보기',
     back:'전체 세션', prevS:'← 이전', nextS:'다음 세션 →',
     ph:'영상 자리 표시', m1:'기본 0:00', m2:'방향 1:28', m3:'미니 드릴 3:17',
     cLoop:'8카운트 반복', cMirror:'미러', cCounts:'카운트', cCaps:'자막',
@@ -198,7 +235,7 @@ const C = {
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
     stDone:'완료', stNow:'재생 중', stNext:'시작 전',
     weekSess:(w, n) => `${w}주차 · 세션 ${n}`,
-    videoOf:(d, i) => `${d} · 영상 ${i} / 5`,
+    videoOf:(d, i) => `${d} · 영상 ${i} / 6`,
     last:'마지막 세션', finish:'프로그램 마치기 →',
     cues:['체중을 확실히 옮기고 나서 돌아가세요.','발만 비틀지 말고 가슴과 골반이 함께 이동하게 하세요.','방향은 스위치가 아니라 볼륨 조절입니다. 과하게 돌지 마세요.']
   }
@@ -208,9 +245,10 @@ const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const sessionNo = clamp(parseInt(new URLSearchParams(location.search).get('s'), 10) || STATE.session, 1, 9);
 /* Only the session the prototype says you are on has any progress. */
 const doneCount = sessionNo === STATE.session ? STATE.unitsDone : 0;
-let current = clamp(parseInt(location.hash.replace('#v', ''), 10) || (doneCount + 1), 1, 5);
+let current = clamp(parseInt(location.hash.replace('#v', ''), 10) || (doneCount + 1), 1, UNIT_COUNT);
 
 let dict, lang;
+const q0 = () => (lang === 'ko' ? '&lang=ko' : '');
 
 function paint(){
   const c = dict, S = SESSIONS[lang], U = UNITS[lang], W = WEEKS[lang];
@@ -229,10 +267,10 @@ function paint(){
   document.getElementById('uHead').textContent = u[3];
   document.getElementById('uDesc').textContent = u[2];
   document.getElementById('uMeta').textContent = c.videoOf(u[1], current);
-  document.getElementById('played').style.width = current < doneCount + 1 ? '100%' : (current === doneCount + 1 ? '23%' : '0%');
+  document.getElementById('played').style.width = current <= doneCount ? '100%' : (current === doneCount + 1 ? '23%' : '0%');
 
   /* videos list */
-  document.getElementById('listCount').textContent = `${doneCount} / 5`;
+  document.getElementById('listCount').textContent = `${doneCount} / ${UNIT_COUNT}`;
   document.getElementById('vids').innerHTML = U.map((v, i) => {
     const n = i + 1, isNow = n === current, isDone = n <= doneCount;
     const state = isNow ? c.stNow : (isDone ? c.stDone : c.stNext);
@@ -241,22 +279,41 @@ function paint(){
       <span class="vmeta"><span class="t">${esc(v[0])}</span><span class="n">${esc(v[3])}</span><span class="s">${esc(state)}</span></span>
     </button>`;
   }).join('');
+  document.getElementById('cues').innerHTML = c.cues.map(x => `<li>${esc(x)}</li>`).join('');
+
+  /* video paging */
+  /* the six steps of the method, one per video */
+  document.getElementById('steps').innerHTML = U.map((v, i) => {
+    const n = i + 1;
+    return `<button class="step ${n <= doneCount ? 'done' : ''}" type="button" aria-current="${n === current}" data-v="${n}">
+      <span class="sn">${n}</span><span class="st">${esc(v[0])}</span><span class="sd">${esc(STEP_STARTS[i])}</span>
+    </button>`;
+  }).join('');
+
+  /* the module's other sessions */
+  document.getElementById('sibs').innerHTML = S.map((x, i) => {
+    const n = i + 1, wkNew = n % 3 === 1;
+    const band = wkNew ? `<div class="wkband">${esc(W[weekOf(n) - 1][0])} · ${esc(W[weekOf(n) - 1][1])}</div>` : '';
+    return `${band}<a class="sib" href="session.html?s=${n}${q0()}" ${n === sessionNo ? 'aria-current="page"' : ''}>
+      <span class="sn">${String(n).padStart(2, '0')}</span>
+      <span class="sname">${esc(x[0])}</span>
+      <span class="sdur">${esc(durationOf(i))}</span>
+    </a>`;
+  }).join('');
+
   document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
     current = +b.dataset.v;
     history.replaceState(null, '', `#v${current}`);
     paint();
   }));
 
-  document.getElementById('cues').innerHTML = c.cues.map(x => `<li>${esc(x)}</li>`).join('');
-
-  /* video paging */
   const prevU = document.getElementById('prevU'), nextU = document.getElementById('nextU');
   prevU.disabled = current === 1;
   /* On the last video "next" hands off to the next session rather than stopping. */
-  nextU.textContent = current === 5 ? c.goNext : c.nextU;
+  nextU.textContent = current === UNIT_COUNT ? c.goNext : c.nextU;
 
   /* session paging */
-  const q = lang === 'ko' ? '&lang=ko' : '';
+  const q = q0();
   const prevS = document.getElementById('prevS'), nextS = document.getElementById('nextS'), goNextS = document.getElementById('goNextS');
   prevS.href = `session.html?s=${sessionNo - 1}${q}`;
   prevS.classList.toggle('off', sessionNo === 1);
@@ -271,7 +328,7 @@ document.getElementById('prevU').addEventListener('click', () => {
   if (current > 1) { current--; history.replaceState(null, '', `#v${current}`); paint(); }
 });
 document.getElementById('nextU').addEventListener('click', () => {
-  if (current < 5) { current++; history.replaceState(null, '', `#v${current}`); paint(); }
+  if (current < UNIT_COUNT) { current++; history.replaceState(null, '', `#v${current}`); paint(); }
   else document.getElementById('goNextS').click();
 });
 
