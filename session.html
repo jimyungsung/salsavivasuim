@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUIM — Session</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body{background:var(--ink);color:#fff;display:flex;flex-direction:column;min-height:100vh;padding-top:78px}
+
+  /* session bar under the nav */
+  .subnav{position:sticky;top:78px;z-index:15;background:#0f1412;border-bottom:1px solid #ffffff1a}
+  .subin{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:15px 0;flex-wrap:wrap}
+  .backlink{display:inline-flex;align-items:center;gap:9px;font-size:13.5px;font-weight:700;color:#ffffffc4;padding:8px 15px;border:1px solid #ffffff2e;border-radius:26px;transition:.2s}
+  .backlink:hover{color:#fff;border-color:#ffffff6b;background:#ffffff0f}
+  .where{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0}
+  .where .wk{font-size:11px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  .where h1{margin:0;font-size:20px;letter-spacing:-.03em;font-weight:900}
+  .hop{display:flex;gap:8px}
+  .hop a{display:grid;place-items:center;min-width:42px;height:42px;padding:0 14px;border:1px solid #ffffff2e;border-radius:26px;font-size:13px;font-weight:800;color:#ffffffc4;transition:.2s}
+  .hop a:hover{color:#fff;border-color:#ffffff6b;background:#ffffff0f}
+  .hop a.off{opacity:.3;pointer-events:none}
+
+  .lay{display:grid;grid-template-columns:1fr 380px;gap:26px;padding:34px 0 70px;align-items:start}
+
+  /* player */
+  .player{border:1px solid #ffffff24;border-radius:22px;overflow:hidden;background:#111614}
+  .phead{padding:20px 24px;border-bottom:1px solid #ffffff1a;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .phead .type{font-size:11px;letter-spacing:.17em;font-weight:800;color:var(--lime)}
+  .phead h2{margin:7px 0 0;font-size:26px;letter-spacing:-.035em;font-weight:900}
+  .phead .meta{font-size:13px;color:#ffffffa3;align-self:center;white-space:nowrap}
+  .stack h3{margin:0;font-size:30px;letter-spacing:-.03em;font-weight:900}
+  .stack p{margin:0;max-width:44ch;color:#ffffffc4;font-size:15px;line-height:1.55;padding:0 20px}
+  .prevnext{display:flex;justify-content:space-between;gap:12px;padding:0 20px 18px}
+  .prevnext button{flex:1;max-width:230px}
+  .prevnext .sp{flex:1}
+
+  /* about the unit */
+  .about{margin-top:22px;border:1px solid #ffffff1f;border-radius:22px;padding:24px;background:#0f1412}
+  .about h3{margin:0;font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:#ffffff8a}
+  .cues{margin:16px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .cues li{border-left:2px solid var(--lime);padding:2px 0 2px 14px;font-size:15px;line-height:1.5;color:#ffffffd1}
+
+  /* videos list */
+  .side{border:1px solid #ffffff24;border-radius:22px;background:#0f1412;overflow:hidden;position:sticky;top:162px}
+  .shead{padding:18px 20px;border-bottom:1px solid #ffffff1a;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .shead b{font-size:12px;letter-spacing:.17em;text-transform:uppercase;font-weight:800}
+  .shead span{font-size:12px;font-weight:700;color:var(--lime)}
+  .vids{display:flex;flex-direction:column}
+  .vid{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:center;padding:13px 16px;border:0;border-bottom:1px solid #ffffff12;background:none;color:inherit;text-align:left;cursor:pointer;font:inherit;transition:background .18s}
+  .vid:last-child{border-bottom:0}
+  .vid:hover{background:#ffffff0d}
+  .vid[aria-current="true"]{background:#171f14;box-shadow:inset 3px 0 0 var(--lime)}
+  .vthumb{position:relative;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(135deg,#1a221d 0 8px,#20291f 8px 16px);display:grid;place-items:center}
+  .vthumb .g{width:26px;height:26px;border-radius:50%;background:#0b0f0ecc;border:1px solid #ffffff36;display:grid;place-items:center;font-size:10px;color:#fff}
+  .vid.done .vthumb .g{color:var(--lime)}
+  .vid[aria-current="true"] .vthumb .g{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+  .vthumb .d{position:absolute;right:5px;bottom:5px;background:#0b0f0ee6;font-size:9.5px;font-weight:700;padding:2px 5px;border-radius:4px;color:#fff}
+  .vmeta{min-width:0}
+  .vmeta .t,.vmeta .n,.vmeta .s{display:block}
+  .vmeta .t{font-size:10px;letter-spacing:.15em;font-weight:800;color:var(--lime)}
+  .vid.done .vmeta .t{color:#ffffff70}
+  .vmeta .n{margin:3px 0 0;font-size:14.5px;font-weight:700;line-height:1.3}
+  .vmeta .s{margin:3px 0 0;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#ffffff70}
+  .vid[aria-current="true"] .vmeta .s{color:var(--lime)}
+
+  .sfoot{padding:16px 20px;border-top:1px solid #ffffff1a;display:flex;flex-direction:column;gap:9px}
+  .sfoot .pill{width:100%}
+  .sfoot .note{margin:0;font-size:12.5px;color:#ffffff8a;line-height:1.5;text-align:center}
+
+  @media(max-width:1080px){
+    .lay{grid-template-columns:1fr;gap:22px}
+    .side{position:static}
+    .cues{grid-template-columns:1fr}
+  }
+  @media(max-width:640px){
+    .subnav{top:78px}
+    .where h1{font-size:17px}
+    .stack h3{font-size:23px}
+    .prevnext button{max-width:none}
+  }
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="plan.html">SUIM<span class="dot">.</span></a>
+  <nav class="navlinks" aria-label="Main">
+    <a href="plan.html" aria-current="page" data-t="nav1">My training</a>
+    <a href="program.html" data-t="nav2">About this program</a>
+    <a href="#" data-t="nav3">Library</a>
+    <a href="#" data-t="nav4">Progress</a>
+  </nav>
+  <div class="tools">
+    <div class="lang"><span class="sr">Language</span>
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="ko" aria-pressed="false">KO</button>
+    </div>
+    <div class="me"><span class="av" aria-hidden="true">JS</span><span data-t="member">Jimyung</span></div>
+  </div>
+</div></header>
+
+<div class="subnav"><div class="wrap subin">
+  <a class="backlink" href="plan.html"><span aria-hidden="true">←</span><span data-t="back">All sessions</span></a>
+  <div class="where"><span class="wk" id="wkLabel">Week 1 · Session 1</span><h1 id="sTitle">One Step, Many Possibilities</h1></div>
+  <nav class="hop" aria-label="Sessions">
+    <a id="prevS" href="#" data-t="prevS">← Previous</a>
+    <a id="nextS" href="#" data-t="nextS">Next session →</a>
+  </nav>
+</div></div>
+
+<main class="wrap lay">
+  <div>
+    <div class="player">
+      <div class="phead">
+        <div><div class="type" id="uType">DRILL</div><h2 id="uTitle">Direction drill</h2></div>
+        <span class="meta" id="uMeta">4:00 · Video 3 of 5</span>
+      </div>
+      <div class="frame" id="frame">
+        <span class="ph" data-t="ph">Video placeholder</span>
+        <div class="stack">
+          <button class="play" id="play" aria-label="Play"><span aria-hidden="true">▶</span></button>
+          <small id="uKind">DRILL</small>
+          <h3 id="uHead">Direction drill</h3>
+          <p id="uDesc">Follow view. Slow, then counts, then music, until it runs without you.</p>
+        </div>
+      </div>
+      <div class="track"><i id="played" style="width:0%"></i><u id="loopz" style="left:34%;width:16%"></u></div>
+      <div class="marks"><span data-t="m1">FOUNDATION 0:00</span><span data-t="m2">DIRECTION 1:28</span><span data-t="m3">MINI DRILL 3:17</span></div>
+      <div class="ctrls">
+        <button class="ctl" data-speed aria-pressed="false">0.5×</button>
+        <button class="ctl" data-speed aria-pressed="true">0.75×</button>
+        <button class="ctl" data-speed aria-pressed="false">1×</button>
+        <button class="ctl" data-speed aria-pressed="false">1.25×</button>
+        <button class="ctl" id="loop" aria-pressed="true" data-t="cLoop">LOOP 8</button>
+        <button class="ctl" id="mirror" aria-pressed="false" data-t="cMirror">MIRROR</button>
+        <button class="ctl" id="counts" aria-pressed="true" data-t="cCounts">COUNTS</button>
+        <button class="ctl" id="caps" aria-pressed="true" data-t="cCaps">CAPTIONS</button>
+      </div>
+      <div class="prevnext">
+        <button class="pill ghost sm" id="prevU" type="button" data-t="prevU">← Previous video</button>
+        <span class="sp"></span>
+        <button class="pill primary sm" id="nextU" type="button" data-t="nextU">Next video →</button>
+      </div>
+    </div>
+
+    <div class="about">
+      <h3 data-t="focus">What to focus on</h3>
+      <ul class="cues" id="cues"></ul>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="shead"><b data-t="listT">Videos in this session</b><span id="listCount">2 / 5</span></div>
+    <div class="vids" id="vids"></div>
+    <div class="sfoot">
+      <a class="pill primary sm" id="goNextS" href="#" data-t="goNext">Next session →</a>
+      <a class="pill ghost sm" href="plan.html" data-t="goPlan">Back to all sessions</a>
+      <p class="note" data-t="note">Nothing plays — every video here is a placeholder.</p>
+    </div>
+  </aside>
+</main>
+
+<footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span></div></footer>
+
+<script type="module">
+import { esc, initLang, carryLang, toggle, group } from './assets/app.js';
+import { SESSIONS, WEEKS, UNITS, STATE, durationOf, weekOf } from './assets/program-data.js';
+
+const C = {
+  en:{
+    nav1:'My training', nav2:'About this program', nav3:'Library', nav4:'Progress', member:'Jimyung',
+    back:'All sessions', prevS:'← Previous', nextS:'Next session →',
+    ph:'Video placeholder', m1:'FOUNDATION 0:00', m2:'DIRECTION 1:28', m3:'MINI DRILL 3:17',
+    cLoop:'LOOP 8', cMirror:'MIRROR', cCounts:'COUNTS', cCaps:'CAPTIONS',
+    prevU:'← Previous video', nextU:'Next video →',
+    focus:'What to focus on', listT:'Videos in this session',
+    goNext:'Next session →', goPlan:'Back to all sessions',
+    note:'Nothing plays — every video here is a placeholder.',
+    footer:'Solo salsa training · Built around practice',
+    stDone:'Done', stNow:'Playing', stNext:'Not started',
+    weekSess:(w, n) => `Week ${w} · Session ${n}`,
+    videoOf:(d, i) => `${d} · Video ${i} of 5`,
+    last:'Last session', finish:'Finish the program →',
+    cues:['Weight, weight, weight — change it fully before you turn.','Let chest and hips travel together; do not twist only the feet.','Direction is a volume knob, not a switch. Do not over-rotate.']
+  },
+  ko:{
+    nav1:'나의 트레이닝', nav2:'프로그램 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
+    back:'전체 세션', prevS:'← 이전', nextS:'다음 세션 →',
+    ph:'영상 자리 표시', m1:'기본 0:00', m2:'방향 1:28', m3:'미니 드릴 3:17',
+    cLoop:'8카운트 반복', cMirror:'미러', cCounts:'카운트', cCaps:'자막',
+    prevU:'← 이전 영상', nextU:'다음 영상 →',
+    focus:'이것에 집중하세요', listT:'이 세션의 영상',
+    goNext:'다음 세션 →', goPlan:'전체 세션으로 돌아가기',
+    note:'재생되지 않습니다. 모든 영상은 자리 표시입니다.',
+    footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
+    stDone:'완료', stNow:'재생 중', stNext:'시작 전',
+    weekSess:(w, n) => `${w}주차 · 세션 ${n}`,
+    videoOf:(d, i) => `${d} · 영상 ${i} / 5`,
+    last:'마지막 세션', finish:'프로그램 마치기 →',
+    cues:['체중을 확실히 옮기고 나서 돌아가세요.','발만 비틀지 말고 가슴과 골반이 함께 이동하게 하세요.','방향은 스위치가 아니라 볼륨 조절입니다. 과하게 돌지 마세요.']
+  }
+};
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const sessionNo = clamp(parseInt(new URLSearchParams(location.search).get('s'), 10) || STATE.session, 1, 9);
+/* Only the session the prototype says you are on has any progress. */
+const doneCount = sessionNo === STATE.session ? STATE.unitsDone : 0;
+let current = clamp(parseInt(location.hash.replace('#v', ''), 10) || (doneCount + 1), 1, 5);
+
+let dict, lang;
+
+function paint(){
+  const c = dict, S = SESSIONS[lang], U = UNITS[lang], W = WEEKS[lang];
+  const s = S[sessionNo - 1];
+  const u = U[current - 1];
+  const wk = weekOf(sessionNo);
+
+  document.title = `SUIM — ${s[0]}`;
+  document.getElementById('wkLabel').textContent = c.weekSess(wk, sessionNo);
+  document.getElementById('sTitle').textContent = s[0];
+
+  /* player head + frame */
+  document.getElementById('uType').textContent = u[0];
+  document.getElementById('uKind').textContent = u[0];
+  document.getElementById('uTitle').textContent = u[3];
+  document.getElementById('uHead').textContent = u[3];
+  document.getElementById('uDesc').textContent = u[2];
+  document.getElementById('uMeta').textContent = c.videoOf(u[1], current);
+  document.getElementById('played').style.width = current < doneCount + 1 ? '100%' : (current === doneCount + 1 ? '23%' : '0%');
+
+  /* videos list */
+  document.getElementById('listCount').textContent = `${doneCount} / 5`;
+  document.getElementById('vids').innerHTML = U.map((v, i) => {
+    const n = i + 1, isNow = n === current, isDone = n <= doneCount;
+    const state = isNow ? c.stNow : (isDone ? c.stDone : c.stNext);
+    return `<button class="vid ${isDone ? 'done' : ''}" type="button" aria-current="${isNow}" data-v="${n}">
+      <span class="vthumb"><span class="g" aria-hidden="true">${isDone && !isNow ? '✓' : '▶'}</span><span class="d">${esc(v[1])}</span></span>
+      <span class="vmeta"><span class="t">${esc(v[0])}</span><span class="n">${esc(v[3])}</span><span class="s">${esc(state)}</span></span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+    current = +b.dataset.v;
+    history.replaceState(null, '', `#v${current}`);
+    paint();
+  }));
+
+  document.getElementById('cues').innerHTML = c.cues.map(x => `<li>${esc(x)}</li>`).join('');
+
+  /* video paging */
+  const prevU = document.getElementById('prevU'), nextU = document.getElementById('nextU');
+  prevU.disabled = current === 1;
+  /* On the last video "next" hands off to the next session rather than stopping. */
+  nextU.textContent = current === 5 ? c.goNext : c.nextU;
+
+  /* session paging */
+  const q = lang === 'ko' ? '&lang=ko' : '';
+  const prevS = document.getElementById('prevS'), nextS = document.getElementById('nextS'), goNextS = document.getElementById('goNextS');
+  prevS.href = `session.html?s=${sessionNo - 1}${q}`;
+  prevS.classList.toggle('off', sessionNo === 1);
+  const hasNext = sessionNo < 9;
+  nextS.href = goNextS.href = hasNext ? `session.html?s=${sessionNo + 1}${q}` : `plan.html${q ? '?lang=ko' : ''}`;
+  nextS.textContent = hasNext ? c.nextS : c.last;
+  nextS.classList.toggle('off', !hasNext);
+  goNextS.textContent = hasNext ? c.goNext : c.finish;
+}
+
+document.getElementById('prevU').addEventListener('click', () => {
+  if (current > 1) { current--; history.replaceState(null, '', `#v${current}`); paint(); }
+});
+document.getElementById('nextU').addEventListener('click', () => {
+  if (current < 5) { current++; history.replaceState(null, '', `#v${current}`); paint(); }
+  else document.getElementById('goNextS').click();
+});
+
+toggle('mirror', on => document.getElementById('frame').classList.toggle('mirrored', on));
+toggle('loop', on => document.getElementById('loopz').style.opacity = on ? '1' : '0');
+toggle('counts'); toggle('caps');
+group('[data-speed]');
+document.getElementById('play').addEventListener('click', () => document.getElementById('nextU').focus());
+
+initLang(C, (c, l) => { dict = c; lang = l; paint(); carryLang(); });
+</script>
+</body>
+</html>

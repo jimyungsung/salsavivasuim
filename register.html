@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUIM — Create your account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body{min-height:100vh;display:flex;flex-direction:column}
+  .split{flex:1;display:grid;grid-template-columns:.86fr 1.14fr;min-height:100vh}
+  .side{background:var(--ink);color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:34px 40px 40px}
+  .side:before{content:"";position:absolute;inset:0;background:url("assets/coach.jpg") center 12%/cover;opacity:.5}
+  .side:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0b0f0eee,#0b0f0e66 42%,#0b0f0ef2)}
+  .side>*{position:relative;z-index:2}
+  .side .logo{display:inline-block}
+  .side h2{font-size:clamp(34px,3.4vw,50px);line-height:.95;letter-spacing:-.05em;font-weight:900;margin:0 0 16px;max-width:12ch}
+  .side h2 em{font-style:normal;color:var(--lime)}
+  .side p{margin:0;color:#ffffffb8;max-width:36ch;line-height:1.6}
+  .side .steps{display:flex;gap:8px;margin-top:26px}
+  .side .steps span{height:3px;flex:1;background:#ffffff2e;border-radius:3px}
+  .side .steps span.on{background:var(--lime)}
+
+  .form{padding:110px 0 70px;display:flex;justify-content:center}
+  .formin{width:min(100%,560px);padding:0 40px}
+  .step{border-top:1px solid var(--line);padding:34px 0}
+  .step:first-of-type{border-top:0;padding-top:0}
+  .stepno{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:#7b807c}
+  .stepno i{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:900}
+  .step h3{margin:14px 0 0;font-size:27px;letter-spacing:-.035em;font-weight:900}
+  .step .hint{margin:8px 0 0;font-size:15px;color:var(--muted);line-height:1.55}
+  label{display:block;margin-top:20px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#7b807c}
+  input[type=email],input[type=text]{width:100%;margin-top:9px;padding:15px 18px;border:1px solid var(--line);border-radius:14px;background:#fff;font:inherit;font-size:16px;color:var(--ink)}
+  input::placeholder{color:#9aa09a}
+  input:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px #c6ff0059}
+  .alt{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .alt .pill{flex:1;min-width:150px}
+  .or{display:flex;align-items:center;gap:14px;margin:22px 0 0;font-size:11px;letter-spacing:.18em;font-weight:800;color:#9aa09a}
+  .or:before,.or:after{content:"";height:1px;flex:1;background:var(--line)}
+  .q{margin-top:24px}
+  .q p{margin:0 0 11px;font-size:15px;font-weight:700}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:26px;padding:10px 16px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.18s;color:var(--ink)}
+  .chip:hover{border-color:var(--ink)}
+  .chip[aria-pressed="true"]{background:var(--lime);border-color:var(--ink)}
+  .go{margin-top:34px;display:flex;flex-direction:column;gap:12px}
+  .go .pill{width:100%}
+  .legal{font-size:12.5px;color:#8b918b;line-height:1.6;margin:0}
+  .legal a{text-decoration:underline}
+  .backhome{font-size:13px;font-weight:700;color:var(--muted)}
+  .backhome:hover{color:var(--ink)}
+
+  @media(max-width:900px){
+    .split{grid-template-columns:1fr}
+    .side{min-height:340px;padding:26px 28px 34px}
+    .form{padding:50px 0 60px}
+    .formin{padding:0 28px}
+  }
+</style>
+</head>
+<body>
+<main class="split">
+  <aside class="side">
+    <a class="logo" href="index.html">SUIM<span class="dot">.</span></a>
+    <div>
+      <h2 data-t="sideH">Ten movements you understand beat <em>fifty you memorised.</em></h2>
+      <p data-t="sideP">Two questions about your dancing, then your first session is ready. No card, nothing to install.</p>
+      <div class="steps" aria-hidden="true"><span class="on"></span><span class="on"></span><span></span></div>
+    </div>
+  </aside>
+
+  <section class="form"><div class="formin">
+    <a class="backhome" href="index.html" data-t="back">← Back to suim.com</a>
+
+    <div class="step">
+      <div class="stepno"><i>1</i><span data-t="s1">Your account</span></div>
+      <h3 data-t="s1h">Create your account</h3>
+      <p class="hint" data-t="s1p">We send a sign-in link — there is no password to remember.</p>
+      <label for="email" data-t="lblEmail">Email</label>
+      <input id="email" type="email" autocomplete="email" data-tph="phEmail" placeholder="you@example.com">
+      <div class="or"><span data-t="or">OR</span></div>
+      <div class="alt">
+        <button class="pill ghost onpaper" type="button" data-t="alt1">Continue with Google</button>
+        <button class="pill ghost onpaper" type="button" data-t="alt2">Continue with Apple</button>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="stepno"><i>2</i><span data-t="s2">About your dancing</span></div>
+      <h3 data-t="s2h">So we start you in the right place</h3>
+      <p class="hint" data-t="s2p">You can change any of this later, or skip it entirely.</p>
+
+      <div class="q"><p data-t="q1">How long have you been dancing salsa?</p><div class="chips" data-group="exp"></div></div>
+      <div class="q"><p data-t="q2">Do you dance On1 or On2?</p><div class="chips" data-group="timing"></div></div>
+      <div class="q"><p data-t="q3">What is hardest right now?</p><div class="chips" data-group="pain"></div></div>
+    </div>
+
+    <div class="go">
+      <a class="pill primary" href="plan.html" data-t="cta">Create account and see my plan ↗</a>
+      <a class="pill ghost onpaper" href="plan.html" data-t="skip">Skip the questions</a>
+      <p class="legal" data-t="legal">By continuing you agree to the terms and privacy policy. This is a prototype — nothing is submitted anywhere.</p>
+    </div>
+  </div></section>
+</main>
+
+<script type="module">
+import { esc, initLang, carryLang } from './assets/app.js';
+
+const C = {
+  en:{
+    sideH:'Ten movements you understand beat fifty you memorised.',
+    sideP:'Two questions about your dancing, then your first session is ready. No card, nothing to install.',
+    back:'← Back to suim.com',
+    s1:'Your account', s1h:'Create your account', s1p:'We send a sign-in link — there is no password to remember.',
+    lblEmail:'Email', phEmail:'you@example.com', or:'OR',
+    alt1:'Continue with Google', alt2:'Continue with Apple',
+    s2:'About your dancing', s2h:'So we start you in the right place',
+    s2p:'You can change any of this later, or skip it entirely.',
+    q1:'How long have you been dancing salsa?', q2:'Do you dance On1 or On2?', q3:'What is hardest right now?',
+    cta:'Create account and see my plan ↗', skip:'Skip the questions',
+    legal:'By continuing you agree to the terms and privacy policy. This is a prototype — nothing is submitted anywhere.',
+    exp:['Under 1 year','1–3 years','3+ years'],
+    timing:['On1','On2','Both'],
+    pain:['I freeze when I improvise','My shines feel disconnected','My movement looks messy','I always repeat myself']
+  },
+  ko:{
+    sideH:'제대로 이해한 10개의 동작이 외운 50개보다 낫습니다.',
+    sideP:'두 가지 질문에 답하면 첫 세션이 준비됩니다. 카드 등록도, 설치할 것도 없습니다.',
+    back:'← suim.com으로 돌아가기',
+    s1:'계정', s1h:'계정 만들기', s1p:'로그인 링크를 보내드립니다. 기억할 비밀번호가 없습니다.',
+    lblEmail:'이메일', phEmail:'you@example.com', or:'또는',
+    alt1:'Google로 계속하기', alt2:'Apple로 계속하기',
+    s2:'당신의 춤에 대해', s2h:'맞는 지점에서 시작할 수 있도록',
+    s2p:'나중에 언제든 바꿀 수 있고, 건너뛰어도 됩니다.',
+    q1:'살사를 춘 지 얼마나 되었나요?', q2:'On1과 On2 중 어느 쪽으로 추시나요?', q3:'지금 가장 어려운 것은 무엇인가요?',
+    cta:'계정 만들고 내 플랜 보기 ↗', skip:'질문 건너뛰기',
+    legal:'계속하면 이용약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다. 이 페이지는 프로토타입이며 어떤 정보도 전송되지 않습니다.',
+    exp:['1년 미만','1~3년','3년 이상'],
+    timing:['On1','On2','둘 다'],
+    pain:['즉흥을 하면 얼어붙어요','샤인이 서로 이어지지 않아요','움직임이 정돈되지 않아요','늘 같은 것만 반복해요']
+  }
+};
+
+/* Remember which chip was picked so switching language does not clear it. */
+const picked = { exp:0, timing:0, pain:0 };
+
+initLang(C, c => {
+  document.querySelectorAll('[data-group]').forEach(box => {
+    const key = box.dataset.group;
+    box.innerHTML = c[key].map((label, i) =>
+      `<button class="chip" type="button" aria-pressed="${i === picked[key]}">${esc(label)}</button>`).join('');
+    [...box.children].forEach((b, i) => b.addEventListener('click', () => {
+      picked[key] = i;
+      [...box.children].forEach((x, j) => x.setAttribute('aria-pressed', String(i === j)));
+    }));
+  });
+  carryLang();
+});
+</script>
+</body>
+</html>

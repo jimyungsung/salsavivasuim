@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUIM — Your plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body{display:flex;flex-direction:column;min-height:100vh}
+  .head{background:var(--ink);color:#fff;padding:78px 0 0;position:relative;overflow:hidden}
+  .head:before{content:"";position:absolute;width:600px;height:600px;border-radius:50%;background:#c6ff0020;filter:blur(110px);right:-200px;top:-180px}
+  .headin{position:relative;display:grid;grid-template-columns:1fr .8fr;gap:56px;padding:52px 0 60px;align-items:end}
+  .hello{font-size:12px;letter-spacing:.22em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  .head h1{font-size:clamp(40px,5.4vw,74px);line-height:.94;letter-spacing:-.05em;font-weight:900;margin:14px 0 0}
+  .head .sub{margin:16px 0 0;color:#ffffffb5;font-size:17px;line-height:1.6;max-width:52ch}
+
+  .next{background:var(--panel);border:1px solid #ffffff24;border-radius:24px;padding:26px}
+  .next .lab{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  .next h2{margin:12px 0 0;font-size:24px;letter-spacing:-.03em;font-weight:900}
+  .next p{margin:8px 0 18px;color:#ffffffa8;font-size:14.5px;line-height:1.55}
+  .bar{height:8px;border-radius:8px;background:#ffffff1f;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--lime);border-radius:8px}
+  .barmeta{display:flex;justify-content:space-between;margin-top:9px;font-size:12px;font-weight:700;color:#ffffffa8}
+  .next .pill{width:100%;margin-top:18px}
+
+  .plan{padding:84px 0}
+  .planhead{display:flex;justify-content:space-between;align-items:end;gap:30px;flex-wrap:wrap}
+  .planhead .body{margin-top:14px}
+  .weeks{margin-top:52px;display:flex;flex-direction:column;gap:46px}
+  .wk{display:grid;grid-template-columns:220px 1fr;gap:36px;align-items:start}
+  .wklab h3{margin:0;font-size:12px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#7b807c}
+  .wklab h4{margin:9px 0 0;font-size:26px;letter-spacing:-.04em;font-weight:900;line-height:1.05}
+  .wklab .cnt{margin:12px 0 0;font-size:13px;font-weight:700;color:#9aa09a}
+  .mods{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .mod{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid #11111f22;border-radius:20px;background:var(--card);color:inherit;min-height:236px;transition:.22s}
+  .mod:hover{transform:translateY(-6px);background:var(--lime);border-color:var(--ink)}
+  .mod .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .mod .n{font-size:11px;letter-spacing:.16em;font-weight:800;color:#7b807c}
+  .mod:hover .n{color:#2c3800}
+  .mod h5{margin:0;font-size:23px;line-height:1.06;letter-spacing:-.035em;font-weight:900}
+  .mod p{margin:0;font-size:14.5px;line-height:1.5;color:#4d534e;flex:1}
+  .mod .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #11111f24;padding-top:14px;font-size:12.5px;font-weight:700;color:#5b615c}
+  .mod .arrow{font-weight:900}
+  .state{font-size:10px;letter-spacing:.13em;font-weight:800;text-transform:uppercase;border-radius:20px;padding:6px 11px;border:1px solid var(--line);color:#7b807c;white-space:nowrap}
+  .state.now{background:var(--ink);border-color:var(--ink);color:var(--lime)}
+  .mod:hover .state{border-color:#0b0f0e59;color:#2c3800}
+  .mod:hover .state.now{background:var(--ink);color:var(--lime)}
+  .units5{display:flex;gap:4px}
+  .units5 i{height:4px;flex:1;border-radius:4px;background:#11111f1f}
+  .units5 i.on{background:var(--ink)}
+  .mod:hover .units5 i{background:#0b0f0e33}
+  .mod:hover .units5 i.on{background:var(--ink)}
+
+  @media(max-width:1080px){ .mods{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:900px){
+    .headin{grid-template-columns:1fr;gap:34px;align-items:start}
+    .wk{grid-template-columns:1fr;gap:18px}
+    .plan{padding:60px 0}
+  }
+  @media(max-width:640px){ .mods{grid-template-columns:1fr} .mod{min-height:0} }
+</style>
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="plan.html">SUIM<span class="dot">.</span></a>
+  <nav class="navlinks" aria-label="Main">
+    <a href="plan.html" aria-current="page" data-t="nav1">My training</a>
+    <a href="program.html" data-t="nav2">About this program</a>
+    <a href="#" data-t="nav3">Library</a>
+    <a href="#" data-t="nav4">Progress</a>
+  </nav>
+  <div class="tools">
+    <div class="lang"><span class="sr">Language</span>
+      <button data-lang="en" aria-pressed="true">EN</button>
+      <button data-lang="ko" aria-pressed="false">KO</button>
+    </div>
+    <div class="me"><span class="av" aria-hidden="true">JS</span><span data-t="member">Jimyung</span></div>
+  </div>
+</div></header>
+
+<main>
+  <section class="head"><div class="wrap headin">
+    <div>
+      <div class="hello" data-t="hello">You are in · Improver+</div>
+      <h1 data-t="h1">IMPROVISATION 01</h1>
+      <p class="sub" data-t="sub">Three weeks, nine sessions, three a week. Work through them in order — or pick whichever session you have time for today.</p>
+    </div>
+    <aside class="next">
+      <span class="lab" data-t="nextLab">Pick up here</span>
+      <h2 id="nextTitle">Session 1 · One Step, Many Possibilities</h2>
+      <p id="nextSub">Week 1 · 18 min · 2 of 5 videos done</p>
+      <div class="bar"><i style="width:23%"></i></div>
+      <div class="barmeta"><span data-t="prog">Program progress</span><span>2%</span></div>
+      <a class="pill primary" id="nextCta" href="session.html?s=1" data-t="nextCtaT">Continue ↗</a>
+    </aside>
+  </div></section>
+
+  <section class="strip"><div class="wrap">
+    <div class="cell"><b>0 / 9</b><span data-t="c1">sessions completed</span></div>
+    <div class="cell"><b data-t="c2a">12 min</b><span data-t="c2">practice time</span></div>
+    <div class="cell"><b>4</b><span data-t="c3">loops and restarts</span></div>
+    <div class="cell"><b data-t="c4a">1 day</b><span data-t="c4">current streak</span></div>
+  </div></section>
+
+  <section class="plan"><div class="wrap">
+    <div class="planhead">
+      <div>
+        <div class="kicker" data-t="planK">Your plan</div>
+        <h2 class="title" data-t="planT">Nine sessions.</h2>
+        <p class="body" data-t="planB">Each session is five short videos: see it, learn it, drill it, change it, then use it on your own. Pick one to open its videos.</p>
+      </div>
+      <a class="pill ghost onpaper sm" href="program.html" data-t="planAbout">What this program is for</a>
+    </div>
+    <div class="weeks" id="weeks"></div>
+  </div></section>
+</main>
+
+<footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span></div></footer>
+
+<script type="module">
+import { esc, initLang, carryLang } from './assets/app.js';
+import { SESSIONS, WEEKS, STATE, durationOf } from './assets/program-data.js';
+
+const C = {
+  en:{
+    nav1:'My training', nav2:'About this program', nav3:'Library', nav4:'Progress', member:'Jimyung',
+    hello:'You are in · Improver+', h1:'IMPROVISATION 01',
+    sub:'Three weeks, nine sessions, three a week. Work through them in order — or pick whichever session you have time for today.',
+    nextLab:'Pick up here', nextCtaT:'Continue ↗', prog:'Program progress',
+    c1:'sessions completed', c2a:'12 min', c2:'practice time', c3:'loops and restarts', c4a:'1 day', c4:'current streak',
+    planK:'Your plan', planT:'Nine sessions.',
+    planB:'Each session is five short videos: see it, learn it, drill it, change it, then use it on your own. Pick one to open its videos.',
+    planAbout:'What this program is for',
+    footer:'Solo salsa training · Built around practice',
+    sessionWord:'Session', videos:'5 videos', open:'Open', stNow:'In progress', stNext:'Not started', stDone:'Done',
+    nextSub: (w, d, done) => `Week ${w} · ${d} · ${done} of 5 videos done`,
+    nextTitle: (n, t) => `Session ${n} · ${t}`
+  },
+  ko:{
+    nav1:'나의 트레이닝', nav2:'프로그램 소개', nav3:'라이브러리', nav4:'진행 상황', member:'지명',
+    hello:'이용 중 · 초중급 이상', h1:'즉흥 01',
+    sub:'3주, 9개 세션, 주 3회. 순서대로 진행해도 되고, 오늘 시간이 되는 세션을 골라도 됩니다.',
+    nextLab:'여기서 이어서', nextCtaT:'이어서 하기 ↗', prog:'프로그램 진행률',
+    c1:'완료한 세션', c2a:'12분', c2:'연습 시간', c3:'반복과 되감기', c4a:'1일', c4:'현재 연속 기록',
+    planK:'나의 플랜', planT:'9개의 세션.',
+    planB:'한 세션은 다섯 개의 짧은 영상입니다. 보고, 배우고, 반복하고, 바꾸고, 스스로 사용해 봅니다. 세션을 골라 영상을 여세요.',
+    planAbout:'이 프로그램에 대하여',
+    footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
+    sessionWord:'세션', videos:'영상 5개', open:'열기', stNow:'진행 중', stNext:'시작 전', stDone:'완료',
+    nextSub: (w, d, done) => `${w}주차 · ${d} · 영상 5개 중 ${done}개 완료`,
+    nextTitle: (n, t) => `세션 ${n} · ${t}`
+  }
+};
+
+initLang(C, (c, lang) => {
+  const S = SESSIONS[lang], W = WEEKS[lang];
+
+  document.getElementById('weeks').innerHTML = W.map((w, wi) => {
+    const mods = S.slice(wi * 3, wi * 3 + 3).map((s, si) => {
+      const n = wi * 3 + si + 1;
+      const now = n === STATE.session;
+      const done = now ? STATE.unitsDone : 0;
+      const bars = Array.from({ length: 5 }, (_, i) => `<i class="${i < done ? 'on' : ''}"></i>`).join('');
+      return `<a class="mod" href="session.html?s=${n}">
+        <span class="top"><span class="n">${esc(c.sessionWord)} ${String(n).padStart(2, '0')}</span>
+          <span class="state ${now ? 'now' : ''}">${esc(now ? c.stNow : c.stNext)}</span></span>
+        <h5>${esc(s[0])}</h5>
+        <p>${esc(s[1])}</p>
+        <span class="units5" aria-hidden="true">${bars}</span>
+        <span class="foot"><span>${esc(durationOf(n - 1))} · ${esc(c.videos)}</span><span class="arrow">→</span></span>
+      </a>`;
+    }).join('');
+    return `<section class="wk">
+      <div class="wklab"><h3>${esc(w[0])}</h3><h4>${esc(w[1])}</h4><p class="cnt">${esc(c.sessionWord)} ${wi * 3 + 1}–${wi * 3 + 3}</p></div>
+      <div class="mods">${mods}</div>
+    </section>`;
+  }).join('');
+
+  const n = STATE.session, s = S[n - 1];
+  document.getElementById('nextTitle').textContent = c.nextTitle(n, s[0]);
+  document.getElementById('nextSub').textContent = c.nextSub(Math.ceil(n / 3), durationOf(n - 1), STATE.unitsDone);
+  document.getElementById('nextCta').href = `session.html?s=${n}`;
+  carryLang();
+});
+</script>
+</body>
+</html>

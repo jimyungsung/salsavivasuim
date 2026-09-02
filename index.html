@@ -220,7 +220,7 @@
         <button data-lang="en" aria-pressed="true">EN</button>
         <button data-lang="ko" aria-pressed="false">KO</button>
       </div>
-      <a class="navcta" href="#plans" data-t="navCta">Start training</a>
+      <a class="navcta" href="register.html" data-t="navCta">Start training</a>
     </div>
   </div></header>
 
@@ -231,7 +231,7 @@
         <h1><span data-t="head1">FROM STEPS</span> <em data-t="head2">TO STYLE.</em></h1>
         <p class="lead" data-t="lead">Learn the movement. Train it. Play with it. Make it yours. A practice-led platform for salsa dancers ready to stop copying and start creating.</p>
         <div class="actions">
-          <a class="pill primary" href="#plans" data-t="primary">Start the 7-day reset ↗</a>
+          <a class="pill primary" href="register.html" data-t="primary">Start the 7-day reset ↗</a>
           <a class="pill secondary" href="#method" data-t="secondary">See the method ↓</a>
         </div>
       </div>
@@ -319,7 +319,7 @@ Stay if you train.</h2></div>
     <section class="final" id="final"><div class="wrap">
       <div class="eyebrow" data-t="finalK">Ready to move differently?</div>
       <h2 data-t="finalT">Make the next eight counts yours.</h2>
-      <a class="pill" href="#plans" data-t="finalC">Start the 7-day shine reset ↗</a>
+      <a class="pill" href="register.html" data-t="finalC">Start the 7-day shine reset ↗</a>
     </div></section>
   </main>
 
@@ -401,7 +401,7 @@ Stay if you train.</h2></div>
     phases.innerHTML=c.phases.map((x,i)=>`<div class="phase ${i===2?'active':''}">${esc(x[0])}<span>${esc(x[1])}</span></div>`).join('');
     cards.innerHTML=c.cards.map((x,i)=>`<a class="card" href="${i===1?'program.html':'#plans'}"><div class="top"><span>0${i+1}</span><span>${esc(x[0])}</span></div><h3>${esc(x[1])}</h3><p>${esc(x[2])}</p><div class="meta">${esc(x[3])}</div></a>`).join('');
     checks.innerHTML=c.checks.map(x=>`<div class="check"><span class="tick" aria-hidden="true">✓</span><span>${esc(x)}</span></div>`).join('');
-    planCards.innerHTML=c.plans.map((x,i)=>`<article class="plan${i===0?' hi':''}"><span class="tag">${esc(x[0])}</span><h3>${esc(x[1])}</h3><div class="price">${esc(x[2])}${x[3]?`<i>${esc(x[3])}</i>`:''}</div><p>${esc(x[4])}</p><a class="pill ${x[6]}" href="#">${esc(x[5])}</a></article>`).join('');
+    planCards.innerHTML=c.plans.map((x,i)=>`<article class="plan${i===0?' hi':''}"><span class="tag">${esc(x[0])}</span><h3>${esc(x[1])}</h3><div class="price">${esc(x[2])}${x[3]?`<i>${esc(x[3])}</i>`:''}</div><p>${esc(x[4])}</p><a class="pill ${x[6]}" href="register.html">${esc(x[5])}</a></article>`).join('');
     try{localStorage.setItem('suim-lang',l)}catch(e){}
   }
 
