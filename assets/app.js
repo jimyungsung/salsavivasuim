@@ -52,6 +52,7 @@ export function initLang(C, render, navCurrent){
     renderNav(l, navCurrent);
     document.querySelectorAll('[data-t]').forEach(e => { if (c[e.dataset.t] !== undefined) e.textContent = c[e.dataset.t]; });
     document.querySelectorAll('[data-tph]').forEach(e => { if (c[e.dataset.tph] !== undefined) e.placeholder = c[e.dataset.tph]; });
+    document.querySelectorAll('[data-ta]').forEach(e => { if (c[e.dataset.ta] !== undefined) e.setAttribute('aria-label', c[e.dataset.ta]); });
     document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === l)));
     if (render) render(c, l);
     try { localStorage.setItem('suim-lang', l); } catch (e) {}

@@ -25,8 +25,9 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   masterplan's: crumb and resume line, then kicker, title, one paragraph and a
   derived stat. Nothing states a session count, so the module can grow or
   shrink without the copy going stale.
-- `session.html?s=1…9` — one session: the player, its six videos, the six-step
-  bar, and the module's other sessions in the sidebar.
+- `session.html?s=1…9` — one session: the player, the six-step bar and the six
+  videos. Playback controls are icons overlaid on the video itself, not a row of
+  chips beneath it.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
   Reads like a sales page, so it sits off to the side: linked from the plan as
   "About this module", and a candidate to fold into the landing page later.
@@ -98,9 +99,10 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
 
 - **Languages:** EN / KO toggle in the nav. The choice persists in
   `localStorage`; `?lang=ko` forces Korean on load.
-- **Nothing plays.** Every video is a hatched placeholder. The controls
-  (speed / loop / mirror / counts / captions) only change their own state,
-  though mirror does really flip the frame.
+- **Nothing plays.** Every video is a hatched placeholder. The overlay controls
+  (play, speed, loop, mirror, counts, captions, full screen) only change their
+  own state, though mirror does really flip the frame and speed cycles through
+  0.5× / 0.75× / 1× / 1.25×.
 - **No accounts.** The register form submits nothing. It does set a
   `suim-member` flag in `localStorage` so the flow stays continuous — the
   landing page then says "Continue training" instead of "Start the 7-day

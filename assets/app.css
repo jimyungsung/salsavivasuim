@@ -32,8 +32,8 @@ img{max-width:100%}
 /* back link — one level up, labelled with the parent screen */
 .crumb{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:700;padding:8px 15px;border:1px solid var(--line);border-radius:26px;color:var(--muted);transition:.2s}
 .crumb:hover{color:var(--ink);border-color:var(--ink);background:#e6e8df}
-.onink .crumb,.nav+.subnav .crumb,.crumb.onink{color:#ffffffb5;border-color:#ffffff2e}
-.onink .crumb:hover,.nav+.subnav .crumb:hover,.crumb.onink:hover{color:#fff;border-color:#ffffff6b;background:#ffffff0f}
+.onink .crumb,.crumb.onink{color:#ffffffb5;border-color:#ffffff2e}
+.onink .crumb:hover,.crumb.onink:hover{color:#fff;border-color:#ffffff6b;background:#ffffff0f}
 
 /* buttons */
 .pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 24px;border-radius:30px;font-weight:800;border:1px solid transparent;cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease}
