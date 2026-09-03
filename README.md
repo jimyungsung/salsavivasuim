@@ -18,7 +18,8 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   grows — the rail scrolls, the grid is `auto-fill`, and a status filter and
   "All programs" view keep 37 programs (and more) navigable. Area and filter
   live in the URL, so a view can be linked to.
-- `masterplan-v1.html` — the previous tabbed version, kept for comparison.
+- `masterplan-v1.html` — the previous tabbed version, kept for comparison. It is
+  not linked from anywhere; reach it by URL.
 - `plan.html` — one module (Improvisation 01) as a grid of sessions tagged by
   level, with a level filter. Header is deliberately spare and mirrors the
   masterplan's: crumb and resume line, then kicker, title, one paragraph and a
@@ -33,8 +34,9 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 ## Navigation
 
 Every signed-in screen renders the same bar from `renderNav()` in
-`assets/app.js` — **Masterplan · My training · Library · Progress**, logo to the
-masterplan, language switch and member chip — so it cannot drift. `program.html`
+`assets/app.js` — **Masterplan · My training**, logo to the masterplan, language
+switch and member chip — so it cannot drift. The bar only lists screens that
+exist; there are no placeholder items pointing at `#`. `program.html`
 is self-contained and carries a hand-matched copy of the same markup.
 
 Screens below the top level show one back link (`.crumb`) naming the screen
@@ -109,8 +111,10 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
 - **Every session shares one video stack.** The six steps are the same in every
   session, so the videos list is generated per step rather than authored nine
   times over.
-- **Only Improvisation 01 is built out.** The other 36 programs exist so the
-  catalogue has realistic depth; every open one leads to the same module page.
+- **Only Improvisation 01 is built out**, and it is the only card on the
+  masterplan that navigates. The other 36 programs give the catalogue realistic
+  depth but are not links, because they would all land on Stop Freezing.
+  The arrow on a card is the signal that it goes somewhere.
 - **Guest programs are not named after real people.** They are labelled by
   discipline (Body Percussion, Cuban Son Roots) rather than by an invented
   guest artist.

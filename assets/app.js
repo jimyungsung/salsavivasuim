@@ -15,13 +15,12 @@ export const signOut = () => { try { localStorage.removeItem(MEMBER_KEY); } catc
    keys, or omitted on screens that sit below a section (they show a back link
    instead). */
 export const NAV = {
-  en: { masterplan:'Masterplan', training:'My training', library:'Library', progress:'Progress',
-        member:'Jimyung', initials:'JS', language:'Language' },
-  ko: { masterplan:'마스터플랜', training:'나의 트레이닝', library:'라이브러리', progress:'진행 상황',
-        member:'지명', initials:'JS', language:'언어' }
+  en: { masterplan:'Masterplan', training:'My training', member:'Jimyung', initials:'JS', language:'Language' },
+  ko: { masterplan:'마스터플랜', training:'나의 트레이닝', member:'지명', initials:'JS', language:'언어' }
 };
 
-const NAV_ITEMS = [['masterplan', 'masterplan.html'], ['training', 'plan.html'], ['library', '#'], ['progress', '#']];
+/* Only screens that exist. A nav item pointing at "#" is a dead end. */
+const NAV_ITEMS = [['masterplan', 'masterplan.html'], ['training', 'plan.html']];
 
 export function renderNav(lang, current){
   const host = document.getElementById('appnav');

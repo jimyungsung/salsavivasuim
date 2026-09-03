@@ -119,7 +119,7 @@
 <header class="nav" id="appnav"></header>
 
 <div class="subnav"><div class="wrap subin">
-  <a class="crumb" href="plan.html"><span aria-hidden="true">←</span><span id="backLabel">Improvisation 01</span></a>
+  <a class="crumb" href="plan.html"><span aria-hidden="true">←</span><span id="backLabel">Stop Freezing</span></a>
   <div class="where"><span class="wk" id="wkLabel">Session 01</span><h1 id="sTitle">One Step, Many Possibilities</h1></div>
   <nav class="hop" aria-label="Sessions">
     <a id="prevS" href="#" data-t="prevS">← Previous</a>
@@ -243,7 +243,7 @@ function paint(){
 
   document.title = `SUIM — ${s[0]}`;
   document.getElementById('backLabel').textContent =
-    SECTIONS[lang].flatMap(x => x[3]).find(m => m[7] === 'current')[1];
+    SECTIONS[lang].flatMap(x => x[3]).find(m => m[7] === 'current')[2];
   document.getElementById('wkLabel').textContent = c.sessLabel(sessionNo, levels);
   document.getElementById('sTitle').textContent = s[0];
 
@@ -301,10 +301,18 @@ function paint(){
   /* session paging */
   const q = q0();
   const prevS = document.getElementById('prevS'), nextS = document.getElementById('nextS'), goNextS = document.getElementById('goNextS');
-  prevS.href = `session.html?s=${sessionNo - 1}${q}`;
+  /* A disabled arrow gets no href at all, so it is not keyboard-reachable and
+     cannot navigate to a session that does not exist. */
+  const setHop = (el, href) => {
+    if (href) { el.setAttribute('href', href); el.removeAttribute('aria-disabled'); }
+    else { el.removeAttribute('href'); el.setAttribute('aria-disabled', 'true'); }
+  };
+  setHop(prevS, sessionNo === 1 ? null : `session.html?s=${sessionNo - 1}${q}`);
   prevS.classList.toggle('off', sessionNo === 1);
   const hasNext = sessionNo < 9;
-  nextS.href = goNextS.href = hasNext ? `session.html?s=${sessionNo + 1}${q}` : `plan.html${q ? '?lang=ko' : ''}`;
+  const onward = hasNext ? `session.html?s=${sessionNo + 1}${q}` : `plan.html${q ? '?lang=ko' : ''}`;
+  setHop(nextS, hasNext ? onward : null);
+  goNextS.setAttribute('href', onward);
   nextS.textContent = hasNext ? c.nextS : c.last;
   nextS.classList.toggle('off', !hasNext);
   goNextS.textContent = hasNext ? c.goNext : c.finish;

@@ -232,9 +232,11 @@ function card(m, i, sectionId, areaName){
       <div class="bars" aria-hidden="true">${bars}</div>
       <div class="meta"><span>${esc(weeks)}</span><span>${esc(sessions)}</span><span>${esc(level)}</span></div>
     </div>`;
-  return state === 'soon'
-    ? `<div class="card ${cls}">${inner}</div>`
-    : `<a class="card ${cls}" href="plan.html">${inner}</a>`;
+  /* Improvisation 01 is the only module built out, so it is the only card that
+     navigates — the rest would all land on it, which reads as a broken link. */
+  return state === 'current'
+    ? `<a class="card ${cls}" href="plan.html">${inner}</a>`
+    : `<div class="card ${cls}">${inner}</div>`;
 }
 
 function paint(){

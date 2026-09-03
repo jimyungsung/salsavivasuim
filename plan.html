@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="Improvisation 01: sessions tagged by level. Stop freezing and improvise with what you already know.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="Suim — Improvisation 01">
+<meta property="og:title" content="Suim — Stop Freezing">
 <meta property="og:description" content="Sessions tagged by level. Stop freezing and improvise with what you already know.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="assets/app.css">
-<title>SUIM — Improvisation 01</title>
+<title>SUIM — Stop Freezing</title>
 <style>
   body{display:flex;flex-direction:column;min-height:100vh;padding-top:78px}
 
@@ -91,8 +91,8 @@
 
   <section class="hero">
     <div>
-      <div class="kicker" data-t="hello">Module 01 · Improvisation</div>
-      <h1 data-t="h1">IMPROVISATION 01</h1>
+      <div class="kicker" id="kicker"></div>
+      <h1 id="moduleName">Stop Freezing</h1>
       <p data-t="sub">Each session is tagged by level, and the levels are not a ladder — take them in order, or go straight to what you want to work on.</p>
       <a class="about" href="program.html" data-t="planAbout">What this module is for <span aria-hidden="true">→</span></a>
     </div>
@@ -118,13 +118,12 @@
 
 <script type="module">
 import { esc, initLang, carryLang, signOut } from './assets/app.js';
-import { SESSIONS, LEVELS, LEVEL_ORDER, SESSION_LEVELS, STATE, UNIT_COUNT, durationOf } from './assets/program-data.js';
+import { SECTIONS, SESSIONS, LEVELS, LEVEL_ORDER, SESSION_LEVELS, STATE, UNIT_COUNT, durationOf } from './assets/program-data.js';
 
 const C = {
   en:{
-    crumb:'Masterplan', resumeGo:'Continue ↗', totalMinL:'minutes of practice',
+    crumb:'Masterplan', moduleWord:'Module', resumeGo:'Continue ↗', totalMinL:'minutes of practice',
     chooseT:'Choose a session', chooseS:'Open one to see its six videos',
-    hello:'Module 01 · Improvisation', h1:'IMPROVISATION 01',
     sub:'Each session is tagged by level, and the levels are not a ladder — take them in order, or go straight to what you want to work on.', prog:'Module progress',
     planAbout:'What this module is for', everySession:'Every session',
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
@@ -132,9 +131,8 @@ const C = {
     empty:'No session carries that level. Try another one.',
   },
   ko:{
-    crumb:'마스터플랜', resumeGo:'이어서 하기 ↗', totalMinL:'분 · 총 연습 시간',
+    crumb:'마스터플랜', moduleWord:'모듈', resumeGo:'이어서 하기 ↗', totalMinL:'분 · 총 연습 시간',
     chooseT:'세션 선택', chooseS:'열어서 여섯 개의 영상을 확인하세요',
-    hello:'모듈 01 · 즉흥', h1:'즉흥 01',
     sub:'각 세션에는 레벨이 붙어 있고, 그 레벨은 사다리가 아닙니다. 순서대로 해도 되고, 지금 다루고 싶은 것으로 바로 가도 됩니다.', prog:'모듈 진행률',
     planAbout:'이 모듈에 대하여', everySession:'전체 세션',
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
@@ -175,6 +173,13 @@ function paint(){
   }).join('') : `<p class="empty">${esc(c.empty)}</p>`;
 
   document.querySelectorAll('[data-l]').forEach(b => b.addEventListener('click', () => { level = b.dataset.l; paint(); }));
+
+  /* Identity comes from the catalogue, so the page is titled with the same name
+     as the card that was clicked to reach it. */
+  const mod = SECTIONS[lang].flatMap(x => x[3]).find(m => m[7] === 'current');
+  document.getElementById('moduleName').textContent = mod[2];
+  document.getElementById('kicker').textContent = `${c.moduleWord} · ${mod[1]}`;
+  document.title = `SUIM — ${mod[2]}`;
 
   /* resume line and the module's total practice time, both derived from the data */
   const n = STATE.session;
