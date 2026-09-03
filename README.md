@@ -19,9 +19,11 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   "All programs" view keep 37 programs (and more) navigable. Area and filter
   live in the URL, so a view can be linked to.
 - `masterplan-v1.html` — the previous tabbed version, kept for comparison.
-- `plan.html` — one module (Improvisation 01) as nine selectable sessions,
-  tagged by level rather than grouped into weeks, with a level filter and a
-  nine-session ribbon along the bottom of the header.
+- `plan.html` — one module (Improvisation 01) as a grid of sessions tagged by
+  level, with a level filter. Header is deliberately spare and mirrors the
+  masterplan's: crumb and resume line, then kicker, title, one paragraph and a
+  derived stat. Nothing states a session count, so the module can grow or
+  shrink without the copy going stale.
 - `session.html?s=1…9` — one session: the player, its six videos, the six-step
   bar, and the module's other sessions in the sidebar.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
