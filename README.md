@@ -33,9 +33,11 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   practice time, streak, sessions this week), where you left off, what you have
   saved, and a feed of recently practised videos.
 - `drills.html` — **My drills**, a layout mockup of a feature that does not
-  exist yet: chain drills you have already trained into one run, save the chain,
-  then drag it onto the days you want to practise. Three numbered steps on one
-  screen — pick, chain, week.
+  exist yet. The main screen is your saved drills beside a Monday-to-Sunday
+  column of drop zones. **Create a drill** opens a dialog at `#new`: video
+  previews you have trained, the ones still locked in the masterplan below them,
+  and the drill you are assembling with a running total. Save names it, closes
+  the dialog, and the drill lands in the list ready to drag onto a day.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
   Reads like a sales page, so it sits off to the side: linked from the plan as
   "About this module", and a candidate to fold into the landing page later.
@@ -120,10 +122,11 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
   `suim-member` flag in `localStorage` so the flow stays continuous — the
   landing page then says "Continue training" instead of "Start the 7-day
   reset". "Sign out" in the app footer clears it.
-- **My drills is a mockup.** Adding, removing, saving a chain, dragging it onto
-  a day and changing the repeat count all work in the page, but nothing is
-  saved — reload and it resets. Its library reads `PRACTISED`, which is
-  deliberately richer than `STATE` so there is something to build a chain from.
+- **My drills is a mockup.** The path works — open the dialog, pick and unpick
+  videos with the total updating, save under a name, drag the new drill onto a
+  day, step the repeat count — but nothing persists; reload and it resets. Its
+  library reads `PRACTISED`, deliberately richer than `STATE` so there is
+  something to build from; everything else is shown locked.
 - **Progress is hard-coded** in `assets/program-data.js` (`STATE`) to someone who
   just subscribed: session 1 in progress, 2 of its 6 videos done. `RECENT` and
   `SAVED` alongside it drive the dashboard's activity feed and saved list.

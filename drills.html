@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Chain drills you have already trained, save the chain, and put it in your week.">
+<meta name="description" content="Build your own drill from videos you have trained, then place it in your week.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Suim — My drills">
-<meta property="og:description" content="Chain drills you have already trained, save the chain, and put it in your week.">
+<meta property="og:description" content="Build your own drill from videos you have trained, then place it in your week.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,87 +17,113 @@
   body{display:flex;flex-direction:column;min-height:100vh;padding-top:78px}
   .main{padding:28px 0 80px}
 
-  .head{padding-bottom:26px;max-width:62ch}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:28px}
   .head .kicker{color:#708000}
   .head h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,58px);line-height:.92;letter-spacing:-.05em;font-weight:900}
-  .head p{margin:14px 0 0;font-size:16.5px;line-height:1.6;color:var(--muted)}
+  .head p{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--muted);max-width:46ch}
 
-  .panel{border:1px solid var(--line);border-radius:20px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+  .cols{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+  .cols>*{min-width:0}
+  .panel{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden}
   .phead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
-  .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;display:flex;align-items:center;gap:10px}
-  .phead h2 i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--lime);font-size:9.5px;font-weight:900}
+  .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
   .phead .note{font-size:11px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
 
-  .build{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
-  .build>*{min-width:0}
+  /* ---- your drills ---- */
+  .drills{padding:12px;display:flex;flex-direction:column;gap:8px}
+  .drill{display:grid;grid-template-columns:16px 1fr;gap:12px;align-items:center;padding:15px 16px;border-radius:14px;background:var(--ink);color:#fff;cursor:grab}
+  .drill:active{cursor:grabbing}
+  .drill.dragging{opacity:.4}
+  .grip{display:grid;grid-template-columns:repeat(2,3px);gap:3px;justify-content:center}
+  .grip i{width:3px;height:3px;border-radius:1px;background:#ffffff5c}
+  .drill .n{display:block;font-size:15px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  .drill .m{display:block;margin-top:5px;font-size:11px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
+  .drill.fresh{animation:pop .5s ease}
+  @keyframes pop{from{transform:scale(.94);background:var(--lime)}to{transform:none}}
+  .none{padding:26px 20px;text-align:center;color:#9aa09b;font-size:13.5px;line-height:1.6}
 
-  /* ---- 01 library ---- */
-  .lib{max-height:392px;overflow-y:auto}
-  .libgroup{padding:12px 20px 4px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#9aa09b;background:#fafbf6;border-bottom:1px solid #11111f0f}
-  .item{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;width:100%;padding:11px 20px;border:0;border-bottom:1px solid #11111f0f;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer;transition:background .16s}
-  .item:hover{background:#f1f2ec}
-  .item .t{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:#748000;display:block}
-  .item .n{font-size:14.5px;font-weight:700;line-height:1.3;display:block;margin-top:2px}
-  .item .d{font-size:11.5px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
-  .item .add{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#0b0f0e0d;font-size:15px;font-weight:800;line-height:1}
-  .item:hover .add{background:var(--lime)}
-  .item[data-in="true"]{opacity:.4}
-  .item[data-in="true"] .add{background:var(--ink);color:var(--lime)}
-
-  /* ---- 02 chain ---- */
-  .chain{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-height:250px}
-  .link{display:grid;grid-template-columns:22px 1fr auto auto;gap:11px;align-items:center;padding:11px 13px;border-radius:13px;background:var(--ink);color:#fff}
-  .link .ix{font-size:11px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
-  .link .n{font-size:14px;font-weight:700;line-height:1.25;min-width:0}
-  .link .n em{display:block;font-style:normal;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#ffffff70;margin-top:2px}
-  .link .d{font-size:11.5px;font-weight:700;color:#ffffff8f;font-variant-numeric:tabular-nums}
-  .link .x{width:22px;height:22px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:13px;line-height:1;cursor:pointer}
-  .link .x:hover{background:var(--lime);color:var(--ink)}
-  .blank{flex:1;display:grid;place-content:center;text-align:center;gap:6px;border:1px dashed var(--line);border-radius:14px;padding:26px;color:#9aa09b}
-  .blank b{font-size:14px;font-weight:800;color:#6e746f}
-  .blank span{font-size:12.5px}
-  .cfoot{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
-  .cfoot input{flex:1;min-width:0;padding:11px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:14px;background:#fafbf6;color:var(--ink)}
-  .cfoot input:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px #c6ff0059}
-  .cfoot .pill{flex:none}
-  .cfoot .pill[disabled]{opacity:.35;pointer-events:none}
-
-  /* ---- 03 week ---- */
-  .week{margin-top:14px}
-  .saved{display:flex;gap:8px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line);align-items:center}
-  .saved .lb{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#9aa09b;margin-right:4px}
-  .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 15px 9px 11px;border:1px solid var(--ink);border-radius:26px;background:var(--lime);font-size:13px;font-weight:800;cursor:grab}
-  .chip:active{cursor:grabbing}
-  .chip .grip{display:grid;grid-template-columns:repeat(2,2px);gap:2px;opacity:.55}
-  .chip .grip i{width:2px;height:2px;background:var(--ink);border-radius:1px}
-  .chip .d{font-weight:700;font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
-  .chip.dragging{opacity:.45}
-
-  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:16px 20px 20px}
-  .day{min-height:132px;border:1px dashed var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px;transition:.16s}
-  .day.over{border-style:solid;border-color:var(--ink);background:#c6ff001f}
-  .day .dl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:#9aa09b}
+  /* ---- your week ---- */
+  .week{padding:12px}
+  .day{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:stretch;padding:5px 0}
+  .dl{display:flex;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9aa09b}
   .day.has .dl{color:var(--ink)}
-  .slot{background:var(--ink);color:#fff;border-radius:11px;padding:9px 10px}
-  .slot .n{font-size:12px;font-weight:800;line-height:1.25}
-  .slot .r{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:7px}
-  .slot .times{font-size:10.5px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
-  .slot .ctrls{display:flex;gap:4px}
-  .slot button{width:19px;height:19px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:11px;line-height:1;cursor:pointer}
+  .zone{min-height:64px;border:1px dashed var(--line);border-radius:14px;padding:9px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;transition:.16s}
+  .zone.empty{justify-content:center;color:#b3b8b3;font-size:12px;font-weight:700}
+  .day.over .zone{border-style:solid;border-color:var(--ink);background:#c6ff0026}
+  .slot{display:inline-flex;align-items:center;gap:10px;padding:9px 10px 9px 14px;border-radius:12px;background:var(--ink);color:#fff}
+  .slot .sn{font-size:13px;font-weight:800;letter-spacing:-.02em}
+  .slot .sd{font-size:10.5px;font-weight:700;color:#ffffff8f;margin-left:2px;font-variant-numeric:tabular-nums}
+  .slot .rep{display:flex;align-items:center;gap:5px;padding-left:10px;border-left:1px solid #ffffff26}
+  .slot .rep b{font-size:11px;font-weight:800;color:var(--lime);min-width:16px;text-align:center;font-variant-numeric:tabular-nums}
+  .slot button{width:20px;height:20px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:12px;line-height:1;cursor:pointer}
   .slot button:hover{background:var(--lime);color:var(--ink)}
-  .hint{padding:0 20px 20px;font-size:12px;color:#9aa09b}
 
-  .ko .item .n,.ko .link .n{font-size:13.5px}
-  @media(max-width:980px){
-    .build{grid-template-columns:1fr}
-    .lib{max-height:300px}
-    .days{grid-template-columns:repeat(4,1fr)}
+  /* ---- modal ---- */
+  .veil{position:fixed;inset:0;z-index:60;background:#0b0f0ecc;backdrop-filter:blur(3px);display:grid;place-items:center;padding:24px}
+  .veil[hidden]{display:none}
+  .modal{width:min(1080px,100%);max-height:88vh;background:var(--paper);border-radius:22px;display:flex;flex-direction:column;overflow:hidden}
+  .mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:22px 24px;border-bottom:1px solid var(--line);background:#fff}
+  .mhead h2{margin:0;font-size:26px;letter-spacing:-.04em;font-weight:900}
+  .mhead p{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+  .close{width:38px;height:38px;flex:none;border:1px solid var(--line);border-radius:50%;background:#fff;font:inherit;font-size:17px;line-height:1;cursor:pointer;color:var(--muted)}
+  .close:hover{border-color:var(--ink);color:var(--ink)}
+
+  .mbody{display:grid;grid-template-columns:1fr 330px;gap:0;min-height:0;flex:1}
+  .mbody>*{min-width:0}
+  .pick{overflow-y:auto;padding:20px 24px}
+  .sec{font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:#9aa09b;margin:0 0 12px}
+  .sec.two{margin-top:26px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px}
+  .vcard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:9px;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:.16s}
+  .vcard:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .vthumb{position:relative;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(135deg,#e7e8e1 0 7px,#eff0e9 7px 14px);display:grid;place-items:center}
+  .vthumb .g{width:26px;height:26px;border-radius:50%;background:#0b0f0e14;display:grid;place-items:center}
+  .vthumb .g svg{width:11px;height:11px}
+  .vthumb .d{position:absolute;right:5px;bottom:5px;background:#0b0f0ed9;color:#fff;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px}
+  .vcard .t{display:block;margin-top:9px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:#748000}
+  .vcard .n{display:block;margin-top:3px;font-size:13.5px;font-weight:700;line-height:1.25}
+  .vcard .s{display:block;margin-top:3px;font-size:10.5px;color:#9aa09b}
+  .vcard[data-on="true"]{border-color:var(--ink);background:var(--lime)}
+  .vcard[data-on="true"] .t{color:#3d4d00}
+  .vcard[data-on="true"] .vthumb{background:repeating-linear-gradient(135deg,#b6ee00 0 7px,#c6ff00 7px 14px)}
+  .vcard[data-on="true"] .s{color:#2c3800}
+  .vcard.locked{opacity:.5;cursor:not-allowed;background:transparent;border-style:dashed}
+  .vcard.locked:hover{transform:none;border-color:var(--line)}
+  .vcard.locked .vthumb .g{background:#0b0f0e0d}
+  .vcard.locked .t{color:#9aa09b}
+
+  .made{border-left:1px solid var(--line);background:#fff;display:flex;flex-direction:column;min-height:0}
+  .mtop{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:18px 20px 12px}
+  .mtop h3{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+  .mtop .tot{font-size:19px;font-weight:900;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .list{flex:1;overflow-y:auto;padding:0 14px 14px;display:flex;flex-direction:column;gap:7px}
+  .link{display:grid;grid-template-columns:20px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--ink);color:#fff}
+  .link .ix{font-size:10.5px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
+  .link .n{font-size:13px;font-weight:700;line-height:1.25;min-width:0}
+  .link .d{font-size:10.5px;font-weight:700;color:#ffffff8f;font-variant-numeric:tabular-nums}
+  .link .x{width:20px;height:20px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:12px;line-height:1;cursor:pointer}
+  .link .x:hover{background:var(--lime);color:var(--ink)}
+  .blank{flex:1;display:grid;place-content:center;text-align:center;gap:5px;margin:0 14px 14px;border:1px dashed var(--line);border-radius:14px;padding:24px;color:#9aa09b;font-size:12.5px;line-height:1.5}
+
+  .mfoot{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--line);background:#fff}
+  .mfoot input{flex:1;min-width:0;padding:11px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:14px;background:#fafbf6;color:var(--ink)}
+  .mfoot input:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px #c6ff0059}
+  .mfoot .pill[disabled]{opacity:.35;pointer-events:none}
+
+  @media(max-width:1000px){
+    .cols{grid-template-columns:1fr}
+    .mbody{grid-template-columns:1fr}
+    .made{border-left:0;border-top:1px solid var(--line)}
+    .list{max-height:190px}
   }
-  @media(max-width:620px){
-    .days{grid-template-columns:repeat(2,1fr)}
-    .cfoot{flex-wrap:wrap}
-    .cfoot .pill{width:100%}
+  @media(max-width:560px){
+    .day{grid-template-columns:60px 1fr;gap:9px}
+    .mfoot{flex-wrap:wrap}
+    .mfoot .pill{width:100%}
+    .veil{padding:0}
+    .modal{max-height:100vh;border-radius:0;width:100%}
   }
+  @media(prefers-reduced-motion:reduce){.drill.fresh{animation:none}.vcard:hover{transform:none}}
 </style>
 </head>
 <body>
@@ -105,34 +131,54 @@
 
 <main class="wrap main">
   <section class="head">
-    <div class="kicker" data-t="kicker">Build your own practice</div>
-    <h1 data-t="h1">MY DRILLS</h1>
-    <p data-t="sub">Chain drills you have already trained into one run, save it, then drop it into the days you want to practise.</p>
+    <div>
+      <div class="kicker" data-t="kicker">Build your own practice</div>
+      <h1 data-t="h1">MY DRILLS</h1>
+      <p data-t="sub">Chain videos you have already trained into one drill, then drop it on the days you want to run it.</p>
+    </div>
+    <button class="pill primary" id="openNew" data-t="newBtn">+ Create a drill</button>
   </section>
 
-  <div class="build">
+  <div class="cols">
     <section class="panel">
-      <div class="phead"><h2><i>1</i><span data-t="p1">Pick your drills</span></h2><span class="note" id="libNote"></span></div>
-      <div class="lib" id="lib"></div>
+      <div class="phead"><h2 data-t="yours">Your drills</h2><span class="note" id="drillNote"></span></div>
+      <div class="drills" id="drills"></div>
     </section>
 
     <section class="panel">
-      <div class="phead"><h2><i>2</i><span data-t="p2">Your chain</span></h2><span class="note" id="chainNote"></span></div>
-      <div class="chain" id="chain"></div>
-      <div class="cfoot">
-        <input id="chainName" data-tph="namePh" placeholder="Name this chain">
-        <button class="pill primary sm" id="saveChain" data-t="save" disabled>Save chain</button>
-      </div>
+      <div class="phead"><h2 data-t="weekT">Your week</h2><span class="note" id="weekNote"></span></div>
+      <div class="week" id="week"></div>
     </section>
   </div>
-
-  <section class="panel week">
-    <div class="phead"><h2><i>3</i><span data-t="p3">Put it in your week</span></h2><span class="note" id="weekNote"></span></div>
-    <div class="saved" id="saved"></div>
-    <div class="days" id="days"></div>
-    <p class="hint" data-t="hint">Drag a chain onto a day. Tap the + to repeat it more times that day.</p>
-  </section>
 </main>
+
+<!-- create a drill -->
+<div class="veil" id="veil" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="mhead">
+      <div><h2 id="mTitle" data-t="mTitle">Create a drill</h2><p data-t="mSub">Tap videos in the order you want to run them.</p></div>
+      <button class="close" id="closeNew" data-ta="aClose" aria-label="Close">×</button>
+    </div>
+
+    <div class="mbody">
+      <div class="pick">
+        <p class="sec" data-t="secOpen">Trained — ready to use</p>
+        <div class="grid" id="gridOpen"></div>
+        <p class="sec two" data-t="secLocked">Not trained yet — complete these in the masterplan first</p>
+        <div class="grid" id="gridLocked"></div>
+      </div>
+
+      <div class="made">
+        <div class="mtop"><h3 data-t="mMade">Your drill</h3><span class="tot" id="total">0:00</span></div>
+        <div class="list" id="list"></div>
+        <div class="mfoot">
+          <input id="name" data-tph="namePh" placeholder="Name this drill">
+          <button class="pill primary sm" id="save" data-t="saveBtn" disabled>Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span><a href="index.html" id="signout" data-t="signout">Sign out</a></div></footer>
 
@@ -143,165 +189,193 @@ import { SESSIONS, UNITS, PRACTISED, CHAINS, WEEK } from './assets/program-data.
 const C = {
   en:{
     kicker:'Build your own practice', h1:'MY DRILLS',
-    sub:'Chain drills you have already trained into one run, save it, then drop it into the days you want to practise.',
-    p1:'Pick your drills', p2:'Your chain', p3:'Put it in your week',
-    namePh:'Name this chain', save:'Save chain',
-    hint:'Drag a chain onto a day. Tap the + to repeat it more times that day.',
+    sub:'Chain videos you have already trained into one drill, then drop it on the days you want to run it.',
+    newBtn:'+ Create a drill', yours:'Your drills', weekT:'Your week',
+    mTitle:'Create a drill', mSub:'Tap videos in the order you want to run them.',
+    secOpen:'Trained — ready to use', secLocked:'Not trained yet',
+    mMade:'Your drill', namePh:'Name this drill', saveBtn:'Save', aClose:'Close',
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
-    days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    sessionWord:'Session', savedLb:'Saved chains',
-    trained:n => `${n} trained`, inChain:n => `${n} in chain · `,
-    blankT:'Nothing in the chain yet', blankS:'Pick a drill on the left to start.',
-    perWeek:n => `${n} runs this week`
+    days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+    dayShort:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    dropHere:'Drop a drill here',
+    nDrills:n => `${n} saved`, nRuns:n => `${n} runs this week`,
+    vids:n => `${n} videos`, sessionWord:'Session',
+    emptyDrills:'No drills yet. Create one to get started.',
+    emptyChain:'Nothing picked yet. Tap a video on the left.',
+    lockedNote:'Complete it first'
   },
   ko:{
     kicker:'나만의 연습 만들기', h1:'나의 드릴',
-    sub:'이미 훈련한 드릴을 하나의 흐름으로 엮고, 저장한 뒤, 연습할 요일에 놓으세요.',
-    p1:'드릴 고르기', p2:'나의 체인', p3:'주간 계획에 넣기',
-    namePh:'체인 이름', save:'체인 저장',
-    hint:'체인을 요일로 끌어다 놓으세요. +를 눌러 그날 반복 횟수를 늘립니다.',
+    sub:'이미 훈련한 영상을 하나의 드릴로 엮고, 실행할 요일에 놓으세요.',
+    newBtn:'+ 드릴 만들기', yours:'나의 드릴', weekT:'주간 계획',
+    mTitle:'드릴 만들기', mSub:'실행할 순서대로 영상을 탭하세요.',
+    secOpen:'훈련 완료 — 사용 가능', secLocked:'아직 훈련하지 않음',
+    mMade:'내 드릴', namePh:'드릴 이름', saveBtn:'저장', aClose:'닫기',
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
-    days:['월','화','수','목','금','토','일'],
-    sessionWord:'세션', savedLb:'저장한 체인',
-    trained:n => `${n}개 훈련함`, inChain:n => `${n}개 · `,
-    blankT:'아직 비어 있습니다', blankS:'왼쪽에서 드릴을 골라 시작하세요.',
-    perWeek:n => `이번 주 ${n}회`
+    days:['월요일','화요일','수요일','목요일','금요일','토요일','일요일'],
+    dayShort:['월','화','수','목','금','토','일'],
+    dropHere:'여기에 드릴을 놓으세요',
+    nDrills:n => `${n}개 저장됨`, nRuns:n => `이번 주 ${n}회`,
+    vids:n => `영상 ${n}개`, sessionWord:'세션',
+    emptyDrills:'아직 드릴이 없습니다. 하나 만들어 보세요.',
+    emptyChain:'아직 선택한 영상이 없습니다. 왼쪽에서 탭하세요.',
+    lockedNote:'먼저 완료하세요'
   }
 };
 
+const PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
+const LOCK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
+
 const secs = t => { const [m, s] = String(t).split(':').map(Number); return m * 60 + s; };
 const mmss = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
-
-/* Working state — this is a mockup, nothing is persisted. */
-let chain = [[1, 4], [1, 5]];
-let chains = [];
-let week = [];
-let dict, lang;
-
-const key = ([s, v]) => `${s}-${v}`;
 const lenOf = list => mmss(list.reduce((t, [, v]) => t + secs(UNITS.en[v - 1][1]), 0));
+
+/* Mockup state — nothing is persisted. */
+const DOING = [3, 4, 5, 6];                       /* only the doing steps are drillable */
+const openSet = new Set(PRACTISED.map(p => p.join('-')));
+const locked = [];
+for (let s = 1; s <= 9 && locked.length < 6; s++)
+  for (const v of DOING) if (!openSet.has(`${s}-${v}`) && locked.length < 6) locked.push([s, v]);
+
+let drills = [], week = [], picked = [], fresh = -1, dict, lang;
 
 function render(){
   const c = dict, S = SESSIONS[lang], U = UNITS[lang];
 
-  /* ---- 01 the library, grouped by the session it came from ---- */
-  const inChain = new Set(chain.map(key));
-  const bySession = {};
-  PRACTISED.forEach(([s, v]) => (bySession[s] = bySession[s] || []).push(v));
-  document.getElementById('libNote').textContent = c.trained(PRACTISED.length);
-  document.getElementById('lib').innerHTML = Object.keys(bySession).map(sn => {
-    const rows = bySession[sn].map(v => {
-      const u = U[v - 1], on = inChain.has(`${sn}-${v}`);
-      return `<button class="item" type="button" data-add="${sn}-${v}" data-in="${on}">
-        <span><span class="t">${esc(u[0])}</span><span class="n">${esc(u[3])}</span></span>
-        <span class="d">${esc(u[1])}</span>
-        <span class="add" aria-hidden="true">${on ? '✓' : '+'}</span>
-      </button>`;
-    }).join('');
-    return `<div class="libgroup">${esc(c.sessionWord)} ${String(sn).padStart(2, '0')} · ${esc(S[sn - 1][0])}</div>${rows}`;
+  /* ---- your drills ---- */
+  document.getElementById('drillNote').textContent = c.nDrills(drills.length);
+  document.getElementById('drills').innerHTML = drills.length ? drills.map((d, i) =>
+    `<div class="drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
+      <span class="grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span><span class="n">${esc(d[0])}</span><span class="m">${esc(c.vids(d[1].length))} · ${esc(lenOf(d[1]))}</span></span>
+    </div>`).join('') : `<p class="none">${esc(c.emptyDrills)}</p>`;
+  fresh = -1;
+
+  /* ---- your week ---- */
+  document.getElementById('weekNote').textContent = c.nRuns(week.reduce((t, w) => t + w.times, 0));
+  document.getElementById('week').innerHTML = c.days.map((day, di) => {
+    const here = week.filter(w => w.day === di && drills[w.drill]);
+    const chips = here.map((w, wi) => `<span class="slot">
+        <span><span class="sn">${esc(drills[w.drill][0])}</span><span class="sd"> ${esc(lenOf(drills[w.drill][1]))}</span></span>
+        <span class="rep">
+          <button type="button" data-less="${di}-${wi}" aria-label="−">−</button>
+          <b>×${w.times}</b>
+          <button type="button" data-more="${di}-${wi}" aria-label="+">+</button>
+        </span></span>`).join('');
+    return `<div class="day ${here.length ? 'has' : ''}" data-day="${di}">
+      <span class="dl">${esc(c.dayShort[di])}</span>
+      <div class="zone ${here.length ? '' : 'empty'}">${chips || esc(c.dropHere)}</div>
+    </div>`;
   }).join('');
 
-  /* ---- 02 the chain ---- */
-  document.getElementById('chainNote').textContent = chain.length ? c.inChain(chain.length) + lenOf(chain) : '';
-  document.getElementById('chain').innerHTML = chain.length
-    ? chain.map(([s, v], i) => {
-        const u = U[v - 1];
-        return `<div class="link">
-          <span class="ix">${String(i + 1).padStart(2, '0')}</span>
-          <span class="n">${esc(u[3])}<em>${esc(c.sessionWord)} ${String(s).padStart(2, '0')} · ${esc(u[0])}</em></span>
-          <span class="d">${esc(u[1])}</span>
-          <button class="x" type="button" data-del="${i}" aria-label="Remove">×</button>
-        </div>`;
-      }).join('')
-    : `<div class="blank"><b>${esc(c.blankT)}</b><span>${esc(c.blankS)}</span></div>`;
-  document.getElementById('saveChain').disabled = chain.length < 2;
+  /* ---- modal: the two libraries ---- */
+  const on = new Set(picked.map(p => p.join('-')));
+  const card = ([s, v], isLocked) => {
+    const u = U[v - 1], sel = on.has(`${s}-${v}`);
+    return `<button class="vcard ${isLocked ? 'locked' : ''}" type="button" ${isLocked ? 'disabled' : `data-pick="${s}-${v}"`} data-on="${sel}">
+      <span class="vthumb"><span class="g">${isLocked ? LOCK : PLAY}</span><span class="d">${esc(u[1])}</span></span>
+      <span class="t">${esc(u[0])}</span>
+      <span class="n">${esc(u[3])}</span>
+      <span class="s">${esc(c.sessionWord)} ${String(s).padStart(2, '0')} · ${esc(S[s - 1][0])}</span>
+    </button>`;
+  };
+  document.getElementById('gridOpen').innerHTML = PRACTISED.map(p => card(p, false)).join('');
+  document.getElementById('gridLocked').innerHTML = locked.map(p => card(p, true)).join('');
 
-  /* ---- 03 saved chains and the week ---- */
-  document.getElementById('saved').innerHTML =
-    `<span class="lb">${esc(c.savedLb)}</span>` + chains.map((ch, i) =>
-      `<span class="chip" draggable="true" data-chain="${i}">
-        <span class="grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-        ${esc(ch[0])}<span class="d">${esc(lenOf(ch[1]))}</span>
-      </span>`).join('');
-
-  const runs = week.reduce((t, w) => t + w[1], 0);
-  document.getElementById('weekNote').textContent = c.perWeek(runs);
-  document.getElementById('days').innerHTML = c.days.map((d, di) => {
-    const slots = week.filter(w => w[0] === di && chains[w[2]]).map(w => {
-      const ch = chains[w[2]];
-      return `<div class="slot">
-        <span class="n">${esc(ch ? ch[0] : '')}</span>
-        <span class="r"><span class="times">×${w[1]}</span>
-          <span class="ctrls">
-            <button type="button" data-less="${di}" aria-label="Fewer">−</button>
-            <button type="button" data-more="${di}" aria-label="More">+</button>
-          </span></span>
-      </div>`;
-    }).join('');
-    return `<div class="day ${slots ? 'has' : ''}" data-day="${di}"><span class="dl">${esc(d)}</span>${slots}</div>`;
-  }).join('');
+  /* ---- modal: the drill being built ---- */
+  document.getElementById('total').textContent = picked.length ? lenOf(picked) : '0:00';
+  document.getElementById('list').innerHTML = picked.length ? picked.map(([s, v], i) => {
+    const u = U[v - 1];
+    return `<div class="link">
+      <span class="ix">${String(i + 1).padStart(2, '0')}</span>
+      <span class="n">${esc(u[3])}</span>
+      <span class="d">${esc(u[1])}</span>
+      <button class="x" type="button" data-drop="${i}" aria-label="Remove">×</button>
+    </div>`;
+  }).join('') : `<div class="blank">${esc(c.emptyChain)}</div>`;
+  document.getElementById('save').disabled = picked.length < 2;
 
   wire();
   carryLang();
 }
 
 function wire(){
-  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
-    const [s, v] = b.dataset.add.split('-').map(Number);
-    const at = chain.findIndex(x => key(x) === `${s}-${v}`);
-    at >= 0 ? chain.splice(at, 1) : chain.push([s, v]);
+  document.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
+    const [s, v] = b.dataset.pick.split('-').map(Number);
+    const at = picked.findIndex(p => p[0] === s && p[1] === v);
+    at >= 0 ? picked.splice(at, 1) : picked.push([s, v]);
     render();
   }));
-  document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
-    chain.splice(+b.dataset.del, 1); render();
+  document.querySelectorAll('[data-drop]').forEach(b => b.addEventListener('click', () => {
+    picked.splice(+b.dataset.drop, 1); render();
   }));
-  document.querySelectorAll('[data-more]').forEach(b => b.addEventListener('click', () => {
-    const w = week.find(x => x[0] === +b.dataset.more); if (w) { w[1]++; render(); }
+  const step = (attr, by) => document.querySelectorAll(`[data-${attr}]`).forEach(b => b.addEventListener('click', () => {
+    const [di, wi] = b.dataset[attr].split('-').map(Number);
+    const list = week.filter(w => w.day === di);
+    const w = list[wi]; if (!w) return;
+    w.times += by;
+    if (w.times < 1) week.splice(week.indexOf(w), 1);
+    render();
   }));
-  document.querySelectorAll('[data-less]').forEach(b => b.addEventListener('click', () => {
-    const i = week.findIndex(x => x[0] === +b.dataset.less);
-    if (i >= 0) { week[i][1]--; if (week[i][1] < 1) week.splice(i, 1); render(); }
-  }));
+  step('more', 1); step('less', -1);
 
-  /* drag a saved chain onto a day */
   let held = null;
-  document.querySelectorAll('[data-chain]').forEach(chip => {
-    chip.addEventListener('dragstart', e => {
-      held = +chip.dataset.chain;
-      chip.classList.add('dragging');
+  document.querySelectorAll('[data-drill]').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      held = +el.dataset.drill; el.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'copy';
-      e.dataTransfer.setData('text/plain', chip.dataset.chain);
+      e.dataTransfer.setData('text/plain', el.dataset.drill);
     });
-    chip.addEventListener('dragend', () => { held = null; chip.classList.remove('dragging'); });
+    el.addEventListener('dragend', () => { held = null; el.classList.remove('dragging'); });
   });
   document.querySelectorAll('[data-day]').forEach(day => {
     day.addEventListener('dragover', e => { e.preventDefault(); day.classList.add('over'); });
     day.addEventListener('dragleave', () => day.classList.remove('over'));
     day.addEventListener('drop', e => {
       e.preventDefault(); day.classList.remove('over');
-      const ci = held ?? +e.dataTransfer.getData('text/plain');
-      if (Number.isNaN(ci)) return;
       const di = +day.dataset.day;
-      const at = week.find(w => w[0] === di);
-      at ? (at[1]++, at[2] = ci) : week.push([di, 1, ci]);
+      const ix = held ?? parseInt(e.dataTransfer.getData('text/plain'), 10);
+      if (Number.isNaN(ix) || !drills[ix]) return;
+      const there = week.find(w => w.day === di && w.drill === ix);
+      there ? there.times++ : week.push({ day: di, drill: ix, times: 1 });
       render();
     });
   });
 }
 
-document.getElementById('saveChain').addEventListener('click', () => {
-  const input = document.getElementById('chainName');
-  const name = input.value.trim() || `${dict.p2} ${chains.length + 1}`;
-  chains.push([name, chain.slice()]);
-  input.value = ''; chain = [];
-  render();
+/* ---- the modal ---- */
+const veil = document.getElementById('veil');
+/* The dialog lives at #new, so it can be linked to and Back closes it. */
+const openModal = () => {
+  picked = []; document.getElementById('name').value = '';
+  veil.hidden = false; render();
+  if (location.hash !== '#new') history.pushState(null, '', '#new');
+  document.getElementById('closeNew').focus();
+};
+const closeModal = ({ back = true } = {}) => {
+  veil.hidden = true;
+  if (back && location.hash === '#new') history.replaceState(null, '', location.pathname + location.search);
+  document.getElementById('openNew').focus();
+};
+addEventListener('hashchange', () => { location.hash === '#new' ? openModal() : closeModal({ back: false }); });
+document.getElementById('openNew').addEventListener('click', openModal);
+document.getElementById('closeNew').addEventListener('click', closeModal);
+veil.addEventListener('mousedown', e => { if (e.target === veil) closeModal(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !veil.hidden) closeModal(); });
+
+document.getElementById('save').addEventListener('click', () => {
+  const input = document.getElementById('name');
+  drills.push([input.value.trim() || `${dict.mMade} ${drills.length + 1}`, picked.slice()]);
+  fresh = drills.length - 1;
+  closeModal(); render();
 });
 
 initLang(C, (c, l) => {
   dict = c; lang = l;
-  chains = CHAINS[l].map(x => [x[0], x[1].slice()]);
-  week = WEEK.map(([d, times], i) => [d, times, i === 1 ? 1 : 0]);
+  drills = CHAINS[l].map(x => [x[0], x[1].slice()]);
+  week = WEEK.map(([day, times], i) => ({ day, times, drill: i === 1 ? 1 : 0 }));
   render();
+  if (location.hash === '#new' && veil.hidden) openModal();
 }, 'drills');
 
 document.getElementById('signout').addEventListener('click', signOut);
