@@ -28,6 +28,9 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 - `session.html?s=1…9` — one session: the player, the six-step bar and the six
   videos. Playback controls are icons overlaid on the video itself, not a row of
   chips beneath it.
+- `training.html` — **My training**, the personal view: this week's sessions,
+  the practice numbers, where you left off, and the module in progress. The
+  only screen under that nav item.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
   Reads like a sales page, so it sits off to the side: linked from the plan as
   "About this module", and a candidate to fold into the landing page later.
@@ -37,7 +40,12 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 Every signed-in screen renders the same bar from `renderNav()` in
 `assets/app.js` — **Masterplan · My training**, logo to the masterplan, language
 switch and member chip — so it cannot drift. The bar only lists screens that
-exist; there are no placeholder items pointing at `#`. `program.html`
+exist; there are no placeholder items pointing at `#`.
+
+The two items are two sections, not two pages. **Masterplan** stays current for
+everything beneath it — the catalogue, a module, a session, a module explainer —
+because drilling in never leaves that section. **My training** is the only other
+place: your own practice, not the catalogue. `program.html`
 is self-contained and carries a hand-matched copy of the same markup.
 
 Screens below the top level show one back link (`.crumb`) naming the screen

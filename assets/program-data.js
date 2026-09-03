@@ -189,7 +189,11 @@ export const SECTIONS = {
 };
 
 /* Hard-coded prototype state: just subscribed, partway through session 1. */
-export const STATE = { module: 'improvisation-01', session: 1, unit: 3, unitsDone: 2 };
+export const STATE = {
+  module: 'improvisation-01', session: 1, unit: 3, unitsDone: 2,
+  /* practice behaviour, the thing the product actually counts */
+  sessionsDone: 0, minutes: 12, loops: 4, streak: 1, weekTarget: 3, weekDone: 1
+};
 export const UNIT_COUNT = 6;
 
 export const durationOf = i => ['18 min', '17 min', '19 min', '18 min', '16 min', '21 min', '18 min', '16 min', '22 min'][i];

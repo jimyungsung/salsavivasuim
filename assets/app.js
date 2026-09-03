@@ -19,8 +19,10 @@ export const NAV = {
   ko: { masterplan:'마스터플랜', training:'나의 트레이닝', member:'지명', initials:'JS', language:'언어' }
 };
 
-/* Only screens that exist. A nav item pointing at "#" is a dead end. */
-const NAV_ITEMS = [['masterplan', 'masterplan.html'], ['training', 'plan.html']];
+/* Only screens that exist. A nav item pointing at "#" is a dead end.
+   "Masterplan" stays current for everything below it — a module, a session, a
+   module explainer — because drilling in never leaves that section. */
+const NAV_ITEMS = [['masterplan', 'masterplan.html'], ['training', 'training.html']];
 
 export function renderNav(lang, current){
   const host = document.getElementById('appnav');
