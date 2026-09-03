@@ -12,11 +12,13 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 
 - `index.html` — the public landing page. Every CTA goes to `register.html`.
 - `register.html` — account plus the two onboarding questions.
-- `masterplan.html` — **what you see right after registering.** The catalogue,
-  split into seven sections as tabs (Improvisation, Move Better, Shine Language,
-  Musicality, Choreo Lab, Partnerwork, Guest Labs). Each tab swaps the panel
-  below for that section's modules, numbered in the order they are meant to be
-  taken. Pick one.
+- `masterplan.html` — **what you see right after registering.** The catalogue:
+  a quiet left rail of the seven training areas, and an editorial grid of the
+  programs inside the selected one. Built to stay readable as the catalogue
+  grows — the rail scrolls, the grid is `auto-fill`, and a status filter and
+  "All programs" view keep 37 programs (and more) navigable. Area and filter
+  live in the URL, so a view can be linked to.
+- `masterplan-v1.html` — the previous tabbed version, kept for comparison.
 - `plan.html` — one module (Improvisation 01) as nine selectable sessions
   grouped by week, with a nine-session ribbon along the bottom of the header so
   the whole shape is visible without scrolling.
@@ -40,8 +42,8 @@ explainer go back to *Improvisation 01*, and register goes back to *suim.com*.
 
 ## Vocabulary
 
-**Section** (Improvisation) → **module** (Improvisation 01) → **session** (nine
-of them, 15–22 min each) → **video** (six per session, one per step).
+**Area** (Improvisation) → **program / module** (Improvisation 01) → **session**
+(nine of them, 15–22 min each) → **video** (six per session, one per step).
 
 The method is six steps, and every session is those six steps in order:
 
@@ -96,7 +98,10 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
 - **Every session shares one video stack.** The six steps are the same in every
   session, so the videos list is generated per step rather than authored nine
   times over.
-- **Only Improvisation 01 is built out.** The other 23 modules exist so each
-  section has something in it; every open one leads to the same module page.
+- **Only Improvisation 01 is built out.** The other 36 programs exist so the
+  catalogue has realistic depth; every open one leads to the same module page.
+- **Guest programs are not named after real people.** They are labelled by
+  discipline (Body Percussion, Cuban Son Roots) rather than by an invented
+  guest artist.
 - **Pricing** ($16 monthly, $140 annual) is the indicative test range from the
   PRD, not confirmed pricing.
