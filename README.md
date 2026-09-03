@@ -32,6 +32,10 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   that nav item. A dashboard: four stat tiles (module complete with a ring,
   practice time, streak, sessions this week), where you left off, what you have
   saved, and a feed of recently practised videos.
+- `drills.html` — **My drills**, a layout mockup of a feature that does not
+  exist yet: chain drills you have already trained into one run, save the chain,
+  then drag it onto the days you want to practise. Three numbered steps on one
+  screen — pick, chain, week.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
   Reads like a sales page, so it sits off to the side: linked from the plan as
   "About this module", and a candidate to fold into the landing page later.
@@ -43,10 +47,10 @@ Every signed-in screen renders the same bar from `renderNav()` in
 switch and member chip — so it cannot drift. The bar only lists screens that
 exist; there are no placeholder items pointing at `#`.
 
-The two items are two sections, not two pages. **Masterplan** stays current for
-everything beneath it — the catalogue, a module, a session, a module explainer —
-because drilling in never leaves that section. **My training** is the only other
-place: your own practice, not the catalogue. `program.html`
+The items are sections, not pages. **Masterplan** stays current for everything
+beneath it — the catalogue, a module, a session, a module explainer — because
+drilling in never leaves that section. **My training** is your own practice, and
+**My drills** is where you assemble your own. `program.html`
 is self-contained and carries a hand-matched copy of the same markup.
 
 Screens below the top level show one back link (`.crumb`) naming the screen
@@ -116,6 +120,10 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
   `suim-member` flag in `localStorage` so the flow stays continuous — the
   landing page then says "Continue training" instead of "Start the 7-day
   reset". "Sign out" in the app footer clears it.
+- **My drills is a mockup.** Adding, removing, saving a chain, dragging it onto
+  a day and changing the repeat count all work in the page, but nothing is
+  saved — reload and it resets. Its library reads `PRACTISED`, which is
+  deliberately richer than `STATE` so there is something to build a chain from.
 - **Progress is hard-coded** in `assets/program-data.js` (`STATE`) to someone who
   just subscribed: session 1 in progress, 2 of its 6 videos done. `RECENT` and
   `SAVED` alongside it drive the dashboard's activity feed and saved list.

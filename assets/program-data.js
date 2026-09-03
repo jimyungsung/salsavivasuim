@@ -212,4 +212,30 @@ export const SAVED = [
   [2, 3]
 ];
 
+/* Practice videos the dancer has already trained, as [session, video].
+   Only the doing steps — TRAIN, DRILL, TRANSFORM, IMPROVISE — are drillable;
+   WATCH and UNDERSTAND explain, so they never enter a chain.
+   Set richer than STATE on purpose, so My drills has a library to build from. */
+export const PRACTISED = [
+  [1, 3], [1, 4], [1, 5], [1, 6],
+  [2, 3], [2, 4], [2, 5],
+  [3, 4], [3, 5],
+  [4, 4]
+];
+
+/* Chains the dancer has already saved: [name, [[session, video], ...]] */
+export const CHAINS = {
+  en: [
+    ['Direction & size', [[1, 4], [1, 5]]],
+    ['Rhythm reset',     [[2, 4], [3, 4]]]
+  ],
+  ko: [
+    ['방향과 크기', [[1, 4], [1, 5]]],
+    ['리듬 리셋',   [[2, 4], [3, 4]]]
+  ]
+};
+
+/* What is already in the week: day index (0 = Monday) -> [chain index, times]. */
+export const WEEK = [[0, 2], [2, 1], [4, 1]];
+
 export const durationOf = i => ['18 min', '17 min', '19 min', '18 min', '16 min', '21 min', '18 min', '16 min', '22 min'][i];

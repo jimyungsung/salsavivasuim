@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Chain drills you have already trained, save the chain, and put it in your week.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Suim — My drills">
+<meta property="og:description" content="Chain drills you have already trained, save the chain, and put it in your week.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<title>SUIM — My drills</title>
+<style>
+  body{display:flex;flex-direction:column;min-height:100vh;padding-top:78px}
+  .main{padding:28px 0 80px}
+
+  .head{padding-bottom:26px;max-width:62ch}
+  .head .kicker{color:#708000}
+  .head h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,58px);line-height:.92;letter-spacing:-.05em;font-weight:900}
+  .head p{margin:14px 0 0;font-size:16.5px;line-height:1.6;color:var(--muted)}
+
+  .panel{border:1px solid var(--line);border-radius:20px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+  .phead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
+  .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;display:flex;align-items:center;gap:10px}
+  .phead h2 i{font-style:normal;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--lime);font-size:9.5px;font-weight:900}
+  .phead .note{font-size:11px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
+
+  .build{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+  .build>*{min-width:0}
+
+  /* ---- 01 library ---- */
+  .lib{max-height:392px;overflow-y:auto}
+  .libgroup{padding:12px 20px 4px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#9aa09b;background:#fafbf6;border-bottom:1px solid #11111f0f}
+  .item{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;width:100%;padding:11px 20px;border:0;border-bottom:1px solid #11111f0f;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer;transition:background .16s}
+  .item:hover{background:#f1f2ec}
+  .item .t{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:#748000;display:block}
+  .item .n{font-size:14.5px;font-weight:700;line-height:1.3;display:block;margin-top:2px}
+  .item .d{font-size:11.5px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
+  .item .add{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#0b0f0e0d;font-size:15px;font-weight:800;line-height:1}
+  .item:hover .add{background:var(--lime)}
+  .item[data-in="true"]{opacity:.4}
+  .item[data-in="true"] .add{background:var(--ink);color:var(--lime)}
+
+  /* ---- 02 chain ---- */
+  .chain{flex:1;padding:12px 14px;display:flex;flex-direction:column;gap:7px;min-height:250px}
+  .link{display:grid;grid-template-columns:22px 1fr auto auto;gap:11px;align-items:center;padding:11px 13px;border-radius:13px;background:var(--ink);color:#fff}
+  .link .ix{font-size:11px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
+  .link .n{font-size:14px;font-weight:700;line-height:1.25;min-width:0}
+  .link .n em{display:block;font-style:normal;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#ffffff70;margin-top:2px}
+  .link .d{font-size:11.5px;font-weight:700;color:#ffffff8f;font-variant-numeric:tabular-nums}
+  .link .x{width:22px;height:22px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:13px;line-height:1;cursor:pointer}
+  .link .x:hover{background:var(--lime);color:var(--ink)}
+  .blank{flex:1;display:grid;place-content:center;text-align:center;gap:6px;border:1px dashed var(--line);border-radius:14px;padding:26px;color:#9aa09b}
+  .blank b{font-size:14px;font-weight:800;color:#6e746f}
+  .blank span{font-size:12.5px}
+  .cfoot{display:flex;align-items:center;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+  .cfoot input{flex:1;min-width:0;padding:11px 14px;border:1px solid var(--line);border-radius:12px;font:inherit;font-size:14px;background:#fafbf6;color:var(--ink)}
+  .cfoot input:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px #c6ff0059}
+  .cfoot .pill{flex:none}
+  .cfoot .pill[disabled]{opacity:.35;pointer-events:none}
+
+  /* ---- 03 week ---- */
+  .week{margin-top:14px}
+  .saved{display:flex;gap:8px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line);align-items:center}
+  .saved .lb{font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#9aa09b;margin-right:4px}
+  .chip{display:inline-flex;align-items:center;gap:9px;padding:9px 15px 9px 11px;border:1px solid var(--ink);border-radius:26px;background:var(--lime);font-size:13px;font-weight:800;cursor:grab}
+  .chip:active{cursor:grabbing}
+  .chip .grip{display:grid;grid-template-columns:repeat(2,2px);gap:2px;opacity:.55}
+  .chip .grip i{width:2px;height:2px;background:var(--ink);border-radius:1px}
+  .chip .d{font-weight:700;font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
+  .chip.dragging{opacity:.45}
+
+  .days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:16px 20px 20px}
+  .day{min-height:132px;border:1px dashed var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:7px;transition:.16s}
+  .day.over{border-style:solid;border-color:var(--ink);background:#c6ff001f}
+  .day .dl{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:800;color:#9aa09b}
+  .day.has .dl{color:var(--ink)}
+  .slot{background:var(--ink);color:#fff;border-radius:11px;padding:9px 10px}
+  .slot .n{font-size:12px;font-weight:800;line-height:1.25}
+  .slot .r{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:7px}
+  .slot .times{font-size:10.5px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
+  .slot .ctrls{display:flex;gap:4px}
+  .slot button{width:19px;height:19px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:11px;line-height:1;cursor:pointer}
+  .slot button:hover{background:var(--lime);color:var(--ink)}
+  .hint{padding:0 20px 20px;font-size:12px;color:#9aa09b}
+
+  .ko .item .n,.ko .link .n{font-size:13.5px}
+  @media(max-width:980px){
+    .build{grid-template-columns:1fr}
+    .lib{max-height:300px}
+    .days{grid-template-columns:repeat(4,1fr)}
+  }
+  @media(max-width:620px){
+    .days{grid-template-columns:repeat(2,1fr)}
+    .cfoot{flex-wrap:wrap}
+    .cfoot .pill{width:100%}
+  }
+</style>
+</head>
+<body>
+<header class="nav" id="appnav"></header>
+
+<main class="wrap main">
+  <section class="head">
+    <div class="kicker" data-t="kicker">Build your own practice</div>
+    <h1 data-t="h1">MY DRILLS</h1>
+    <p data-t="sub">Chain drills you have already trained into one run, save it, then drop it into the days you want to practise.</p>
+  </section>
+
+  <div class="build">
+    <section class="panel">
+      <div class="phead"><h2><i>1</i><span data-t="p1">Pick your drills</span></h2><span class="note" id="libNote"></span></div>
+      <div class="lib" id="lib"></div>
+    </section>
+
+    <section class="panel">
+      <div class="phead"><h2><i>2</i><span data-t="p2">Your chain</span></h2><span class="note" id="chainNote"></span></div>
+      <div class="chain" id="chain"></div>
+      <div class="cfoot">
+        <input id="chainName" data-tph="namePh" placeholder="Name this chain">
+        <button class="pill primary sm" id="saveChain" data-t="save" disabled>Save chain</button>
+      </div>
+    </section>
+  </div>
+
+  <section class="panel week">
+    <div class="phead"><h2><i>3</i><span data-t="p3">Put it in your week</span></h2><span class="note" id="weekNote"></span></div>
+    <div class="saved" id="saved"></div>
+    <div class="days" id="days"></div>
+    <p class="hint" data-t="hint">Drag a chain onto a day. Tap the + to repeat it more times that day.</p>
+  </section>
+</main>
+
+<footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span><a href="index.html" id="signout" data-t="signout">Sign out</a></div></footer>
+
+<script type="module">
+import { esc, initLang, carryLang, signOut } from './assets/app.js';
+import { SESSIONS, UNITS, PRACTISED, CHAINS, WEEK } from './assets/program-data.js';
+
+const C = {
+  en:{
+    kicker:'Build your own practice', h1:'MY DRILLS',
+    sub:'Chain drills you have already trained into one run, save it, then drop it into the days you want to practise.',
+    p1:'Pick your drills', p2:'Your chain', p3:'Put it in your week',
+    namePh:'Name this chain', save:'Save chain',
+    hint:'Drag a chain onto a day. Tap the + to repeat it more times that day.',
+    footer:'Solo salsa training · Built around practice', signout:'Sign out',
+    days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    sessionWord:'Session', savedLb:'Saved chains',
+    trained:n => `${n} trained`, inChain:n => `${n} in chain · `,
+    blankT:'Nothing in the chain yet', blankS:'Pick a drill on the left to start.',
+    perWeek:n => `${n} runs this week`
+  },
+  ko:{
+    kicker:'나만의 연습 만들기', h1:'나의 드릴',
+    sub:'이미 훈련한 드릴을 하나의 흐름으로 엮고, 저장한 뒤, 연습할 요일에 놓으세요.',
+    p1:'드릴 고르기', p2:'나의 체인', p3:'주간 계획에 넣기',
+    namePh:'체인 이름', save:'체인 저장',
+    hint:'체인을 요일로 끌어다 놓으세요. +를 눌러 그날 반복 횟수를 늘립니다.',
+    footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
+    days:['월','화','수','목','금','토','일'],
+    sessionWord:'세션', savedLb:'저장한 체인',
+    trained:n => `${n}개 훈련함`, inChain:n => `${n}개 · `,
+    blankT:'아직 비어 있습니다', blankS:'왼쪽에서 드릴을 골라 시작하세요.',
+    perWeek:n => `이번 주 ${n}회`
+  }
+};
+
+const secs = t => { const [m, s] = String(t).split(':').map(Number); return m * 60 + s; };
+const mmss = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+
+/* Working state — this is a mockup, nothing is persisted. */
+let chain = [[1, 4], [1, 5]];
+let chains = [];
+let week = [];
+let dict, lang;
+
+const key = ([s, v]) => `${s}-${v}`;
+const lenOf = list => mmss(list.reduce((t, [, v]) => t + secs(UNITS.en[v - 1][1]), 0));
+
+function render(){
+  const c = dict, S = SESSIONS[lang], U = UNITS[lang];
+
+  /* ---- 01 the library, grouped by the session it came from ---- */
+  const inChain = new Set(chain.map(key));
+  const bySession = {};
+  PRACTISED.forEach(([s, v]) => (bySession[s] = bySession[s] || []).push(v));
+  document.getElementById('libNote').textContent = c.trained(PRACTISED.length);
+  document.getElementById('lib').innerHTML = Object.keys(bySession).map(sn => {
+    const rows = bySession[sn].map(v => {
+      const u = U[v - 1], on = inChain.has(`${sn}-${v}`);
+      return `<button class="item" type="button" data-add="${sn}-${v}" data-in="${on}">
+        <span><span class="t">${esc(u[0])}</span><span class="n">${esc(u[3])}</span></span>
+        <span class="d">${esc(u[1])}</span>
+        <span class="add" aria-hidden="true">${on ? '✓' : '+'}</span>
+      </button>`;
+    }).join('');
+    return `<div class="libgroup">${esc(c.sessionWord)} ${String(sn).padStart(2, '0')} · ${esc(S[sn - 1][0])}</div>${rows}`;
+  }).join('');
+
+  /* ---- 02 the chain ---- */
+  document.getElementById('chainNote').textContent = chain.length ? c.inChain(chain.length) + lenOf(chain) : '';
+  document.getElementById('chain').innerHTML = chain.length
+    ? chain.map(([s, v], i) => {
+        const u = U[v - 1];
+        return `<div class="link">
+          <span class="ix">${String(i + 1).padStart(2, '0')}</span>
+          <span class="n">${esc(u[3])}<em>${esc(c.sessionWord)} ${String(s).padStart(2, '0')} · ${esc(u[0])}</em></span>
+          <span class="d">${esc(u[1])}</span>
+          <button class="x" type="button" data-del="${i}" aria-label="Remove">×</button>
+        </div>`;
+      }).join('')
+    : `<div class="blank"><b>${esc(c.blankT)}</b><span>${esc(c.blankS)}</span></div>`;
+  document.getElementById('saveChain').disabled = chain.length < 2;
+
+  /* ---- 03 saved chains and the week ---- */
+  document.getElementById('saved').innerHTML =
+    `<span class="lb">${esc(c.savedLb)}</span>` + chains.map((ch, i) =>
+      `<span class="chip" draggable="true" data-chain="${i}">
+        <span class="grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        ${esc(ch[0])}<span class="d">${esc(lenOf(ch[1]))}</span>
+      </span>`).join('');
+
+  const runs = week.reduce((t, w) => t + w[1], 0);
+  document.getElementById('weekNote').textContent = c.perWeek(runs);
+  document.getElementById('days').innerHTML = c.days.map((d, di) => {
+    const slots = week.filter(w => w[0] === di && chains[w[2]]).map(w => {
+      const ch = chains[w[2]];
+      return `<div class="slot">
+        <span class="n">${esc(ch ? ch[0] : '')}</span>
+        <span class="r"><span class="times">×${w[1]}</span>
+          <span class="ctrls">
+            <button type="button" data-less="${di}" aria-label="Fewer">−</button>
+            <button type="button" data-more="${di}" aria-label="More">+</button>
+          </span></span>
+      </div>`;
+    }).join('');
+    return `<div class="day ${slots ? 'has' : ''}" data-day="${di}"><span class="dl">${esc(d)}</span>${slots}</div>`;
+  }).join('');
+
+  wire();
+  carryLang();
+}
+
+function wire(){
+  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+    const [s, v] = b.dataset.add.split('-').map(Number);
+    const at = chain.findIndex(x => key(x) === `${s}-${v}`);
+    at >= 0 ? chain.splice(at, 1) : chain.push([s, v]);
+    render();
+  }));
+  document.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+    chain.splice(+b.dataset.del, 1); render();
+  }));
+  document.querySelectorAll('[data-more]').forEach(b => b.addEventListener('click', () => {
+    const w = week.find(x => x[0] === +b.dataset.more); if (w) { w[1]++; render(); }
+  }));
+  document.querySelectorAll('[data-less]').forEach(b => b.addEventListener('click', () => {
+    const i = week.findIndex(x => x[0] === +b.dataset.less);
+    if (i >= 0) { week[i][1]--; if (week[i][1] < 1) week.splice(i, 1); render(); }
+  }));
+
+  /* drag a saved chain onto a day */
+  let held = null;
+  document.querySelectorAll('[data-chain]').forEach(chip => {
+    chip.addEventListener('dragstart', e => {
+      held = +chip.dataset.chain;
+      chip.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('text/plain', chip.dataset.chain);
+    });
+    chip.addEventListener('dragend', () => { held = null; chip.classList.remove('dragging'); });
+  });
+  document.querySelectorAll('[data-day]').forEach(day => {
+    day.addEventListener('dragover', e => { e.preventDefault(); day.classList.add('over'); });
+    day.addEventListener('dragleave', () => day.classList.remove('over'));
+    day.addEventListener('drop', e => {
+      e.preventDefault(); day.classList.remove('over');
+      const ci = held ?? +e.dataTransfer.getData('text/plain');
+      if (Number.isNaN(ci)) return;
+      const di = +day.dataset.day;
+      const at = week.find(w => w[0] === di);
+      at ? (at[1]++, at[2] = ci) : week.push([di, 1, ci]);
+      render();
+    });
+  });
+}
+
+document.getElementById('saveChain').addEventListener('click', () => {
+  const input = document.getElementById('chainName');
+  const name = input.value.trim() || `${dict.p2} ${chains.length + 1}`;
+  chains.push([name, chain.slice()]);
+  input.value = ''; chain = [];
+  render();
+});
+
+initLang(C, (c, l) => {
+  dict = c; lang = l;
+  chains = CHAINS[l].map(x => [x[0], x[1].slice()]);
+  week = WEEK.map(([d, times], i) => [d, times, i === 1 ? 1 : 0]);
+  render();
+}, 'drills');
+
+document.getElementById('signout').addEventListener('click', signOut);
+</script>
+</body>
+</html>
