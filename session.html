@@ -22,6 +22,7 @@
   .where{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0}
   .where .lv{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:#708000}
   .where h1{margin:0;font-size:19px;letter-spacing:-.035em;font-weight:900}
+  .where .len{font-size:11.5px;font-weight:700;color:#8a908b;font-variant-numeric:tabular-nums}
   .hop{display:flex;gap:7px}
   .hop a{display:grid;place-items:center;min-width:40px;height:40px;padding:0 15px;border:1px solid var(--line);border-radius:26px;font-size:12.5px;font-weight:800;color:var(--muted);transition:.18s}
   .hop a:hover{color:var(--ink);border-color:var(--ink);background:#e6e8df}
@@ -64,12 +65,14 @@
 
   /* ---- the six steps, under the player ---- */
   .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:12px}
-  .step{display:flex;flex-direction:column;align-items:center;gap:3px;padding:11px 6px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--muted);font:inherit;cursor:pointer;transition:.16s;min-width:0}
+  .step{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px 9px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--muted);font:inherit;cursor:pointer;transition:.16s;min-width:0}
   .step:hover{border-color:var(--ink);color:var(--ink)}
   .step .sn{font-size:9px;font-weight:800;opacity:.6}
   .step .st{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.2}
+  .step .slen{margin-top:3px;font-size:12px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .step .sat{font-size:9.5px;font-weight:700;opacity:.55;font-variant-numeric:tabular-nums}
   .step[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
-  .step[aria-current="true"] .st{color:var(--lime)}
+  .step[aria-current="true"] .st,.step[aria-current="true"] .slen{color:var(--lime)}
   .step.done .st{color:#708000}
 
   /* ---- what to focus on ---- */
@@ -126,7 +129,7 @@
 
 <div class="subnav"><div class="wrap subin">
   <a class="crumb" href="plan.html"><span aria-hidden="true">←</span><span id="backLabel">Stop Freezing</span></a>
-  <div class="where"><span class="lv" id="lvLabel"></span><h1 id="sTitle"></h1></div>
+  <div class="where"><span class="lv" id="lvLabel"></span><h1 id="sTitle"></h1><span class="len"><span id="sessLen"></span> <span data-t="totalWord">total</span></span></div>
   <nav class="hop" aria-label="Sessions">
     <a id="prevS" data-t="prevS">← Previous</a>
     <a id="nextS" data-t="nextS">Next session →</a>
@@ -187,7 +190,7 @@
 
 <script type="module">
 import { esc, initLang, carryLang, toggle, signOut } from './assets/app.js';
-import { SECTIONS, SESSIONS, UNITS, LEVELS, SESSION_LEVELS, STATE, UNIT_COUNT, STEP_STARTS, durationOf } from './assets/program-data.js';
+import { SECTIONS, SESSIONS, UNITS, LEVELS, SESSION_LEVELS, STATE, UNIT_COUNT, durationOf } from './assets/program-data.js';
 
 const C = {
   en:{
@@ -195,7 +198,7 @@ const C = {
     ph:'Video placeholder',
     aPlay:'Play', aSpeed:'Playback speed', aLoop:'Loop eight counts', aMirror:'Mirror the picture',
     aCounts:'Counts', aCaps:'Captions', aFull:'Full screen',
-    focus:'What to focus on', listT:'Videos in this session',
+    focus:'What to focus on', listT:'Videos in this session', totalWord:'total',
     goNext:'Next session →', note:'Nothing plays — every video here is a placeholder.',
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
     last:'Last session', finish:'Finish the module →',
@@ -207,7 +210,7 @@ const C = {
     ph:'영상 자리 표시',
     aPlay:'재생', aSpeed:'재생 속도', aLoop:'8카운트 반복', aMirror:'좌우 반전',
     aCounts:'카운트', aCaps:'자막', aFull:'전체 화면',
-    focus:'이것에 집중하세요', listT:'이 세션의 영상',
+    focus:'이것에 집중하세요', listT:'이 세션의 영상', totalWord:'분량',
     goNext:'다음 세션 →', note:'재생되지 않습니다. 모든 영상은 자리 표시입니다.',
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
     last:'마지막 세션', finish:'모듈 마치기 →',
@@ -225,6 +228,15 @@ const SPEEDS = ['0.5×', '0.75×', '1×', '1.25×'];
 let speedIx = 1;
 let dict, lang;
 const q0 = () => (lang === 'ko' ? '&lang=ko' : '');
+/* Where each step sits inside the session, summed from the video lengths so the
+   bar stays correct if a video's duration changes. */
+const secs = t => { const [m, s2] = String(t).split(':').map(Number); return m * 60 + s2; };
+const mmss = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
+function spans(U){
+  let at = 0;
+  return U.map(v => { const d = secs(v[1]); const from = at; at += d; return [mmss(from), mmss(at), v[1]]; });
+}
+
 const tick = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"/></svg>`;
 const tri  = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
 
@@ -253,12 +265,18 @@ function paint(){
     document.getElementById('ptrack').appendChild(t);
   });
 
-  /* the six steps */
+  /* the six steps, each with its length and where it falls in the session */
+  const sp = spans(U);
   document.getElementById('steps').innerHTML = U.map((v, i) => {
     const n = i + 1;
     return `<button class="step ${n <= doneCount ? 'done' : ''}" type="button" aria-current="${n === current}" data-v="${n}">
-      <span class="sn">${n}</span><span class="st">${esc(v[0])}</span></button>`;
+      <span class="sn">${n}</span>
+      <span class="st">${esc(v[0])}</span>
+      <span class="slen">${esc(sp[i][2])}</span>
+      <span class="sat">${esc(sp[i][0])}–${esc(sp[i][1])}</span>
+    </button>`;
   }).join('');
+  document.getElementById('sessLen').textContent = sp[sp.length - 1][1];
 
   /* the videos */
   document.getElementById('listCount').textContent = `${doneCount} / ${UNIT_COUNT}`;

@@ -73,9 +73,6 @@ export const UNITS = {
   ]
 };
 
-/* Where each step starts inside an 18-minute session. */
-export const STEP_STARTS = ['0:00', '0:20', '4:20', '7:20', '11:20', '15:00'];
-
 /* Everything on the shelf, grouped into the sections of the masterplan.
    Improvisation 01 is the only module this prototype builds out; the rest exist
    so each section has something in it.
