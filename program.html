@@ -3,8 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>SUIM — Improvisation 01</title>
-  <meta name="description" content="Improvisation 01: Stop Freezing — the member view of a SUIM program.">
+  <title>SUIM — About Improvisation 01</title>
+  <meta name="description" content="What the Improvisation 01 module is for, and how a session is built.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="Suim — About Improvisation 01">
+  <meta property="og:description" content="What the Improvisation 01 module is for, and how a session is built.">
+  <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
@@ -149,7 +153,9 @@
     .coachwrap h3{margin:10px 0 14px;font-size:44px;letter-spacing:-.045em;font-weight:900}
 
     footer{background:var(--ink);color:#ffffff8f;border-top:1px solid #ffffff20;padding:25px 0;font-size:12px}
-    .foot{display:flex;justify-content:space-between;gap:20px}
+    .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+    .foot a{color:#ffffffb0;font-weight:700;border-bottom:1px solid #ffffff2e;padding-bottom:1px;transition:.2s}
+    .foot a:hover{color:var(--lime);border-bottom-color:var(--lime)}
 
     .ko{word-break:keep-all}
     .ko h1{font-size:clamp(44px,6vw,86px);line-height:1.06;letter-spacing:-.045em}
@@ -295,7 +301,7 @@
     </div></section>
   </main>
 
-  <footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span></div></footer>
+  <footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span><a href="index.html" id="signout" data-t="signout">Sign out</a></div></footer>
 
   <script>
   const C={
@@ -319,7 +325,7 @@
       curB:'Each week has its own job. Week 1 proves you already know enough, week 2 turns movements into phrases, week 3 puts it against music. Everything is open from day one — the order is a recommendation, not a lock.',
       coachK:'Your coach for this program',coachRole:'Founding coach',
       coachB:'Suim teaches every session in this program. Her job is not to hand you her style — it is to give you the tools to build your own, then step back. By session 9 she demonstrates almost nothing and you are the one deciding what happens in the next eight counts.',
-      footer:'Solo salsa training · Built around practice',
+      footer:'Solo salsa training · Built around practice', signout:'Sign out',
       stDone:'Done',stNow:'In progress',stNext:'Not started',
       units:[
         ['WATCH','The whole thing danced to music, no explanation.','0:20','done'],
@@ -364,7 +370,7 @@
       curB:'each week has its own job.',
       coachK:'이 프로그램의 코치',coachRole:'창립 코치',
       coachB:'이 프로그램의 모든 세션은 Suim이 직접 가르칩니다. 자신의 스타일을 그대로 물려주는 것이 아니라, 당신이 스스로 스타일을 만들 도구를 건네고 한 걸음 물러서는 것이 목표입니다. 9번째 세션에서는 시범이 거의 없고, 다음 8카운트를 정하는 사람은 당신입니다.',
-      footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
+      footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
       stDone:'완료',stNow:'진행 중',stNext:'시작 전',
       units:[
         ['보기','설명 없이 음악에 맞춘 완성된 모습.','0:20','done'],
@@ -422,6 +428,7 @@
     try{localStorage.setItem('suim-lang',l)}catch(e){}
   }
 
+  document.getElementById('signout').addEventListener('click',()=>{try{localStorage.removeItem('suim-member')}catch(e){}});
   document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
   let saved=new URLSearchParams(location.search).get('lang');
   if(!saved){try{saved=localStorage.getItem('suim-lang')}catch(e){}}

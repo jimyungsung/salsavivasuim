@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Two questions about your dancing, then your first session is ready.">
 <title>SUIM — Create your account</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Suim — Create your account">
+<meta property="og:description" content="Two questions about your dancing, then your first session is ready.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
@@ -106,7 +111,7 @@
 </main>
 
 <script type="module">
-import { esc, initLang, carryLang } from './assets/app.js';
+import { esc, initLang, carryLang, signIn } from './assets/app.js';
 
 const C = {
   en:{
@@ -142,6 +147,9 @@ const C = {
     pain:['즉흥을 하면 얼어붙어요','샤인이 서로 이어지지 않아요','움직임이 정돈되지 않아요','늘 같은 것만 반복해요']
   }
 };
+
+/* Either button finishes sign-up: the questions are optional. */
+document.querySelectorAll('a[href^="masterplan.html"]').forEach(a => a.addEventListener('click', signIn));
 
 /* Remember which chip was picked so switching language does not clear it. */
 const picked = { exp:0, timing:0, pain:0 };

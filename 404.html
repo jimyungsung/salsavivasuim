@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SUIM — Page not found</title>
+<meta name="description" content="That page does not exist.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800;900&family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body{background:var(--ink);color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+  body:before{content:"";position:absolute;width:620px;height:620px;border-radius:50%;background:#c6ff0022;filter:blur(110px);left:-220px;top:-220px}
+  .in{position:relative;padding:60px 0}
+  .brand{font-size:27px;font-weight:900;letter-spacing:-.06em;display:inline-block;margin-bottom:44px}
+  .code{font-size:12px;letter-spacing:.25em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  h1{font-size:clamp(44px,8vw,104px);line-height:.9;letter-spacing:-.055em;font-weight:900;margin:16px 0 0;max-width:14ch}
+  p{margin:22px 0 0;font-size:18px;line-height:1.6;color:#ffffffb5;max-width:46ch}
+  .go{display:flex;gap:12px;margin-top:36px;flex-wrap:wrap}
+  .counts{margin-top:56px;display:flex;gap:clamp(12px,3vw,30px);font-size:clamp(14px,2vw,19px);font-weight:800;color:#ffffff3d;font-variant-numeric:tabular-nums}
+  .counts b{color:var(--lime);font-weight:800}
+</style>
+</head>
+<body>
+  <main class="wrap in">
+    <a class="brand" href="index.html">SUIM<span class="dot">.</span></a>
+    <div class="code">Error 404</div>
+    <h1>You have stepped off the count.</h1>
+    <p>That page does not exist. Nothing here is broken — the link just points somewhere we never built.</p>
+    <div class="go">
+      <a class="pill primary" href="index.html">Back to the start</a>
+      <a class="pill ghost" href="masterplan.html">Go to the masterplan</a>
+    </div>
+    <div class="counts" aria-hidden="true">1 2 3 <b>·</b> 5 6 7 <b>·</b></div>
+  </main>
+</body>
+</html>

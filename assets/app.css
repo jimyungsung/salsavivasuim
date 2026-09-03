@@ -83,7 +83,9 @@ img{max-width:100%}
 .ctl[aria-pressed="true"]{background:var(--lime);border-color:var(--lime);color:var(--ink)}
 
 footer{background:var(--ink);color:#ffffff8f;border-top:1px solid #ffffff20;padding:25px 0;font-size:12px;margin-top:auto}
-.foot{display:flex;justify-content:space-between;gap:20px}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.foot a{color:#ffffffb0;font-weight:700;border-bottom:1px solid #ffffff2e;padding-bottom:1px;transition:.2s}
+.foot a:hover{color:var(--lime);border-bottom-color:var(--lime)}
 
 .ko{word-break:keep-all}
 .ko .title{line-height:1.14;letter-spacing:-.03em}

@@ -6,7 +6,9 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 ## The flow
 
     index.html → register.html → masterplan.html → plan.html → session.html
-    landing      sign up         pick a module     the module   the videos
+    landing      create account  the masterplan    the module   the session
+                                                        ↘ program.html
+                                                          module explainer
 
 - `index.html` — the public landing page. Every CTA goes to `register.html`.
 - `register.html` — account plus the two onboarding questions.
@@ -59,6 +61,12 @@ inline JS, photos as base64 — so either can be shared on its own. The app page
 If the design changes, the self-contained pages need the same change applied by
 hand. Fonts (Archivo + Noto Sans KR) load from Google Fonts.
 
+## Deploying
+
+Static files, no build step. GitHub Pages serves the repository root as-is:
+Settings → Pages → deploy from `main` / root. `404.html` is picked up
+automatically and `.nojekyll` keeps Pages from reprocessing the folder.
+
 ## Run it locally
 
 ```bash
@@ -78,8 +86,10 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
 - **Nothing plays.** Every video is a hatched placeholder. The controls
   (speed / loop / mirror / counts / captions) only change their own state,
   though mirror does really flip the frame.
-- **No accounts.** The register form submits nothing; both buttons just go to
-  the plan.
+- **No accounts.** The register form submits nothing. It does set a
+  `suim-member` flag in `localStorage` so the flow stays continuous — the
+  landing page then says "Continue training" instead of "Start the 7-day
+  reset". "Sign out" in the app footer clears it.
 - **Progress is hard-coded** in `assets/program-data.js` (`STATE`) to someone who
   just subscribed: session 1 in progress, 2 of its 5 videos done. Change `STATE`
   to see the pages in a different position.

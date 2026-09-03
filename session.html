@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="One session: six short videos, one per step of the method.">
 <title>SUIM — Session</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Suim — Session">
+<meta property="og:description" content="One session: six short videos, one per step of the method.">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
@@ -180,10 +185,10 @@
   </aside>
 </main>
 
-<footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span></div></footer>
+<footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span><a href="index.html" id="signout" data-t="signout">Sign out</a></div></footer>
 
 <script type="module">
-import { esc, initLang, carryLang, toggle, group } from './assets/app.js';
+import { esc, initLang, carryLang, toggle, group, signOut } from './assets/app.js';
 import { SECTIONS, SESSIONS, WEEKS, UNITS, STATE, UNIT_COUNT, STEP_STARTS, durationOf, weekOf } from './assets/program-data.js';
 
 const C = {
@@ -196,7 +201,7 @@ const C = {
     focus:'What to focus on', listT:'Videos in this session',
     goNext:'Next session →', goPlan:'Back to all sessions',
     note:'Nothing plays — every video here is a placeholder.',
-    footer:'Solo salsa training · Built around practice',
+    footer:'Solo salsa training · Built around practice', signout:'Sign out',
     stDone:'Done', stNow:'Playing', stNext:'Not started',
     weekSess:(w, n) => `Week ${w} · Session ${n}`,
     videoOf:(d, i) => `${d} · Video ${i} of 6`,
@@ -212,7 +217,7 @@ const C = {
     focus:'이것에 집중하세요', listT:'이 세션의 영상',
     goNext:'다음 세션 →', goPlan:'전체 세션으로 돌아가기',
     note:'재생되지 않습니다. 모든 영상은 자리 표시입니다.',
-    footer:'연습을 중심으로 설계한 솔로 살사 트레이닝',
+    footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
     stDone:'완료', stNow:'재생 중', stNext:'시작 전',
     weekSess:(w, n) => `${w}주차 · 세션 ${n}`,
     videoOf:(d, i) => `${d} · 영상 ${i} / 6`,
@@ -321,6 +326,8 @@ group('[data-speed]');
 document.getElementById('play').addEventListener('click', () => document.getElementById('nextU').focus());
 
 initLang(C, (c, l) => { dict = c; lang = l; paint(); carryLang(); }, 'training');
+
+document.getElementById('signout').addEventListener('click', signOut);
 </script>
 </body>
 </html>

@@ -2,6 +2,14 @@
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* Whether this browser has been through the sign-up screen. The prototype has
+   no accounts — this only keeps the flow continuous, so the landing page knows
+   to say "continue" instead of "start", and so the app can offer a sign-out. */
+const MEMBER_KEY = 'suim-member';
+export const isMember = () => { try { return localStorage.getItem(MEMBER_KEY) === '1'; } catch (e) { return false; } };
+export const signIn  = () => { try { localStorage.setItem(MEMBER_KEY, '1'); } catch (e) {} };
+export const signOut = () => { try { localStorage.removeItem(MEMBER_KEY); } catch (e) {} };
+
 /* The signed-in navigation. Every app screen renders this same markup from
    here, so the bar cannot drift between screens. `current` is one of the item
    keys, or omitted on screens that sit below a section (they show a back link
