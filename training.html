@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="What you are training right now, and how often you have practised.">
+<meta name="description" content="Your practice: progress, streak, where you left off, and what you have saved.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta property="og:title" content="Suim — My training">
-<meta property="og:description" content="What you are training right now, and how often you have practised.">
+<meta property="og:description" content="Your practice: progress, streak, where you left off, and what you have saved.">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,188 +15,246 @@
 <title>SUIM — My training</title>
 <style>
   body{display:flex;flex-direction:column;min-height:100vh;padding-top:78px}
-  .main{padding:26px 0 0}
+  .main{padding:28px 0 80px}
 
-  .hero{padding:34px 0 38px;display:flex;justify-content:space-between;align-items:flex-end;gap:44px;border-bottom:1px solid var(--line)}
-  .hero>div{min-width:0}
-  .hero .kicker{color:#708000}
-  .hero h1{font-size:clamp(44px,6.4vw,92px);line-height:.86;letter-spacing:-.06em;font-weight:900;margin:16px 0 18px}
-  .hero p{margin:0;max-width:50ch;font-size:16.5px;line-height:1.6;color:var(--muted)}
-  .week{text-align:right;white-space:nowrap}
-  .week strong{display:block;font-size:30px;letter-spacing:-.045em;line-height:1}
-  .week span{font-size:10px;font-weight:700;letter-spacing:.08em;color:#8b918c}
-  .dots{display:flex;gap:5px;justify-content:flex-end;margin-top:12px}
-  .dots i{width:22px;height:5px;border-radius:5px;background:#0b0f0e1a}
+  .top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:26px}
+  .top .kicker{color:#708000}
+  .top h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,58px);line-height:.92;letter-spacing:-.05em;font-weight:900}
+  .top a{font-size:12.5px;font-weight:800;border-bottom:1px solid #11111f33;padding-bottom:3px}
+  .top a:hover{border-bottom-color:var(--ink)}
+
+  /* ---- stat tiles ---- */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .stat{border:1px solid var(--line);border-radius:18px;background:#fff;padding:20px}
+  .stat .lb{font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:#8a908b}
+  .stat .v{margin-top:12px;font-size:34px;line-height:1;letter-spacing:-.05em;font-weight:900;font-variant-numeric:tabular-nums}
+  .stat .sub{margin-top:7px;font-size:11.5px;font-weight:700;color:#9aa09b}
+  .stat.ink{background:var(--ink);border-color:var(--ink);color:#fff;display:flex;align-items:center;gap:18px}
+  .stat.ink .lb{color:var(--lime)}
+  .stat.ink .sub{color:#ffffff8f}
+  .stat.ink .v{margin-top:10px;font-size:30px}
+  .ring{flex:none;width:74px;height:74px;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:8}
+  .ring .bg{stroke:#ffffff26}
+  .ring .fg{stroke:var(--lime);stroke-linecap:round;transition:stroke-dasharray .5s ease}
+  .dots{display:flex;gap:4px;margin-top:11px}
+  .dots i{width:20px;height:5px;border-radius:5px;background:#0b0f0e1a}
   .dots i.on{background:var(--lime)}
 
-  /* the numbers the product actually counts */
-  .strip{background:var(--lime);margin-top:0}
-  .strip .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
-  .cell{padding:24px 32px;border-right:1px solid #0b0f0e33}
-  .cell:first-child{padding-left:0}
-  .cell:last-child{border:0}
-  .cell b{display:block;font-size:26px;letter-spacing:-.04em}
-  .cell span{font-size:13px;font-weight:600;color:#2c3800}
+  /* ---- two columns ---- */
+  .cols{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:14px;align-items:stretch}
+  .cols>*{min-width:0}
+  .feed{margin-top:14px}
 
-  .body-sec{padding:56px 0 90px}
-  .bar{display:flex;align-items:end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
-  .bar h2{margin:0;font-size:19px;letter-spacing:-.035em;font-weight:900}
-  .bar .sub{margin:5px 0 0;font-size:11px;color:#8a908b}
-  .bar a{font-size:12.5px;font-weight:800;border-bottom:1px solid #11111f33;padding-bottom:3px}
-  .bar a:hover{border-bottom-color:var(--ink)}
+  .panel{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden;display:flex;flex-direction:column}
+  .phead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+  .phead .more{font-size:11.5px;font-weight:800;color:#708000}
+  .phead .more:hover{color:var(--ink)}
 
-  .now{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
-  .now>*{min-width:0}
-  .card{position:relative;border-radius:20px;padding:26px;overflow:hidden}
-  .resume{background:var(--ink);color:#fff;display:flex;flex-direction:column}
-  .resume .lab{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--lime)}
-  .resume h3{margin:12px 0 0;font-size:34px;line-height:1.02;letter-spacing:-.045em;font-weight:900;max-width:16ch}
-  .resume .of{margin:9px 0 0;font-size:14.5px;color:#ffffffa8;line-height:1.55}
-  .resume .steps{display:flex;gap:4px;margin:20px 0 18px}
+  /* where you left off */
+  .resume{flex:1;margin:14px;border-radius:16px;background:var(--ink);color:#fff;padding:22px;display:flex;flex-direction:column}
+  .resume .lab{font-size:10px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+  .resume h3{margin:11px 0 0;font-size:29px;line-height:1.02;letter-spacing:-.045em;font-weight:900;max-width:18ch}
+  .resume .of{margin:9px 0 0;font-size:14px;color:#ffffffa8;line-height:1.55}
+  .resume .steps{display:flex;gap:4px;margin:18px 0 18px}
   .resume .steps i{height:4px;flex:1;border-radius:4px;background:#ffffff2e}
   .resume .steps i.on{background:var(--lime)}
   .resume .pill{align-self:flex-start;margin-top:auto}
 
-  .mod{border:1px solid var(--line);background:var(--card);display:flex;flex-direction:column}
-  .mod .ghost{position:absolute;left:-8px;top:-28px;font-size:120px;font-weight:900;letter-spacing:-.07em;line-height:1;color:#0b0f0e0d;pointer-events:none}
-  .mod .lab{position:relative;z-index:2;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:#748000}
-  .mod h3{position:relative;z-index:2;margin:9px 0 0;font-size:27px;line-height:1.02;letter-spacing:-.045em;font-weight:900}
-  .mod .meta{position:relative;z-index:2;margin-top:auto;padding-top:16px;border-top:1px solid #11111f24;display:flex;justify-content:space-between;gap:10px;font-size:12.5px;font-weight:700;color:#5b615c}
-  .mod .prog{position:relative;z-index:2;margin:18px 0 0}
-  .mod .prog .track{height:5px;border-radius:5px;background:#0b0f0e1a;overflow:hidden}
-  .mod .prog .track i{display:block;height:100%;background:var(--lime);border-radius:5px}
-  .mod .prog .pct{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;font-weight:700;color:#8b918c}
+  /* activity + saved rows */
+  .row{display:grid;grid-template-columns:38px 1fr auto;gap:13px;align-items:center;padding:12px 20px;border-bottom:1px solid #11111f12;color:inherit;transition:background .16s}
+  .row:last-child{border-bottom:0}
+  a.row:hover{background:#f1f2ec}
+  .mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:#0b0f0e0d;color:var(--ink)}
+  .mark svg{width:15px;height:15px}
+  .mark.done{background:var(--ink);color:var(--lime)}
+  .mark.save{background:var(--lime);color:var(--ink)}
+  .rmeta{min-width:0}
+  .rmeta .t{display:block;font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:#748000}
+  .rmeta .n{display:block;margin-top:2px;font-size:14.5px;font-weight:700;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rmeta .s{display:block;margin-top:2px;font-size:11.5px;color:#9aa09b}
+  .when{font-size:11px;font-weight:700;color:#9aa09b;white-space:nowrap;text-align:right}
 
-  .ko .resume h3{font-size:27px;line-height:1.16}
-  @media(max-width:900px){
-    .hero{flex-direction:column;align-items:flex-start;gap:24px;padding:26px 0 30px}
-    .week{text-align:left}
-    .dots{justify-content:flex-start}
-    .strip .wrap{grid-template-columns:repeat(2,1fr)}
-    .cell{padding-left:0;border-right:0;border-bottom:1px solid #0b0f0e33}
-    .now{grid-template-columns:1fr}
-    .body-sec{padding:44px 0 70px}
+  .empty{padding:28px 20px;font-size:13.5px;color:#9aa09b}
+
+  .ko .resume h3{font-size:24px;line-height:1.16}
+  @media(max-width:1080px){ .cols{grid-template-columns:1fr} }
+  @media(max-width:820px){ .stats{grid-template-columns:repeat(2,1fr)} .stat.ink{grid-column:span 2} }
+  @media(max-width:520px){
+    .stats{grid-template-columns:1fr}
+    .stat.ink{grid-column:span 1}
+    .rmeta .n{white-space:normal}
   }
-  @media(max-width:560px){ .strip .wrap{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
 <header class="nav" id="appnav"></header>
 
-<main class="main">
-  <div class="wrap">
-    <section class="hero">
+<main class="wrap main">
+  <section class="top">
+    <div>
+      <div class="kicker" data-t="kicker">Your practice</div>
+      <h1 data-t="h1">MY TRAINING</h1>
+    </div>
+    <a href="masterplan.html" data-t="browse">Browse the masterplan →</a>
+  </section>
+
+  <section class="stats">
+    <div class="stat ink">
+      <svg class="ring" viewBox="0 0 80 80" aria-hidden="true">
+        <circle class="bg" cx="40" cy="40" r="34"></circle>
+        <circle class="fg" cx="40" cy="40" r="34" id="ring" stroke-dasharray="0 214"></circle>
+      </svg>
       <div>
-        <div class="kicker" data-t="kicker">Your practice</div>
-        <h1 data-t="h1">MY TRAINING</h1>
-        <p data-t="sub">What you are working on right now, and how often you have actually practised. Everything else lives in the masterplan.</p>
+        <div class="lb" data-t="s1">Module complete</div>
+        <div class="v" id="vPct">0%</div>
+        <div class="sub" id="sModule"></div>
       </div>
-      <div class="week">
-        <strong id="weekN"></strong><span data-t="weekL">sessions this week</span>
-        <div class="dots" id="dots" aria-hidden="true"></div>
-      </div>
-    </section>
-  </div>
-
-  <section class="strip"><div class="wrap">
-    <div class="cell"><b id="cSessions"></b><span data-t="c1">sessions completed</span></div>
-    <div class="cell"><b id="cMinutes"></b><span data-t="c2">practice time</span></div>
-    <div class="cell"><b id="cLoops"></b><span data-t="c3">loops and restarts</span></div>
-    <div class="cell"><b id="cStreak"></b><span data-t="c4">current streak</span></div>
-  </div></section>
-
-  <section class="body-sec"><div class="wrap">
-    <div class="bar">
-      <div><h2 data-t="nowT">Where you left off</h2><p class="sub" data-t="nowS">Pick up the session you have open</p></div>
-      <a href="masterplan.html" data-t="browse">Browse the masterplan →</a>
     </div>
+    <div class="stat">
+      <div class="lb" data-t="s2">Practice time</div>
+      <div class="v" id="vMin">0</div>
+      <div class="sub" data-t="s2b">since you started</div>
+    </div>
+    <div class="stat">
+      <div class="lb" data-t="s3">Current streak</div>
+      <div class="v" id="vStreak">0</div>
+      <div class="sub" id="sStreak"></div>
+    </div>
+    <div class="stat">
+      <div class="lb" data-t="s4">This week</div>
+      <div class="v" id="vWeek">0 / 3</div>
+      <div class="dots" id="dots" aria-hidden="true"></div>
+    </div>
+  </section>
 
-    <div class="now">
-      <article class="card resume">
-        <span class="lab" id="resumeLab"></span>
-        <h3 id="resumeTitle"></h3>
-        <p class="of" id="resumeOf"></p>
-        <div class="steps" id="steps" aria-hidden="true"></div>
-        <a class="pill primary" id="resumeGo" href="session.html?s=1" data-t="resumeCta">Continue ↗</a>
+  <section class="cols">
+    <div class="panel">
+      <div class="phead"><h2 data-t="leftT">Where you left off</h2><a class="more" href="plan.html" data-t="leftMore">The whole module →</a></div>
+      <article class="resume">
+        <span class="lab" id="rLab"></span>
+        <h3 id="rTitle"></h3>
+        <p class="of" id="rOf"></p>
+        <div class="steps" id="rSteps" aria-hidden="true"></div>
+        <a class="pill primary sm" id="rGo" href="session.html?s=1" data-t="rCta">Continue ↗</a>
       </article>
-
-      <a class="card mod" id="modCard" href="plan.html">
-        <span class="ghost" aria-hidden="true">01</span>
-        <span class="lab" id="modLab"></span>
-        <h3 id="modTitle"></h3>
-        <div class="prog">
-          <div class="track"><i id="modBar"></i></div>
-          <div class="pct"><span data-t="modProg">Module progress</span><span id="modPct"></span></div>
-        </div>
-        <span class="meta"><span id="modMeta"></span><span aria-hidden="true">→</span></span>
-      </a>
     </div>
-  </div></section>
+
+    <aside class="panel">
+      <div class="phead"><h2 data-t="savT">Saved</h2><a class="more" href="plan.html" data-t="savMore">All sessions →</a></div>
+      <div id="saved"></div>
+    </aside>
+  </section>
+
+  <section class="panel feed">
+    <div class="phead"><h2 data-t="recT">Recently practised</h2><span class="more" id="recCount"></span></div>
+    <div id="recent"></div>
+  </section>
 </main>
 
 <footer><div class="wrap foot"><b>SUIM<span class="dot">.</span></b><span data-t="footer">Solo salsa training · Built around practice</span><a href="index.html" id="signout" data-t="signout">Sign out</a></div></footer>
 
 <script type="module">
 import { esc, initLang, carryLang, signOut } from './assets/app.js';
-import { SECTIONS, SESSIONS, UNITS, STATE, UNIT_COUNT, durationOf } from './assets/program-data.js';
+import { SECTIONS, SESSIONS, UNITS, RECENT, SAVED, STATE, UNIT_COUNT, durationOf } from './assets/program-data.js';
 
 const C = {
   en:{
-    kicker:'Your practice', h1:'MY TRAINING',
-    sub:'What you are working on right now, and how often you have actually practised. Everything else lives in the masterplan.',
-    weekL:'sessions this week',
-    c1:'sessions completed', c2:'practice time', c3:'loops and restarts', c4:'current streak',
-    nowT:'Where you left off', nowS:'Pick up the session you have open',
-    browse:'Browse the masterplan →', resumeCta:'Continue ↗', modProg:'Module progress',
+    kicker:'Your practice', h1:'MY TRAINING', browse:'Browse the masterplan →',
+    s1:'Module complete', s2:'Practice time', s2b:'since you started',
+    s3:'Current streak', s4:'This week',
+    leftT:'Where you left off', leftMore:'The whole module →', rCta:'Continue ↗',
+    recT:'Recently practised', savT:'Saved', savMore:'All sessions →', recCount:n => `Last ${n}`,
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
-    minutes:n => `${n} min`, days:n => n === 1 ? '1 day' : `${n} days`,
-    resumeLab:(n) => `Session ${String(n).padStart(2, '0')} · in progress`,
-    resumeOf:(step, done) => `Up next: ${step} · ${done} of ${UNIT_COUNT} videos done`,
-    modMeta:(sessions, done) => `${done} of ${sessions} sessions`
+    min:n => `${n} min`, days:n => n === 1 ? '1 day' : `${n} days`,
+    keepGoing:'Practise today to keep it', bestRun:'Your best run so far',
+    rLab:n => `Session ${String(n).padStart(2, '0')} · in progress`,
+    rOf:(step, done) => `Up next: ${step} · ${done} of ${UNIT_COUNT} videos done`,
+    when:{ today:'Today', yesterday:'Yesterday', days3:'3 days ago' },
+    did:{ completed:'Completed', started:'Started', watched:'Watched' },
+    sessionWord:'Session', wholeSession:'Whole session',
+    noRecent:'Nothing practised yet.', noSaved:'Nothing saved yet.'
   },
   ko:{
-    kicker:'나의 연습', h1:'나의 트레이닝',
-    sub:'지금 하고 있는 것과, 실제로 얼마나 연습했는지. 나머지는 모두 마스터플랜에 있습니다.',
-    weekL:'이번 주 세션',
-    c1:'완료한 세션', c2:'연습 시간', c3:'반복과 되감기', c4:'현재 연속 기록',
-    nowT:'이어서 하기', nowS:'열어둔 세션을 이어서 진행하세요',
-    browse:'마스터플랜 둘러보기 →', resumeCta:'이어서 하기 ↗', modProg:'모듈 진행률',
+    kicker:'나의 연습', h1:'나의 트레이닝', browse:'마스터플랜 둘러보기 →',
+    s1:'모듈 완료율', s2:'연습 시간', s2b:'시작 이후 누적',
+    s3:'연속 기록', s4:'이번 주',
+    leftT:'이어서 하기', leftMore:'모듈 전체 보기 →', rCta:'이어서 하기 ↗',
+    recT:'최근 연습', savT:'저장함', savMore:'전체 세션 →', recCount:n => `최근 ${n}개`,
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
-    minutes:n => `${n}분`, days:n => `${n}일`,
-    resumeLab:(n) => `세션 ${String(n).padStart(2, '0')} · 진행 중`,
-    resumeOf:(step, done) => `다음: ${step} · 영상 ${UNIT_COUNT}개 중 ${done}개 완료`,
-    modMeta:(sessions, done) => `${sessions}개 세션 중 ${done}개`
+    min:n => `${n}분`, days:n => `${n}일`,
+    keepGoing:'오늘 연습하면 이어집니다', bestRun:'지금까지 최고 기록',
+    rLab:n => `세션 ${String(n).padStart(2, '0')} · 진행 중`,
+    rOf:(step, done) => `다음: ${step} · 영상 ${UNIT_COUNT}개 중 ${done}개 완료`,
+    when:{ today:'오늘', yesterday:'어제', days3:'3일 전' },
+    did:{ completed:'완료', started:'시작함', watched:'시청' },
+    sessionWord:'세션', wholeSession:'세션 전체',
+    noRecent:'아직 연습 기록이 없습니다.', noSaved:'저장한 항목이 없습니다.'
   }
+};
+
+const ICON = {
+  done: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"/></svg>`,
+  play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+  save: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>`
 };
 
 initLang(C, (c, lang) => {
   const S = SESSIONS[lang], U = UNITS[lang];
   const mod = SECTIONS[lang].flatMap(x => x[3]).find(m => m[7] === 'current');
-  const n = STATE.session, sess = S[n - 1];
-  const totalSessions = parseInt(mod[5], 10) || S.length;
+  const total = parseInt(mod[5], 10) || S.length;
+  const n = STATE.session;
 
-  document.getElementById('weekN').textContent = `${STATE.weekDone} / ${STATE.weekTarget}`;
+  /* ---- tiles ---- */
+  const pct = Math.round((STATE.sessionsDone / total) * 100 + (STATE.unitsDone / UNIT_COUNT) * (100 / total));
+  const circ = 2 * Math.PI * 34;
+  document.getElementById('ring').setAttribute('stroke-dasharray', `${(pct / 100) * circ} ${circ}`);
+  document.getElementById('vPct').textContent = pct + '%';
+  document.getElementById('sModule').textContent = mod[2];
+  document.getElementById('vMin').textContent = c.min(STATE.minutes);
+  document.getElementById('vStreak').textContent = c.days(STATE.streak);
+  document.getElementById('sStreak').textContent = c.keepGoing;
+  document.getElementById('vWeek').textContent = `${STATE.weekDone} / ${STATE.weekTarget}`;
   document.getElementById('dots').innerHTML =
     Array.from({ length: STATE.weekTarget }, (_, i) => `<i class="${i < STATE.weekDone ? 'on' : ''}"></i>`).join('');
 
-  document.getElementById('cSessions').textContent = `${STATE.sessionsDone} / ${totalSessions}`;
-  document.getElementById('cMinutes').textContent = c.minutes(STATE.minutes);
-  document.getElementById('cLoops').textContent = STATE.loops;
-  document.getElementById('cStreak').textContent = c.days(STATE.streak);
-
-  document.getElementById('resumeLab').textContent = c.resumeLab(n);
-  document.getElementById('resumeTitle').textContent = sess[0];
-  document.getElementById('resumeOf').textContent = c.resumeOf(U[STATE.unitsDone][3], STATE.unitsDone);
-  document.getElementById('steps').innerHTML =
+  /* ---- where you left off ---- */
+  document.getElementById('rLab').textContent = c.rLab(n);
+  document.getElementById('rTitle').textContent = S[n - 1][0];
+  document.getElementById('rOf').textContent = c.rOf(U[STATE.unitsDone][3], STATE.unitsDone);
+  document.getElementById('rSteps').innerHTML =
     Array.from({ length: UNIT_COUNT }, (_, i) => `<i class="${i < STATE.unitsDone ? 'on' : ''}"></i>`).join('');
-  document.getElementById('resumeGo').href = `session.html?s=${n}`;
+  document.getElementById('rGo').href = `session.html?s=${n}`;
 
-  const pct = Math.round((STATE.sessionsDone / totalSessions) * 100 + (STATE.unitsDone / UNIT_COUNT) * (100 / totalSessions));
-  document.getElementById('modLab').textContent = mod[1];
-  document.getElementById('modTitle').textContent = mod[2];
-  document.getElementById('modBar').style.width = pct + '%';
-  document.getElementById('modPct').textContent = pct + '%';
-  document.getElementById('modMeta').textContent = c.modMeta(totalSessions, STATE.sessionsDone);
+  /* ---- recently practised ---- */
+  document.getElementById('recCount').textContent = c.recCount(RECENT.length);
+  document.getElementById('recent').innerHTML = RECENT.length ? RECENT.map(([sn, vi, when, did]) => {
+    const u = U[vi - 1], done = did === 'completed';
+    return `<a class="row" href="session.html?s=${sn}#v${vi}">
+      <span class="mark ${done ? 'done' : ''}">${done ? ICON.done : ICON.play}</span>
+      <span class="rmeta">
+        <span class="t">${esc(u[0])}</span>
+        <span class="n">${esc(u[3])}</span>
+        <span class="s">${esc(c.sessionWord)} ${String(sn).padStart(2, '0')} · ${esc(S[sn - 1][0])} · ${esc(c.did[did])}</span>
+      </span>
+      <span class="when">${esc(c.when[when])}</span>
+    </a>`;
+  }).join('') : `<p class="empty">${esc(c.noRecent)}</p>`;
+
+  /* ---- saved ---- */
+  document.getElementById('saved').innerHTML = SAVED.length ? SAVED.map(([sn, vi]) => {
+    const whole = vi === null, u = whole ? null : U[vi - 1];
+    return `<a class="row" href="session.html?s=${sn}${whole ? '' : '#v' + vi}">
+      <span class="mark save">${ICON.save}</span>
+      <span class="rmeta">
+        <span class="t">${esc(whole ? c.wholeSession : u[0])}</span>
+        <span class="n">${esc(whole ? S[sn - 1][0] : u[3])}</span>
+        <span class="s">${esc(c.sessionWord)} ${String(sn).padStart(2, '0')} · ${esc(whole ? durationOf(sn - 1) : u[1])}</span>
+      </span>
+      <span class="when" aria-hidden="true">→</span>
+    </a>`;
+  }).join('') : `<p class="empty">${esc(c.noSaved)}</p>`;
 
   carryLang();
 }, 'training');

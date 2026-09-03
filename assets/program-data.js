@@ -196,4 +196,20 @@ export const STATE = {
 };
 export const UNIT_COUNT = 6;
 
+/* Recent practice, newest first: [session, video (1-based), when, what].
+   Consistent with STATE — two videos of session 1 done, the third started. */
+export const RECENT = [
+  [1, 2, 'today',     'completed'],
+  [1, 1, 'today',     'completed'],
+  [1, 3, 'yesterday', 'started'],
+  [5, 1, 'days3',     'watched']
+];
+
+/* Saved for later: a whole session when the video is null, otherwise one video. */
+export const SAVED = [
+  [1, 4],
+  [6, null],
+  [2, 3]
+];
+
 export const durationOf = i => ['18 min', '17 min', '19 min', '18 min', '16 min', '21 min', '18 min', '16 min', '22 min'][i];

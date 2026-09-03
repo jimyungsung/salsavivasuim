@@ -28,9 +28,10 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 - `session.html?s=1…9` — one session: the player, the six-step bar and the six
   videos. Playback controls are icons overlaid on the video itself, not a row of
   chips beneath it.
-- `training.html` — **My training**, the personal view: this week's sessions,
-  the practice numbers, where you left off, and the module in progress. The
-  only screen under that nav item.
+- `training.html` — **My training**, the personal view and the only screen under
+  that nav item. A dashboard: four stat tiles (module complete with a ring,
+  practice time, streak, sessions this week), where you left off, what you have
+  saved, and a feed of recently practised videos.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
   Reads like a sales page, so it sits off to the side: linked from the plan as
   "About this module", and a candidate to fold into the landing page later.
@@ -116,8 +117,9 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
   landing page then says "Continue training" instead of "Start the 7-day
   reset". "Sign out" in the app footer clears it.
 - **Progress is hard-coded** in `assets/program-data.js` (`STATE`) to someone who
-  just subscribed: session 1 in progress, 2 of its 5 videos done. Change `STATE`
-  to see the pages in a different position.
+  just subscribed: session 1 in progress, 2 of its 6 videos done. `RECENT` and
+  `SAVED` alongside it drive the dashboard's activity feed and saved list.
+  Change them to see the pages in a different position.
 - **Every session shares one video stack.** The six steps are the same in every
   session, so the videos list is generated per step rather than authored nine
   times over.
