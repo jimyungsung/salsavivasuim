@@ -19,9 +19,9 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
   "All programs" view keep 37 programs (and more) navigable. Area and filter
   live in the URL, so a view can be linked to.
 - `masterplan-v1.html` — the previous tabbed version, kept for comparison.
-- `plan.html` — one module (Improvisation 01) as nine selectable sessions
-  grouped by week, with a nine-session ribbon along the bottom of the header so
-  the whole shape is visible without scrolling.
+- `plan.html` — one module (Improvisation 01) as nine selectable sessions,
+  tagged by level rather than grouped into weeks, with a level filter and a
+  nine-session ribbon along the bottom of the header.
 - `session.html?s=1…9` — one session: the player, its six videos, the six-step
   bar, and the module's other sessions in the sidebar.
 - `program.html` — the module *explainer* (promise, method, full plan, coach).
@@ -44,6 +44,15 @@ explainer go back to *Improvisation 01*, and register goes back to *suim.com*.
 
 **Area** (Improvisation) → **program / module** (Improvisation 01) → **session**
 (nine of them, 15–22 min each) → **video** (six per session, one per step).
+
+## Levels
+
+Sessions carry one or more of **All level · Beginner · Intermediate · Advanced ·
+Pro**, and the scale is deliberately not a ladder: session 05 is All level +
+Beginner while session 04 before it is All level + Intermediate. A level
+describes the material, not the dancer, so a session can sit in two at once.
+Tags live in `SESSION_LEVELS` in `assets/program-data.js`. Modules carry a single
+level on the same scale.
 
 The method is six steps, and every session is those six steps in order:
 

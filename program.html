@@ -132,13 +132,16 @@
     .unit.now .ustate{color:var(--lime)}
 
     /* weeks */
-    .weeks{margin-top:60px;display:flex;flex-direction:column;gap:44px}
+    .weeks{margin-top:40px}
+    .lvls{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+    .lvl{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;padding:4px 8px;border-radius:20px;border:1px solid #11111f26;color:#5b615c}
     .week h3{margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#7b807c}
     .week h4{margin:8px 0 0;font-size:34px;letter-spacing:-.04em;font-weight:900}
     .rows{margin-top:22px;border-top:1px solid var(--ink)}
     .row{display:grid;grid-template-columns:56px 1.1fr 1.3fr 96px 132px;gap:26px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line);transition:background .2s ease,padding-left .2s ease;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;cursor:pointer;color:inherit;font:inherit}
     .row:hover{background:#e6e8df;padding-left:14px}
     .row .n{font-size:12px;font-weight:700;color:#7b807c}
+    .rowtitle{min-width:0}
     .row h5{margin:0;font-size:21px;letter-spacing:-.025em;font-weight:900}
     .row p{margin:0;color:var(--muted);line-height:1.5;font-size:15px}
     .row .len{font-size:14px;font-weight:700;color:#7b807c}
@@ -226,7 +229,7 @@
       </div>
       <aside class="enrol">
         <span class="tagline" data-t="enrolTag">Your next session</span>
-        <h2 data-t="enrolTitle">Week 1 · Session 1</h2>
+        <h2 data-t="enrolTitle">Session 01</h2>
         <p class="sub" data-t="enrolSub">One Step, Many Possibilities — transform a Suzie Q through direction and size. 18 minutes.</p>
         <div class="bar"><i style="width:23%"></i></div>
         <div class="barmeta"><span data-t="enrolLeft">2 of 5 units done</span><span data-t="enrolRight">Started today</span></div>
@@ -250,7 +253,7 @@
 
       <div class="player">
         <div class="player-head">
-          <div><small data-t="phLabel">Week 1 · Session 1 · Unit 3 of 5</small><h3 data-t="phTitle">Direction drill</h3></div>
+          <div><small data-t="phLabel">Session 01 · Step 3 of 6</small><h3 data-t="phTitle">Direction drill</h3></div>
           <span class="meta" data-t="phMeta">4:00 · Follow view · Counts then music</span>
         </div>
         <div class="stage">
@@ -283,7 +286,7 @@
     <section class="section" id="curriculum"><div class="wrap">
       <div class="intro">
         <div><div class="kicker" data-t="curK">The full plan</div><h2 class="title" data-t="curT">Three weeks, nine sessions.</h2></div>
-        <p class="body" data-t="curB">Each week has its own job. Week 1 proves you already know enough, week 2 turns movements into phrases, week 3 puts it against music. Everything is open from day one — the order is a recommendation, not a lock.</p>
+        <p class="body" data-t="curB">The levels describe the session, not you, and they are not a ladder.</p>
       </div>
       <div class="weeks" id="weeks"></div>
     </div></section>
@@ -311,18 +314,18 @@
       eyebrow:'Flagship program · Improver+',h1:'STOP FREEZING',
       promise:'By the end of three weeks you can improvise through a section of a song without falling back on memorised choreography. You will not learn more shines. You will learn to do more with the ones you have.',
       f1:'3 weeks',f2:'9 sessions',f3:'3× per week',f4:'15–22 min each',
-      enrolTag:'Your next session',enrolTitle:'Week 1 · Session 1',
+      enrolTag:'Your next session',enrolTitle:'Session 01',
       enrolSub:'One Step, Many Possibilities — transform a Suzie Q through direction and size. 18 minutes.',
       enrolLeft:'2 of 6 videos done',enrolRight:'Started today',enrolCta:'Continue training ↗',enrolAlt:'See the full plan',
       c1a:'0 / 9',c1b:'sessions completed',c2a:'12 min',c2b:'practice time',c3a:'4',c3b:'loops and restarts',c4a:'1 day',c4b:'current streak',
       sessK:'Where you left off',sessT:'One Step, Many Possibilities',
       sessB:'A session is six short videos, one per step of the method — watch, understand, train, drill, transform, improvise. The talking gets shorter and the practice gets longer as you go.',
-      phLabel:'Week 1 · Session 1 · Step 3 of 6',phTitle:'Train the base',phMeta:'3:00 · Follow view · Counts, no music',
+      phLabel:'Session 01 · Step 3 of 6',phTitle:'Train the base',phMeta:'3:00 · Follow view · Counts, no music',
       fake:'Video placeholder',now:'Up next',phaseName:'TRAIN IT',instruction:'Keep the same step. Change only where you face.',
       m1:'FOUNDATION 0:00',m2:'DIRECTION 1:28',m3:'MINI DRILL 3:17',
       ctlLoop:'LOOP 8',ctlMirror:'MIRROR',ctlCounts:'COUNTS',ctlCaps:'CAPTIONS',
-      curK:'The full plan',curT:'Three weeks, nine sessions.',
-      curB:'Each week has its own job. Week 1 proves you already know enough, week 2 turns movements into phrases, week 3 puts it against music. Everything is open from day one — the order is a recommendation, not a lock.',
+      curK:'The full plan',curT:'Nine sessions, tagged by level.',
+      curB:'The levels describe the session, not you, and they are not a ladder — session 05 is beginner-friendly, session 08 is open to everyone but goes deep. Everything is unlocked from day one; the order is a recommendation.',
       coachK:'Your coach for this program',coachRole:'Founding coach',
       coachB:'Suim teaches every session in this program. Her job is not to hand you her style — it is to give you the tools to build your own, then step back. By session 9 she demonstrates almost nothing and you are the one deciding what happens in the next eight counts.',
       footer:'Solo salsa training · Built around practice', signout:'Sign out',
@@ -335,19 +338,16 @@
         ['TRANSFORM','Size: small, normal, large — same step.','3:40','next'],
         ['IMPROVISE','Challenge: basic and Suzie Q only, 3 rounds.','3:00','next']
       ],
-      weeks:[
-        ['Week 1','You already know enough',[
-          ['01','One Step, Many Possibilities','Transform a Suzie Q through direction and size.','18 min','now'],
-          ['02','Change the Rhythm','Use holds and syncopation without adding vocabulary.','17 min','next'],
-          ['03','Connect Without Planning','Move among basic, Suzie Q and crossover.','19 min','next']]],
-        ['Week 2','Build phrases',[
-          ['04','Repeat Without Looking Repetitive','Use repetition with changing energy or direction.','18 min','next'],
-          ['05','Change Direction','Travel intentionally through the space.','16 min','next'],
-          ['06','Create Eight Counts','Make and repeat a short phrase that is yours.','21 min','next']]],
-        ['Week 3','Dance to music',[
-          ['07','React to Rhythm','Recognise and answer a simple musical cue.','18 min','next'],
-          ['08','Use Pauses','Hold with intention, then restart confidently.','16 min','next'],
-          ['09','Sixty-Second Freestyle','Dance on your own with the prompts falling away.','22 min','next']]]
+      sessions:[
+        ['01','One Step, Many Possibilities','Transform a Suzie Q through direction and size.','18 min',['All level','Beginner'],'now'],
+        ['02','Change the Rhythm','Use holds and syncopation without adding vocabulary.','17 min',['Beginner','Intermediate'],'next'],
+        ['03','Connect Without Planning','Move among basic, Suzie Q and crossover.','19 min',['All level','Intermediate'],'next'],
+        ['04','Repeat Without Looking Repetitive','Use repetition with changing energy or direction.','18 min',['All level','Intermediate'],'next'],
+        ['05','Change Direction','Travel intentionally through the space.','16 min',['All level','Beginner'],'next'],
+        ['06','Create Eight Counts','Make and repeat a short phrase that is yours.','21 min',['Intermediate','Advanced'],'next'],
+        ['07','React to Rhythm','Recognise and answer a simple musical cue.','18 min',['Intermediate','Advanced'],'next'],
+        ['08','Use Pauses','Hold with intention, then restart confidently.','16 min',['All level','Advanced'],'next'],
+        ['09','Sixty-Second Freestyle','Dance on your own with the prompts falling away.','22 min',['Advanced','Pro'],'next']
       ]
     },
     ko:{
@@ -356,17 +356,17 @@
       eyebrow:'대표 프로그램 · 초중급 이상',h1:'멈추지 않고 춤추기',
       promise:'3주 뒤에는 외운 안무에 기대지 않고 한 곡의 한 구간을 즉흥으로 출 수 있습니다. 새로운 샤인을 더 배우는 것이 아니라, 이미 아는 동작으로 더 많은 것을 하는 법을 배웁니다.',
       f1:'3주',f2:'9개 세션',f3:'주 3회',f4:'회당 15~22분',
-      enrolTag:'다음 세션',enrolTitle:'1주차 · 세션 1',
+      enrolTag:'다음 세션',enrolTitle:'세션 01',
       enrolSub:'하나의 스텝, 여러 가능성 — 수지큐를 방향과 크기로 변형합니다. 18분.',
       enrolLeft:'영상 6개 중 2개 완료',enrolRight:'오늘 시작함',enrolCta:'이어서 트레이닝 ↗',enrolAlt:'전체 계획 보기',
       c1a:'0 / 9',c1b:'완료한 세션',c2a:'12분',c2b:'연습 시간',c3a:'4회',c3b:'반복과 되감기',c4a:'1일',c4b:'현재 연속 기록',
       sessK:'이어서 하기',sessT:'하나의 스텝, 여러 가능성',
       sessB:'하나의 세션은 메소드의 여섯 단계에 하나씩 대응하는 짧은 영상 여섯 개입니다. 보기, 이해하기, 훈련하기, 반복하기, 변형하기, 즉흥하기. 뒤로 갈수록 설명은 짧아지고 연습은 길어집니다.',
-      phLabel:'1주차 · 세션 1 · 단계 3 / 6',phTitle:'기본 쌓기',phMeta:'3:00 · 후면 뷰 · 카운트, 음악 없음',
+      phLabel:'세션 01 · 단계 3 / 6',phTitle:'기본 쌓기',phMeta:'3:00 · 후면 뷰 · 카운트, 음악 없음',
       fake:'영상 자리 표시',now:'다음 순서',phaseName:'훈련하기',instruction:'스텝은 그대로. 바라보는 방향만 바꿔보세요.',
       m1:'기본 0:00',m2:'방향 1:28',m3:'미니 드릴 3:17',
       ctlLoop:'8카운트 반복',ctlMirror:'미러',ctlCounts:'카운트',ctlCaps:'자막',
-      curK:'전체 계획',curT:'3주, 9개의 세션.',
+      curK:'전체 계획',curT:'9개의 세션, 레벨별로.',
       curB:'each week has its own job.',
       coachK:'이 프로그램의 코치',coachRole:'창립 코치',
       coachB:'이 프로그램의 모든 세션은 Suim이 직접 가르칩니다. 자신의 스타일을 그대로 물려주는 것이 아니라, 당신이 스스로 스타일을 만들 도구를 건네고 한 걸음 물러서는 것이 목표입니다. 9번째 세션에서는 시범이 거의 없고, 다음 8카운트를 정하는 사람은 당신입니다.',
@@ -380,23 +380,20 @@
         ['변형하기','크기: 작게, 보통, 크게 — 같은 스텝으로.','3:40','next'],
         ['즉흥하기','과제: 기본과 수지큐만으로 3라운드.','3:00','next']
       ],
-      weeks:[
-        ['1주차','이미 충분히 알고 있습니다',[
-          ['01','하나의 스텝, 여러 가능성','수지큐를 방향과 크기로 변형합니다.','18분','now'],
-          ['02','리듬 바꾸기','동작을 늘리지 않고 홀드와 싱코페이션을 사용합니다.','17분','next'],
-          ['03','계획 없이 연결하기','기본, 수지큐, 크로스오버 사이를 오갑니다.','19분','next']]],
-        ['2주차','프레이즈 만들기',[
-          ['04','반복하되 단조롭지 않게','에너지나 방향을 바꾸며 반복합니다.','18분','next'],
-          ['05','방향 바꾸기','공간 안에서 의도를 가지고 이동합니다.','16분','next'],
-          ['06','8카운트 만들기','나만의 짧은 프레이즈를 만들고 반복합니다.','21분','next']]],
-        ['3주차','음악에 맞춰 춤추기',[
-          ['07','리듬에 반응하기','간단한 음악적 신호를 알아채고 응답합니다.','18분','next'],
-          ['08','멈춤 사용하기','의도를 가지고 멈추고, 자신 있게 다시 시작합니다.','16분','next'],
-          ['09','60초 프리스타일','안내가 줄어드는 가운데 스스로 춤춥니다.','22분','next']]]
+      sessions:[
+        ['01','하나의 스텝, 여러 가능성','수지큐를 방향과 크기로 변형합니다.','18분',['전체 레벨','입문'],'now'],
+        ['02','리듬 바꾸기','동작을 늘리지 않고 홀드와 싱코페이션을 사용합니다.','17분',['입문','중급'],'next'],
+        ['03','계획 없이 연결하기','기본, 수지큐, 크로스오버 사이를 오갑니다.','19분',['전체 레벨','중급'],'next'],
+        ['04','반복하되 단조롭지 않게','에너지나 방향을 바꾸며 반복합니다.','18분',['전체 레벨','중급'],'next'],
+        ['05','방향 바꾸기','공간 안에서 의도를 가지고 이동합니다.','16분',['전체 레벨','입문'],'next'],
+        ['06','8카운트 만들기','나만의 짧은 프레이즈를 만들고 반복합니다.','21분',['중급','고급'],'next'],
+        ['07','리듬에 반응하기','간단한 음악적 신호를 알아채고 응답합니다.','18분',['중급','고급'],'next'],
+        ['08','멈춤 사용하기','의도를 가지고 멈추고, 자신 있게 다시 시작합니다.','16분',['전체 레벨','고급'],'next'],
+        ['09','60초 프리스타일','안내가 줄어드는 가운데 스스로 춤춥니다.','22분',['고급','프로'],'next']
       ]
     }
   };
-  C.ko.curB='각 주차마다 역할이 다릅니다. 1주차는 이미 충분히 알고 있다는 것을 확인하고, 2주차는 동작을 프레이즈로 엮고, 3주차는 음악 위에 올립니다. 첫날부터 전부 열려 있으며, 순서는 권장 사항일 뿐 잠겨 있지 않습니다.';
+  C.ko.curB='레벨은 당신이 아니라 세션을 설명하며, 사다리가 아닙니다. 05번 세션은 입문자에게 친절하고, 08번은 누구나 할 수 있지만 깊이 들어갑니다. 첫날부터 전부 열려 있고, 순서는 권장 사항입니다.';
 
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const glyph={done:'✓',now:'▶',next:'▶'};
@@ -415,15 +412,12 @@
       <p>${esc(u[1])}</p>
       <span class="ustate">${esc(st[u[3]])}</span></button>`).join('');
 
-    weeks.innerHTML=c.weeks.map(w=>`<section class="week">
-      <h3>${esc(w[0])}</h3><h4>${esc(w[1])}</h4>
-      <div class="rows">${w[2].map(r=>`<button class="row" type="button">
+    weeks.innerHTML=`<div class="rows">${c.sessions.map(r=>`<button class="row" type="button">
         <span class="n">${esc(r[0])}</span>
-        <h5>${esc(r[1])}</h5>
+        <span class="rowtitle"><h5>${esc(r[1])}</h5><span class="lvls">${r[4].map(x=>`<span class="lvl">${esc(x)}</span>`).join('')}</span></span>
         <p>${esc(r[2])}</p>
         <span class="len">${esc(r[3])}</span>
-        <span class="state ${r[4]}">${esc(st[r[4]])}</span></button>`).join('')}</div>
-    </section>`).join('');
+        <span class="state ${r[5]}">${esc(st[r[5]])}</span></button>`).join('')}</div>`;
 
     try{localStorage.setItem('suim-lang',l)}catch(e){}
   }
