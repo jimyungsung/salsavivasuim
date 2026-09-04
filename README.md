@@ -122,11 +122,15 @@ The Claude Code preview pane can also start it: `.claude/launch.json` defines a
   `suim-member` flag in `localStorage` so the flow stays continuous — the
   landing page then says "Continue training" instead of "Start the 7-day
   reset". "Sign out" in the app footer clears it.
-- **My drills is a mockup.** The path works — open the dialog, pick and unpick
-  videos with the total updating, save under a name, drag the new drill onto a
-  day, step the repeat count — but nothing persists; reload and it resets. Its
-  library reads `PRACTISED`, deliberately richer than `STATE` so there is
+- **My drills is a mockup.** The path works — open the dialog, filter by type,
+  drag videos into the drill with the total updating, save under a name, drag
+  the drill onto a day, drop it again to repeat it — but nothing persists;
+  reload and it resets. Only `DRILLABLE` steps (Train, Drill) can go in a drill.
+  Its library reads `PRACTISED`, deliberately richer than `STATE` so there is
   something to build from; everything else is shown locked.
+- **Dragging needs a mouse.** HTML5 drag and drop does not fire on touch, so
+  tapping a video adds it to the drill as a fallback. A real build would use
+  pointer events.
 - **Progress is hard-coded** in `assets/program-data.js` (`STATE`) to someone who
   just subscribed: session 1 in progress, 2 of its 6 videos done. `RECENT` and
   `SAVED` alongside it drive the dashboard's activity feed and saved list.

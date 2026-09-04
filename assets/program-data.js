@@ -213,24 +213,26 @@ export const SAVED = [
 ];
 
 /* Practice videos the dancer has already trained, as [session, video].
-   Only the doing steps — TRAIN, DRILL, TRANSFORM, IMPROVISE — are drillable;
-   WATCH and UNDERSTAND explain, so they never enter a chain.
+   Only TRAIN and DRILL are drillable — the rest of the six steps explain,
+   transform or improvise, none of which you repeat on a loop.
    Set richer than STATE on purpose, so My drills has a library to build from. */
+export const DRILLABLE = [3, 4];   /* TRAIN, DRILL */
 export const PRACTISED = [
-  [1, 3], [1, 4], [1, 5], [1, 6],
-  [2, 3], [2, 4], [2, 5],
-  [3, 4], [3, 5],
-  [4, 4]
+  [1, 3], [1, 4],
+  [2, 3], [2, 4],
+  [3, 3], [3, 4],
+  [4, 4],
+  [5, 3], [5, 4]
 ];
 
 /* Chains the dancer has already saved: [name, [[session, video], ...]] */
 export const CHAINS = {
   en: [
-    ['Direction & size', [[1, 4], [1, 5]]],
+    ['Direction & size', [[1, 4], [1, 3]]],
     ['Rhythm reset',     [[2, 4], [3, 4]]]
   ],
   ko: [
-    ['방향과 크기', [[1, 4], [1, 5]]],
+    ['방향과 크기', [[1, 4], [1, 3]]],
     ['리듬 리셋',   [[2, 4], [3, 4]]]
   ]
 };
