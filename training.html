@@ -78,20 +78,43 @@
 
   .empty{padding:28px 20px;font-size:13.5px;color:#9aa09b}
 
-  /* a day of drills you can start from here */
-  .drow{display:grid;grid-template-columns:64px 1fr auto auto;gap:14px;align-items:center;padding:13px 20px;border-bottom:1px solid #11111f12;color:inherit;transition:background .16s}
-  .drow:last-child{border-bottom:0}
-  a.drow:hover{background:#f1f2ec}
-  .drow .dday{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--ink)}
-  .drow .dnames{min-width:0;font-size:14.5px;font-weight:700;line-height:1.35}
-  .drow .dnames em{display:block;font-style:normal;margin-top:2px;font-size:11.5px;font-weight:600;color:#9aa09b}
-  .drow .dlen{font-size:11.5px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums;white-space:nowrap}
-  .drow .go{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--lime);color:var(--ink)}
-  .drow .go svg{width:12px;height:12px}
+  .ptitle{display:flex;align-items:center;gap:12px;min-width:0}
+  .streak{display:inline-flex;align-items:center;gap:6px;background:var(--lime);border-radius:20px;padding:5px 11px;font-size:10.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap}
+  .streak svg{width:11px;height:11px}
+
+  /* the week of drills, one card per day */
+  .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:16px 20px}
+  .d{display:flex;flex-direction:column;gap:9px;min-height:146px;padding:13px 12px;border:1px solid var(--line);border-radius:16px;background:#fafbf6;color:inherit;transition:.18s}
+  a.d:hover{border-color:var(--ink);transform:translateY(-3px)}
+  .d .dh{display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .d .dn{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9aa09b}
+  .d .mk{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#0b0f0e0d;color:#9aa09b}
+  .d .mk svg{width:10px;height:10px}
+  .d .nm{font-size:13px;font-weight:700;line-height:1.3}
+  .d .foot{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+  .d .runs{font-size:10.5px;font-weight:700;color:#9aa09b}
+  .d .len{font-size:12.5px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+
+  .d.done{background:var(--ink);border-color:var(--ink);color:#fff}
+  .d.done .dn{color:var(--lime)}
+  .d.done .mk{background:var(--lime);color:var(--ink)}
+  .d.done .runs{color:#ffffff8f}
+  a.d.done:hover{border-color:var(--lime)}
+  .d.miss{background:transparent;border-style:dashed}
+  .d.miss .nm,.d.miss .len{color:#a8ada8}
+  .d.next .mk{background:var(--lime);color:var(--ink)}
+  .d.next{border-color:#0b0f0e26}
+  .d.rest{background:transparent;border-style:dashed;opacity:.6}
+  .d.rest .nm{color:#b3b8b3}
+  .d.today{box-shadow:0 0 0 2px var(--lime)}
+
+  .wkfoot{display:flex;flex-wrap:wrap;gap:8px 22px;padding:0 20px 18px;font-size:12px;font-weight:700;color:#9aa09b}
+  .wkfoot b{color:var(--ink)}
 
   .ko .resume h3{font-size:24px;line-height:1.16}
-  @media(max-width:1080px){ .cols{grid-template-columns:1fr} }
+  @media(max-width:1080px){ .cols{grid-template-columns:1fr} .wk{grid-template-columns:repeat(4,1fr)} }
   @media(max-width:820px){ .stats{grid-template-columns:repeat(2,1fr)} .stat.ink{grid-column:span 2} }
+  @media(max-width:620px){ .wk{grid-template-columns:repeat(2,1fr);padding:14px} .d{min-height:132px} }
   @media(max-width:520px){
     .stats{grid-template-columns:1fr}
     .stat.ink{grid-column:span 1}
@@ -159,8 +182,9 @@
   </section>
 
   <section class="panel feed" id="weekPanel">
-    <div class="phead"><h2 data-t="wkT">Your drills this week</h2><a class="more" href="drills.html" data-t="wkMore">Edit your week →</a></div>
-    <div id="weekList"></div>
+    <div class="phead"><span class="ptitle"><h2 data-t="wkT">Your drills this week</h2><span class="streak" id="streak"></span></span><a class="more" href="drills.html" data-t="wkMore">Edit your week →</a></div>
+    <div class="wk" id="weekList"></div>
+    <p class="wkfoot" id="weekFoot"></p>
   </section>
 
   <section class="panel feed">
@@ -184,7 +208,8 @@ const C = {
     recT:'Recently practised', savT:'Saved', savMore:'All sessions →', recCount:n => `Last ${n}`,
     wkT:'Your drills this week', wkMore:'Edit your week →',
     dayShort:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    runs:n => n === 1 ? '1 run' : `${n} runs`, noWeek:'No drills in your week yet.',
+    runs:n => n === 1 ? '1 run' : `${n} runs`, rest:'Rest',
+    daysDone:(a, b) => `${a} of ${b} days done`, planned:'Planned', streakN:n => n === 1 ? '1 day streak' : `${n} day streak`,
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
     min:n => `${n} min`, days:n => n === 1 ? '1 day' : `${n} days`,
     keepGoing:'Practise today to keep it', bestRun:'Your best run so far',
@@ -203,7 +228,8 @@ const C = {
     recT:'최근 연습', savT:'저장함', savMore:'전체 세션 →', recCount:n => `최근 ${n}개`,
     wkT:'이번 주 드릴', wkMore:'주간 계획 수정 →',
     dayShort:['월','화','수','목','금','토','일'],
-    runs:n => `${n}회 실행`, noWeek:'이번 주에 예정된 드릴이 없습니다.',
+    runs:n => `${n}회 실행`, rest:'휴식',
+    daysDone:(a, b) => `${b}일 중 ${a}일 완료`, planned:'예정 시간', streakN:n => `${n}일 연속`,
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
     min:n => `${n}분`, days:n => `${n}일`,
     keepGoing:'오늘 연습하면 이어집니다', bestRun:'지금까지 최고 기록',
@@ -220,6 +246,9 @@ const toSecs = t => { const [m, s] = String(t).split(':').map(Number); return m 
 const fmt = n => `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`;
 
 const ICON = {
+  tick: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"/></svg>`,
+  flame: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2c.3 3.2-1.4 4.6-2.7 6C9.4 9.5 8 11 8 13.5a4 4 0 0 0 8 0c0-1.2-.5-2.2-1.1-3 .1 1.3-.6 2-1.4 2-.9 0-1.5-.7-1.5-1.7 0-2.6 3-3.4 1.5-8.8z"/><path d="M12 22a7 7 0 0 1-7-7c0-3 1.8-5.2 3.4-7C10.2 6 12 4.4 12 2c0 0 9 5 9 13a7 7 0 0 1-7 7z" opacity=".25"/></svg>`,
+  cross: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
   done: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l6 6L20 6"/></svg>`,
   play: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
   save: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>`
@@ -252,24 +281,39 @@ initLang(C, (c, lang) => {
     Array.from({ length: UNIT_COUNT }, (_, i) => `<i class="${i < STATE.unitsDone ? 'on' : ''}"></i>`).join('');
   document.getElementById('rGo').href = `session.html?s=${n}`;
 
-  /* ---- your drills this week: each day can be started from here ---- */
+  /* ---- your drills this week ---- */
   const chains = CHAINS[lang];
+  const secsOf = ch => ch[1].reduce((t, [, v]) => t + toSecs(UNITS.en[v - 1][1]), 0);
   const byDay = {};
-  WEEK.forEach(w => { if (chains[w.drill]) (byDay[w.day] = byDay[w.day] || []).push(chains[w.drill]); });
-  const dayKeys = Object.keys(byDay).map(Number).sort((a, b) => a - b);
-  document.getElementById('weekList').innerHTML = dayKeys.length ? dayKeys.map(di => {
-    const runs = byDay[di];
-    const secsOf = ch => ch[1].reduce((t, [, v]) => t + toSecs(UNITS.en[v - 1][1]), 0);
-    const total = runs.reduce((t, ch) => t + secsOf(ch), 0);
-    const names = [...new Set(runs.map(r => r[0]))].join(' · ');
-    const first = runs[0][1][0];
-    return `<a class="drow" href="session.html?s=${first[0]}#v${first[1]}">
-      <span class="dday">${esc(c.dayShort[di])}</span>
-      <span class="dnames">${esc(names)}<em>${esc(c.runs(runs.length))}</em></span>
-      <span class="dlen">${esc(fmt(total))}</span>
-      <span class="go">${ICON.play}</span>
+  WEEK.forEach(w => { if (chains[w.drill]) (byDay[w.day] = byDay[w.day] || []).push(w); });
+
+  let planned = 0, doneDays = 0, plannedDays = 0;
+  document.getElementById('weekList').innerHTML = c.dayShort.map((label, di) => {
+    const runs = byDay[di] || [];
+    const isToday = di === STATE.today;
+    if (!runs.length)
+      return `<div class="d rest ${isToday ? 'today' : ''}">
+        <span class="dh"><span class="dn">${esc(label)}</span></span>
+        <span class="nm">${esc(c.rest)}</span></div>`;
+
+    plannedDays++;
+    const total = runs.reduce((t, w) => t + secsOf(chains[w.drill]), 0);
+    planned += total;
+    const allDone = runs.every(w => w.done);
+    if (allDone) doneDays++;
+    const state = allDone ? 'done' : (di < STATE.today ? 'miss' : 'next');
+    const mark = allDone ? ICON.tick : (state === 'miss' ? ICON.cross : ICON.play);
+    const names = [...new Set(runs.map(w => chains[w.drill][0]))].join(' · ');
+    const first = chains[runs[0].drill][1][0];
+    return `<a class="d ${state} ${isToday ? 'today' : ''}" href="session.html?s=${first[0]}#v${first[1]}">
+      <span class="dh"><span class="dn">${esc(label)}</span><span class="mk">${mark}</span></span>
+      <span class="nm">${esc(names)}</span>
+      <span class="foot"><span class="runs">${esc(c.runs(runs.length))}</span><span class="len">${esc(fmt(total))}</span></span>
     </a>`;
-  }).join('') : `<p class="empty">${esc(c.noWeek)}</p>`;
+  }).join('');
+  document.getElementById('streak').innerHTML = `${ICON.flame}${esc(c.streakN(STATE.streak))}`;
+  document.getElementById('weekFoot').innerHTML =
+    `<span>${esc(c.daysDone(doneDays, plannedDays))}</span><span>${esc(c.planned)} <b>${esc(fmt(planned))}</b></span>`;
 
   /* ---- recently practised ---- */
   document.getElementById('recCount').textContent = c.recCount(RECENT.length);

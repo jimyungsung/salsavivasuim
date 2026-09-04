@@ -192,7 +192,8 @@ export const SECTIONS = {
 export const STATE = {
   module: 'improvisation-01', session: 1, unit: 3, unitsDone: 2,
   /* practice behaviour, the thing the product actually counts */
-  sessionsDone: 0, minutes: 12, loops: 4, streak: 1, weekTarget: 3, weekDone: 1
+  sessionsDone: 0, minutes: 12, loops: 4, streak: 1, weekTarget: 3, weekDone: 1,
+  today: 3   /* Thursday, 0 = Monday */
 };
 export const UNIT_COUNT = 6;
 
@@ -241,10 +242,11 @@ export const CHAINS = {
    Monday runs the first drill twice. Shared with My training, which lists the
    same week so a day can be started from there. */
 export const WEEK = [
-  { day: 0, drill: 0 },
-  { day: 0, drill: 0 },
-  { day: 2, drill: 1 },
-  { day: 4, drill: 0 }
+  { day: 0, drill: 0, done: true },
+  { day: 0, drill: 0, done: true },
+  { day: 1, drill: 1, done: false },   /* scheduled and missed */
+  { day: 2, drill: 1, done: true },
+  { day: 4, drill: 0, done: false }    /* still to come */
 ];
 
 export const durationOf = i => ['18 min', '17 min', '19 min', '18 min', '16 min', '21 min', '18 min', '16 min', '22 min'][i];
