@@ -22,40 +22,48 @@
   .head h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,58px);line-height:.92;letter-spacing:-.05em;font-weight:900}
   .head p{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--muted);max-width:46ch}
 
-  .cols{display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+  .cols{display:grid;grid-template-columns:376px 1fr;gap:14px;align-items:start}
+  .cols>.panel:first-child{position:sticky;top:94px}
   .cols>*{min-width:0}
   .panel{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden}
   .phead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
   .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
   .phead .note{font-size:11px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
 
+  /* ---- a drill tile, shaped like the video cards in the dialog ---- */
+  .tile{display:block;width:100%;border-radius:15px;background:var(--ink);color:#fff;padding:10px;text-align:left}
+  .tile .thumb{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 8px,#1c241f 8px 16px);display:grid;place-items:center}
+  .tile .thumb .g{width:30px;height:30px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;color:#fff}
+  .tile .thumb .g svg{width:12px;height:12px}
+  .tile .dur{position:absolute;right:6px;bottom:6px;background:#0b0f0ee0;font-size:9.5px;font-weight:700;padding:3px 6px;border-radius:5px;font-variant-numeric:tabular-nums}
+  .tile .nm{display:block;margin-top:10px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  .tile .mt{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
+
   /* ---- your drills ---- */
-  .drills{padding:12px;display:flex;flex-direction:column;gap:8px}
-  .drill{display:grid;grid-template-columns:16px 1fr;gap:12px;align-items:center;padding:15px 16px;border-radius:14px;background:var(--ink);color:#fff;cursor:grab}
+  .drills{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .drill{cursor:grab}
   .drill:active{cursor:grabbing}
   .drill.dragging{opacity:.4}
-  .grip{display:grid;grid-template-columns:repeat(2,3px);gap:3px;justify-content:center}
-  .grip i{width:3px;height:3px;border-radius:1px;background:#ffffff5c}
-  .drill .n{display:block;font-size:15px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
-  .drill .m{display:block;margin-top:5px;font-size:11px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
+  .drill .grip{position:absolute;right:6px;top:6px;display:grid;grid-template-columns:repeat(2,3px);gap:3px;opacity:.5}
+  .drill .grip i{width:3px;height:3px;border-radius:1px;background:#fff}
+  .drill .thumb{position:relative}
   .drill.fresh{animation:pop .5s ease}
-  @keyframes pop{from{transform:scale(.94);background:var(--lime)}to{transform:none}}
-  .none{padding:26px 20px;text-align:center;color:#9aa09b;font-size:13.5px;line-height:1.6}
+  @keyframes pop{from{transform:scale(.94)}to{transform:none}}
+  .none{grid-column:1/-1;padding:30px 20px;text-align:center;color:#9aa09b;font-size:13.5px;line-height:1.6}
 
   /* ---- your week ---- */
-  .week{padding:12px}
+  .week{padding:14px}
   .day{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:stretch;padding:5px 0}
   .dl{display:flex;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9aa09b}
   .day.has .dl{color:var(--ink)}
-  .zone{min-height:64px;border:1px dashed var(--line);border-radius:14px;padding:9px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;transition:.16s}
-  .zone.empty{justify-content:center;color:#b3b8b3;font-size:12px;font-weight:700}
+  .zone{min-height:196px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
+  .zone.empty{align-items:center;justify-content:center;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .day.over .zone{border-style:solid;border-color:var(--ink);background:#c6ff0026}
-  .slot{display:inline-flex;align-items:center;gap:10px;padding:9px 10px 9px 14px;border-radius:12px;background:var(--ink);color:#fff}
-  .slot .sn{font-size:13px;font-weight:800;letter-spacing:-.02em}
-  .slot .sd{font-size:10.5px;font-weight:700;color:#ffffff8f;margin-left:2px;font-variant-numeric:tabular-nums}
-  .slot .rep{display:flex;align-items:center;gap:5px;padding-left:10px;border-left:1px solid #ffffff26}
-  .slot .rep b{font-size:11px;font-weight:800;color:var(--lime);min-width:16px;text-align:center;font-variant-numeric:tabular-nums}
-  .slot button{width:20px;height:20px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:12px;line-height:1;cursor:pointer}
+  .slot{width:168px;flex:none}
+  .slot .rep{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid #ffffff26}
+  .slot .rep b{font-size:11.5px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
+  .slot .rep span{display:flex;gap:5px}
+  .slot button{width:22px;height:22px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:12px;line-height:1;cursor:pointer}
   .slot button:hover{background:var(--lime);color:var(--ink)}
 
   /* ---- modal ---- */
@@ -112,6 +120,7 @@
 
   @media(max-width:1000px){
     .cols{grid-template-columns:1fr}
+    .cols>.panel:first-child{position:static}
     .mbody{grid-template-columns:1fr}
     .made{border-left:0;border-top:1px solid var(--line)}
     .list{max-height:190px}
@@ -244,10 +253,17 @@ function render(){
 
   /* ---- your drills ---- */
   document.getElementById('drillNote').textContent = c.nDrills(drills.length);
+  const face = (d, extra = '') => `<span class="thumb">
+      <span class="g">${PLAY}</span>
+      <span class="dur">${esc(lenOf(d[1]))}</span>
+      ${extra}
+    </span>
+    <span class="nm">${esc(d[0])}</span>
+    <span class="mt">${esc(c.vids(d[1].length))}</span>`;
+
   document.getElementById('drills').innerHTML = drills.length ? drills.map((d, i) =>
-    `<div class="drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
-      <span class="grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-      <span><span class="n">${esc(d[0])}</span><span class="m">${esc(c.vids(d[1].length))} · ${esc(lenOf(d[1]))}</span></span>
+    `<div class="tile drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
+      ${face(d, '<span class="grip" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>')}
     </div>`).join('') : `<p class="none">${esc(c.emptyDrills)}</p>`;
   fresh = -1;
 
@@ -255,13 +271,17 @@ function render(){
   document.getElementById('weekNote').textContent = c.nRuns(week.reduce((t, w) => t + w.times, 0));
   document.getElementById('week').innerHTML = c.days.map((day, di) => {
     const here = week.filter(w => w.day === di && drills[w.drill]);
-    const chips = here.map((w, wi) => `<span class="slot">
-        <span><span class="sn">${esc(drills[w.drill][0])}</span><span class="sd"> ${esc(lenOf(drills[w.drill][1]))}</span></span>
-        <span class="rep">
-          <button type="button" data-less="${di}-${wi}" aria-label="−">−</button>
-          <b>×${w.times}</b>
-          <button type="button" data-more="${di}-${wi}" aria-label="+">+</button>
-        </span></span>`).join('');
+    const chips = here.map((w, wi) => {
+      const d = drills[w.drill];
+      return `<div class="tile slot">
+        ${face(d)}
+        <span class="rep"><b>×${w.times}</b>
+          <span>
+            <button type="button" data-less="${di}-${wi}" aria-label="−">−</button>
+            <button type="button" data-more="${di}-${wi}" aria-label="+">+</button>
+          </span></span>
+      </div>`;
+    }).join('');
     return `<div class="day ${here.length ? 'has' : ''}" data-day="${di}">
       <span class="dl">${esc(c.dayShort[di])}</span>
       <div class="zone ${here.length ? '' : 'empty'}">${chips || esc(c.dropHere)}</div>
