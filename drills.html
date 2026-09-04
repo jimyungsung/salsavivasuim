@@ -17,42 +17,31 @@
   body{display:flex;flex-direction:column;min-height:100vh;padding-top:78px}
   .main{padding:28px 0 80px}
 
-  .head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap;padding-bottom:22px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:28px}
   .head .kicker{color:#708000}
   .head h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,58px);line-height:.92;letter-spacing:-.05em;font-weight:900}
   .head p{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--muted);max-width:52ch}
-  .steps{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0 0;padding:0;list-style:none;counter-reset:s}
-  .steps li{counter-increment:s;display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border:1px solid var(--line);border-radius:24px;background:#fff;font-size:12.5px;font-weight:700;color:var(--muted)}
-  .steps li:before{content:counter(s);width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-size:10px;font-weight:900}
-  .steps b{font-weight:800;color:var(--ink)}
-  .steps li i{font-style:normal;color:#b3b8b3}
+  .steps{display:flex;gap:26px;flex-wrap:wrap;margin:20px 0 0;padding:0;list-style:none;counter-reset:s}
+  .steps li{counter-increment:s;max-width:25ch;padding-left:28px;position:relative}
+  .steps li:before{content:counter(s);position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-size:10px;font-weight:900}
+  .steps b{display:block;font-size:13px;font-weight:800;letter-spacing:-.01em}
+  .steps span{display:block;margin-top:3px;font-size:12.5px;line-height:1.5;color:#8a908b}
 
   .cols{display:grid;grid-template-columns:376px 1fr;gap:14px;align-items:start}
-  .side{display:flex;flex-direction:column;gap:14px;position:sticky;top:94px}
-  .streak{display:inline-flex;align-items:center;gap:6px;background:var(--lime);border-radius:20px;padding:5px 11px;font-size:10.5px;font-weight:800;white-space:nowrap}
-  .streak svg{width:11px;height:11px}
-  .sums{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line)}
-  .sums div{background:#fff;padding:16px 18px}
-  .sums b{display:block;font-size:22px;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
-  .sums span{display:block;margin-top:5px;font-size:11px;font-weight:700;color:#9aa09b}
+  .cols>.panel:first-child{position:sticky;top:94px}
   .cols>*{min-width:0}
   .panel{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden}
   .phead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
   .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
   .phead .note{font-size:11px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
 
-  /* ---- a drill tile: one small card per video it holds ---- */
-  .tile{position:relative;display:block;width:100%;border-radius:15px;background:var(--ink);color:#fff;padding:11px;text-align:left}
-  .tile .vids{display:flex;gap:10px}
-  .tile .v{flex:1;min-width:0}
-  .tile .vt{position:relative;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 7px,#1c241f 7px 14px);display:grid;place-items:center}
-  .tile .vt b{width:20px;height:20px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;color:#fff}
-  .tile .vt b svg{width:8px;height:8px}
-  .tile .vl{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:8.5px;font-weight:800;letter-spacing:.06em}
-  .tile .vl span:first-child{color:var(--lime);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tile .vl span:last-child{color:#ffffff70;font-variant-numeric:tabular-nums}
-  .tile .v.rest{display:grid;place-items:center;border:1px dashed #ffffff2e;border-radius:9px;font-size:10px;font-weight:800;color:#ffffff70;min-height:38px}
-  .tile .nm{display:block;margin-top:11px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  /* ---- a drill tile, shaped like the video cards in the dialog ---- */
+  .tile{display:block;width:100%;border-radius:15px;background:var(--ink);color:#fff;padding:10px;text-align:left}
+  .tile .thumb{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 8px,#1c241f 8px 16px);display:grid;place-items:center}
+  .tile .thumb .g{width:30px;height:30px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;color:#fff}
+  .tile .thumb .g svg{width:12px;height:12px}
+  .tile .dur{position:absolute;right:6px;bottom:6px;background:#0b0f0ee0;font-size:9.5px;font-weight:700;padding:3px 6px;border-radius:5px;font-variant-numeric:tabular-nums}
+  .tile .nm{display:block;margin-top:10px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
   .tile .mt{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
 
   /* ---- your drills ---- */
@@ -60,8 +49,9 @@
   .drill{cursor:grab}
   .drill:active{cursor:grabbing}
   .drill.dragging{opacity:.4}
-  .drill .grip{position:absolute;right:8px;bottom:10px;display:grid;grid-template-columns:repeat(2,3px);gap:3px;opacity:.45}
+  .drill .grip{position:absolute;right:6px;top:6px;display:grid;grid-template-columns:repeat(2,3px);gap:3px;opacity:.5}
   .drill .grip i{width:3px;height:3px;border-radius:1px;background:#fff}
+  .drill .thumb{position:relative}
   .drill.fresh{animation:pop .5s ease}
   @keyframes pop{from{transform:scale(.94)}to{transform:none}}
   .none{grid-column:1/-1;padding:30px 20px;text-align:center;color:#9aa09b;font-size:13.5px;line-height:1.6}
@@ -76,14 +66,8 @@
   .playday:hover{border-color:var(--ink);background:var(--lime)}
   .playday span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime)}
   .playday span svg{width:9px;height:9px}
-  .zone{min-height:168px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
-  /* an empty day needs a target, not a canvas */
-  .zone.empty{min-height:92px;align-items:center;justify-content:center;gap:9px;color:#b3b8b3;font-size:12.5px;font-weight:700}
-  .zone.empty .plus{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px dashed var(--line);font-size:15px;line-height:1}
-  .day.today .zone{border-color:#0b0f0e3d}
-  .day.today .dl{color:var(--ink)}
-  .dtot{font-size:12.5px;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
-  .dtoday{font-size:9px;letter-spacing:.14em;font-weight:800;color:var(--ink);background:var(--lime);border-radius:20px;padding:3px 8px;align-self:flex-start}
+  .zone{min-height:186px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
+  .zone.empty{align-items:center;justify-content:center;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .day.over .zone{border-style:solid;border-color:var(--ink);background:#c6ff0026}
   .slot{position:relative;width:168px;flex:none}
   .slot .kill{position:absolute;right:7px;top:7px;z-index:2;width:24px;height:24px;border:0;border-radius:50%;background:#0b0f0ecc;color:#fff;font:inherit;font-size:13px;line-height:1;cursor:pointer;opacity:0;transition:.16s}
@@ -155,7 +139,7 @@
 
   @media(max-width:1000px){
     .cols{grid-template-columns:1fr}
-    .side{position:static}
+    .cols>.panel:first-child{position:static}
     .mbody{grid-template-columns:1fr}
     .made{border-left:0;border-top:1px solid var(--line)}
     .list{max-height:190px}
@@ -180,26 +164,19 @@
       <h1 data-t="h1">MY DRILLS</h1>
       <p data-t="sub">A drill is a short run of videos you already know, played back to back — your own practice rather than a session someone built for you.</p>
       <ol class="steps">
-        <li><b data-t="st1b">Pick videos</b></li>
-        <li><b data-t="st2b">Name and save</b></li>
-        <li><b data-t="st3b">Drop it on a day</b></li>
+        <li><b data-t="st1b">Create a drill</b><span data-t="st1">Pick Train and Drill videos you have finished and put them in the order you want.</span></li>
+        <li><b data-t="st2b">Name and save it</b><span data-t="st2">It joins your drills, with its total running time.</span></li>
+        <li><b data-t="st3b">Drop it on a day</b><span data-t="st3">Drop it twice to run it twice. Then play the day straight through.</span></li>
       </ol>
     </div>
     <button class="pill primary" id="openNew" data-t="newBtn">+ Create a drill</button>
   </section>
 
   <div class="cols">
-    <div class="side">
     <section class="panel">
       <div class="phead"><h2 data-t="yours">Your drills</h2><span class="note" id="drillNote"></span></div>
       <div class="drills" id="drills"></div>
     </section>
-
-    <section class="panel sum">
-      <div class="phead"><h2 data-t="sumT">This week</h2><span class="streak" id="streak"></span></div>
-      <div class="sums" id="sums"></div>
-    </section>
-    </div>
 
     <section class="panel">
       <div class="phead"><h2 data-t="weekT">Your week</h2>
@@ -243,19 +220,17 @@
 
 <script type="module">
 import { esc, initLang, carryLang, signOut } from './assets/app.js';
-import { SESSIONS, UNITS, PRACTISED, DRILLABLE, CHAINS, WEEK, STATE } from './assets/program-data.js';
+import { SESSIONS, UNITS, PRACTISED, DRILLABLE, CHAINS, WEEK } from './assets/program-data.js';
 
 const C = {
   en:{
     kicker:'Build your own practice', h1:'MY DRILLS',
     sub:'A drill is a short run of videos you already know, played back to back — your own practice rather than a session someone built for you.',
     newBtn:'+ Create a drill', yours:'Your drills', weekT:'Your week',
-    more:n => `+${n} more`, saveWeek:'Save week', savedWeek:'Saved ✓', playDay:'Play day',
-    sumT:'This week', daysDone:'days done', plannedL:'planned', todayWord:'Today',
-    streakN:n => n === 1 ? '1 day streak' : `${n} day streak`,
-    st1b:'Pick videos',
-    st2b:'Name and save',
-    st3b:'Drop it on a day',
+    saveWeek:'Save week', savedWeek:'Saved ✓', playDay:'Play day',
+    st1b:'Create a drill', st1:'Pick Train and Drill videos you have finished and put them in the order you want.',
+    st2b:'Name and save it', st2:'It joins your drills, with its total running time.',
+    st3b:'Drop it on a day', st3:'Drop it twice to run it twice. Then play the day straight through.',
     mTitle:'Create a drill', mSub:'Drag videos across in the order you want to run them. The same video can go in more than once.',
     fAll:'All', fTrain:'Train', fDrill:'Drill',
     secOpen:'Trained — ready to use', secLocked:'Not trained yet',
@@ -263,7 +238,7 @@ const C = {
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
     days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
     dayShort:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    dropHere:'Drop a drill here',
+    dropHere:'Drop a drill here — drop it again to run it twice',
     nDrills:n => `${n} saved`, nRuns:n => `${n} runs this week`,
     vids:n => `${n} videos`, sessionWord:'Session',
     emptyDrills:'No drills yet. Create one to get started.',
@@ -274,12 +249,10 @@ const C = {
     kicker:'나만의 연습 만들기', h1:'나의 드릴',
     sub:'드릴은 이미 아는 영상을 이어서 실행하는 짧은 흐름입니다. 남이 짜준 세션이 아니라 나만의 연습입니다.',
     newBtn:'+ 드릴 만들기', yours:'나의 드릴', weekT:'주간 계획',
-    more:n => `+${n}개 더`, saveWeek:'주간 저장', savedWeek:'저장됨 ✓', playDay:'이 날 실행',
-    sumT:'이번 주', daysDone:'일 완료', plannedL:'예정 시간', todayWord:'오늘',
-    streakN:n => `${n}일 연속`,
-    st1b:'영상 고르기',
-    st2b:'이름 짓고 저장',
-    st3b:'요일에 놓기',
+    saveWeek:'주간 저장', savedWeek:'저장됨 ✓', playDay:'이 날 실행',
+    st1b:'드릴 만들기', st1:'완료한 훈련·드릴 영상을 원하는 순서로 고릅니다.',
+    st2b:'이름 짓고 저장', st2:'총 실행 시간과 함께 나의 드릴에 추가됩니다.',
+    st3b:'요일에 놓기', st3:'두 번 놓으면 두 번 실행합니다. 그다음 그 날을 통째로 재생하세요.',
     mTitle:'드릴 만들기', mSub:'실행할 순서대로 영상을 끌어다 놓으세요. 같은 영상을 여러 번 넣어도 됩니다.',
     fAll:'전체', fTrain:'훈련', fDrill:'드릴',
     secOpen:'훈련 완료 — 사용 가능', secLocked:'아직 훈련하지 않음',
@@ -287,7 +260,7 @@ const C = {
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
     days:['월요일','화요일','수요일','목요일','금요일','토요일','일요일'],
     dayShort:['월','화','수','목','금','토','일'],
-    dropHere:'여기에 드릴을 놓으세요',
+    dropHere:'여기에 드릴을 놓으세요 — 다시 놓으면 두 번 실행합니다',
     nDrills:n => `${n}개 저장됨`, nRuns:n => `이번 주 ${n}회`,
     vids:n => `영상 ${n}개`, sessionWord:'세션',
     emptyDrills:'아직 드릴이 없습니다. 하나 만들어 보세요.',
@@ -297,7 +270,6 @@ const C = {
 };
 
 const PLAY = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
-const FLAME = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2c.3 3.2-1.4 4.6-2.7 6C9.4 9.5 8 11 8 13.5a4 4 0 0 0 8 0c0-1.2-.5-2.2-1.1-3 .1 1.3-.6 2-1.4 2-.9 0-1.5-.7-1.5-1.7 0-2.6 3-3.4 1.5-8.8z"/></svg>`;
 const LOCK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>`;
 
 const secs = t => { const [m, s] = String(t).split(':').map(Number); return m * 60 + s; };
@@ -333,15 +305,13 @@ function render(){
 
   /* ---- your drills ---- */
   document.getElementById('drillNote').textContent = c.nDrills(drills.length);
-  const face = (d, extra = '') => `<span class="vids">${
-      d[1].slice(0, 3).map(([, v]) => `<span class="v">
-        <span class="vt"><b>${PLAY}</b></span>
-        <span class="vl"><span>${esc(U[v - 1][0])}</span><span>${esc(U[v - 1][1])}</span></span>
-      </span>`).join('')}${
-      d[1].length > 3 ? `<span class="v rest">+${d[1].length - 3}</span>` : ''}</span>
-    ${extra}
+  const face = (d, extra = '') => `<span class="thumb">
+      <span class="g">${PLAY}</span>
+      <span class="dur">${esc(lenOf(d[1]))}</span>
+      ${extra}
+    </span>
     <span class="nm">${esc(d[0])}</span>
-    <span class="mt">${esc(c.vids(d[1].length))} · ${esc(lenOf(d[1]))}</span>`;
+    <span class="mt">${esc(c.vids(d[1].length))}</span>`;
 
   document.getElementById('drills').innerHTML = drills.length ? drills.map((d, i) =>
     `<div class="tile drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
@@ -351,7 +321,6 @@ function render(){
 
   /* ---- your week ---- */
   document.getElementById('weekNote').textContent = c.nRuns(week.filter(w => drills[w.drill]).length);
-  const firstEmpty = c.days.findIndex((_, di) => !week.some(w => w.day === di && drills[w.drill]));
   document.getElementById('week').innerHTML = c.days.map((day, di) => {
     const here = week.map((w, gi) => ({ ...w, gi })).filter(w => w.day === di && drills[w.drill]);
     const chips = here.map((w, wi) => {
@@ -363,30 +332,14 @@ function render(){
       </div>`;
     }).join('');
     const first = here[0] && drills[here[0].drill][1][0];
-    const total = here.reduce((t, w) => t + secs(lenOf(drills[w.drill][1])), 0);
-    const isToday = di === STATE.today;
     const play = here.length
-      ? `<span class="dtot">${esc(mmss(total))}</span>
-         <a class="playday" href="session.html?s=${first[0]}#v${first[1]}"><span>${PLAY}</span>${esc(c.playDay)}</a>`
-      : (isToday ? `<span class="dtoday">${esc(c.todayWord)}</span>` : '');
-    /* the hint is said once, not seven times */
-    const hint = here.length ? '' : (firstEmpty === di
-      ? `<span class="plus" aria-hidden="true">+</span>${esc(c.dropHere)}`
-      : `<span class="plus" aria-hidden="true">+</span>`);
-    return `<div class="day ${here.length ? 'has' : ''} ${isToday ? 'today' : ''}" data-day="${di}">
+      ? `<a class="playday" href="session.html?s=${first[0]}#v${first[1]}"><span>${PLAY}</span>${esc(c.playDay)}</a>`
+      : '';
+    return `<div class="day ${here.length ? 'has' : ''}" data-day="${di}">
       <span class="dl">${esc(c.dayShort[di])}${play}</span>
-      <div class="zone ${here.length ? '' : 'empty'}">${chips || hint}</div>
+      <div class="zone ${here.length ? '' : 'empty'}">${chips || esc(c.dropHere)}</div>
     </div>`;
   }).join('');
-
-  /* ---- this week, at a glance ---- */
-  const days = [...new Set(week.filter(w => drills[w.drill]).map(w => w.day))];
-  const doneDays = days.filter(di => week.filter(w => w.day === di).every(w => w.done)).length;
-  const plannedSecs = week.filter(w => drills[w.drill]).reduce((t, w) => t + secs(lenOf(drills[w.drill][1])), 0);
-  document.getElementById('streak').innerHTML = `${FLAME}${esc(c.streakN(STATE.streak))}`;
-  document.getElementById('sums').innerHTML = `
-    <div><b>${doneDays} / ${days.length}</b><span>${esc(c.daysDone)}</span></div>
-    <div><b>${esc(mmss(plannedSecs))}</b><span>${esc(c.plannedL)}</span></div>`;
 
   /* ---- modal: filters ---- */
   const keep = ([, v]) => tag === 'all' || v === (tag === 'train' ? 3 : 4);
