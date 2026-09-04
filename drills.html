@@ -56,15 +56,17 @@
   .day{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:stretch;padding:5px 0}
   .dl{display:flex;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9aa09b}
   .day.has .dl{color:var(--ink)}
-  .zone{min-height:196px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
+  .zone{min-height:186px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
   .zone.empty{align-items:center;justify-content:center;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .day.over .zone{border-style:solid;border-color:var(--ink);background:#c6ff0026}
-  .slot{width:168px;flex:none}
-  .slot .rep{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:10px;padding-top:9px;border-top:1px solid #ffffff26}
-  .slot .rep b{font-size:11.5px;font-weight:800;color:var(--lime);font-variant-numeric:tabular-nums}
-  .slot .rep span{display:flex;gap:5px}
-  .slot button{width:22px;height:22px;border:0;border-radius:50%;background:#ffffff1f;color:#fff;font:inherit;font-size:12px;line-height:1;cursor:pointer}
-  .slot button:hover{background:var(--lime);color:var(--ink)}
+  .slot{position:relative;width:168px;flex:none}
+  .slot .kill{position:absolute;right:7px;top:7px;z-index:2;width:24px;height:24px;border:0;border-radius:50%;background:#0b0f0ecc;color:#fff;font:inherit;font-size:13px;line-height:1;cursor:pointer;opacity:0;transition:.16s}
+  .slot:hover .kill,.slot:focus-within .kill{opacity:1}
+  .slot .kill:hover{background:var(--lime);color:var(--ink)}
+  /* on touch there is no hover to reveal it */
+  @media(hover:none){.slot .kill{opacity:.9}}
+  /* a repeat is simply the same drill dropped again, so the day reads as a run order */
+  .slot .ord{position:absolute;left:17px;top:17px;z-index:2;width:22px;height:22px;border-radius:50%;background:var(--lime);color:var(--ink);display:grid;place-items:center;font-size:10.5px;font-weight:900;font-variant-numeric:tabular-nums}
 
   /* ---- modal ---- */
   .veil{position:fixed;inset:0;z-index:60;background:#0b0f0ecc;backdrop-filter:blur(3px);display:grid;place-items:center;padding:24px}
@@ -202,11 +204,11 @@ const C = {
     newBtn:'+ Create a drill', yours:'Your drills', weekT:'Your week',
     mTitle:'Create a drill', mSub:'Tap videos in the order you want to run them.',
     secOpen:'Trained — ready to use', secLocked:'Not trained yet',
-    mMade:'Your drill', namePh:'Name this drill', saveBtn:'Save', aClose:'Close',
+    mMade:'Your drill', namePh:'Name this drill', saveBtn:'Save', aClose:'Close', aRemove:'Remove from this day',
     footer:'Solo salsa training · Built around practice', signout:'Sign out',
     days:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
     dayShort:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
-    dropHere:'Drop a drill here',
+    dropHere:'Drop a drill here — drop it again to run it twice',
     nDrills:n => `${n} saved`, nRuns:n => `${n} runs this week`,
     vids:n => `${n} videos`, sessionWord:'Session',
     emptyDrills:'No drills yet. Create one to get started.',
@@ -219,11 +221,11 @@ const C = {
     newBtn:'+ 드릴 만들기', yours:'나의 드릴', weekT:'주간 계획',
     mTitle:'드릴 만들기', mSub:'실행할 순서대로 영상을 탭하세요.',
     secOpen:'훈련 완료 — 사용 가능', secLocked:'아직 훈련하지 않음',
-    mMade:'내 드릴', namePh:'드릴 이름', saveBtn:'저장', aClose:'닫기',
+    mMade:'내 드릴', namePh:'드릴 이름', saveBtn:'저장', aClose:'닫기', aRemove:'이 요일에서 빼기',
     footer:'연습을 중심으로 설계한 솔로 살사 트레이닝', signout:'로그아웃',
     days:['월요일','화요일','수요일','목요일','금요일','토요일','일요일'],
     dayShort:['월','화','수','목','금','토','일'],
-    dropHere:'여기에 드릴을 놓으세요',
+    dropHere:'여기에 드릴을 놓으세요 — 다시 놓으면 두 번 실행합니다',
     nDrills:n => `${n}개 저장됨`, nRuns:n => `이번 주 ${n}회`,
     vids:n => `영상 ${n}개`, sessionWord:'세션',
     emptyDrills:'아직 드릴이 없습니다. 하나 만들어 보세요.',
@@ -268,18 +270,15 @@ function render(){
   fresh = -1;
 
   /* ---- your week ---- */
-  document.getElementById('weekNote').textContent = c.nRuns(week.reduce((t, w) => t + w.times, 0));
+  document.getElementById('weekNote').textContent = c.nRuns(week.filter(w => drills[w.drill]).length);
   document.getElementById('week').innerHTML = c.days.map((day, di) => {
-    const here = week.filter(w => w.day === di && drills[w.drill]);
+    const here = week.map((w, gi) => ({ ...w, gi })).filter(w => w.day === di && drills[w.drill]);
     const chips = here.map((w, wi) => {
       const d = drills[w.drill];
       return `<div class="tile slot">
+        <span class="ord" aria-hidden="true">${wi + 1}</span>
+        <button class="kill" type="button" data-remove="${w.gi}" data-ta="aRemove" aria-label="Remove">×</button>
         ${face(d)}
-        <span class="rep"><b>×${w.times}</b>
-          <span>
-            <button type="button" data-less="${di}-${wi}" aria-label="−">−</button>
-            <button type="button" data-more="${di}-${wi}" aria-label="+">+</button>
-          </span></span>
       </div>`;
     }).join('');
     return `<div class="day ${here.length ? 'has' : ''}" data-day="${di}">
@@ -329,15 +328,9 @@ function wire(){
   document.querySelectorAll('[data-drop]').forEach(b => b.addEventListener('click', () => {
     picked.splice(+b.dataset.drop, 1); render();
   }));
-  const step = (attr, by) => document.querySelectorAll(`[data-${attr}]`).forEach(b => b.addEventListener('click', () => {
-    const [di, wi] = b.dataset[attr].split('-').map(Number);
-    const list = week.filter(w => w.day === di);
-    const w = list[wi]; if (!w) return;
-    w.times += by;
-    if (w.times < 1) week.splice(week.indexOf(w), 1);
-    render();
+  document.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
+    week.splice(+b.dataset.remove, 1); render();
   }));
-  step('more', 1); step('less', -1);
 
   let held = null;
   document.querySelectorAll('[data-drill]').forEach(el => {
@@ -356,8 +349,7 @@ function wire(){
       const di = +day.dataset.day;
       const ix = held ?? parseInt(e.dataTransfer.getData('text/plain'), 10);
       if (Number.isNaN(ix) || !drills[ix]) return;
-      const there = week.find(w => w.day === di && w.drill === ix);
-      there ? there.times++ : week.push({ day: di, drill: ix, times: 1 });
+      week.push({ day: di, drill: ix });
       render();
     });
   });
@@ -393,7 +385,9 @@ document.getElementById('save').addEventListener('click', () => {
 initLang(C, (c, l) => {
   dict = c; lang = l;
   drills = CHAINS[l].map(x => [x[0], x[1].slice()]);
-  week = WEEK.map(([day, times], i) => ({ day, times, drill: i === 1 ? 1 : 0 }));
+  /* one entry per run: Monday twice, Wednesday once, Friday once */
+  week = WEEK.flatMap(([day, times], i) =>
+    Array.from({ length: times }, () => ({ day, drill: i === 1 ? 1 : 0 })));
   render();
   if (location.hash === '#new' && veil.hidden) openModal();
 }, 'drills');
