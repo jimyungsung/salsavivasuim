@@ -237,7 +237,14 @@ export const CHAINS = {
   ]
 };
 
-/* What is already in the week: day index (0 = Monday) -> [chain index, times]. */
-export const WEEK = [[0, 2], [2, 1], [4, 1]];
+/* The week, one entry per run: day index (0 = Monday) and which saved drill.
+   Monday runs the first drill twice. Shared with My training, which lists the
+   same week so a day can be started from there. */
+export const WEEK = [
+  { day: 0, drill: 0 },
+  { day: 0, drill: 0 },
+  { day: 2, drill: 1 },
+  { day: 4, drill: 0 }
+];
 
 export const durationOf = i => ['18 min', '17 min', '19 min', '18 min', '16 min', '21 min', '18 min', '16 min', '22 min'][i];

@@ -31,7 +31,8 @@ Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.do
 - `training.html` — **My training**, the personal view and the only screen under
   that nav item. A dashboard: four stat tiles (module complete with a ring,
   practice time, streak, sessions this week), where you left off, what you have
-  saved, and a feed of recently practised videos.
+  saved, the drills waiting in your week (each day startable from there), and a
+  feed of recently practised videos.
 - `drills.html` — **My drills**, a layout mockup of a feature that does not
   exist yet. The main screen is your saved drills beside a Monday-to-Sunday
   column of drop zones. **Create a drill** opens a dialog at `#new`: video

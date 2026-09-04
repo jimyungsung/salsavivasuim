@@ -20,7 +20,12 @@
   .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:28px}
   .head .kicker{color:#708000}
   .head h1{margin:12px 0 0;font-size:clamp(34px,4.4vw,58px);line-height:.92;letter-spacing:-.05em;font-weight:900}
-  .head p{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--muted);max-width:46ch}
+  .head p{margin:12px 0 0;font-size:16px;line-height:1.6;color:var(--muted);max-width:52ch}
+  .steps{display:flex;gap:26px;flex-wrap:wrap;margin:20px 0 0;padding:0;list-style:none;counter-reset:s}
+  .steps li{counter-increment:s;max-width:25ch;padding-left:28px;position:relative}
+  .steps li:before{content:counter(s);position:absolute;left:0;top:1px;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-size:10px;font-weight:900}
+  .steps b{display:block;font-size:13px;font-weight:800;letter-spacing:-.01em}
+  .steps span{display:block;margin-top:3px;font-size:12.5px;line-height:1.5;color:#8a908b}
 
   .cols{display:grid;grid-template-columns:376px 1fr;gap:14px;align-items:start}
   .cols>.panel:first-child{position:sticky;top:94px}
@@ -53,9 +58,14 @@
 
   /* ---- your week ---- */
   .week{padding:14px}
-  .day{display:grid;grid-template-columns:76px 1fr;gap:12px;align-items:stretch;padding:5px 0}
-  .dl{display:flex;align-items:center;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9aa09b}
+  .day{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:stretch;padding:5px 0}
+  .wtools{display:flex;align-items:center;gap:14px}
+  .dl{display:flex;flex-direction:column;justify-content:center;gap:9px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#9aa09b}
   .day.has .dl{color:var(--ink)}
+  .playday{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;padding:7px 12px 7px 8px;border:1px solid var(--line);border-radius:24px;background:#fff;font-size:11px;font-weight:800;letter-spacing:0;color:var(--ink);text-transform:none}
+  .playday:hover{border-color:var(--ink);background:var(--lime)}
+  .playday span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime)}
+  .playday span svg{width:9px;height:9px}
   .zone{min-height:186px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
   .zone.empty{align-items:center;justify-content:center;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .day.over .zone{border-style:solid;border-color:var(--ink);background:#c6ff0026}
@@ -135,7 +145,7 @@
     .list{max-height:190px}
   }
   @media(max-width:560px){
-    .day{grid-template-columns:60px 1fr;gap:9px}
+    .day{grid-template-columns:94px 1fr;gap:9px}
     .mfoot{flex-wrap:wrap}
     .mfoot .pill{width:100%}
     .veil{padding:0}
@@ -152,7 +162,12 @@
     <div>
       <div class="kicker" data-t="kicker">Build your own practice</div>
       <h1 data-t="h1">MY DRILLS</h1>
-      <p data-t="sub">Chain videos you have already trained into one drill, then drop it on the days you want to run it.</p>
+      <p data-t="sub">A drill is a short run of videos you already know, played back to back — your own practice rather than a session someone built for you.</p>
+      <ol class="steps">
+        <li><b data-t="st1b">Create a drill</b><span data-t="st1">Pick Train and Drill videos you have finished and put them in the order you want.</span></li>
+        <li><b data-t="st2b">Name and save it</b><span data-t="st2">It joins your drills, with its total running time.</span></li>
+        <li><b data-t="st3b">Drop it on a day</b><span data-t="st3">Drop it twice to run it twice. Then play the day straight through.</span></li>
+      </ol>
     </div>
     <button class="pill primary" id="openNew" data-t="newBtn">+ Create a drill</button>
   </section>
@@ -164,7 +179,9 @@
     </section>
 
     <section class="panel">
-      <div class="phead"><h2 data-t="weekT">Your week</h2><span class="note" id="weekNote"></span></div>
+      <div class="phead"><h2 data-t="weekT">Your week</h2>
+        <span class="wtools"><span class="note" id="weekNote"></span>
+          <button class="pill ghost onpaper sm" id="saveWeek" data-t="saveWeek">Save week</button></span></div>
       <div class="week" id="week"></div>
     </section>
   </div>
@@ -208,8 +225,12 @@ import { SESSIONS, UNITS, PRACTISED, DRILLABLE, CHAINS, WEEK } from './assets/pr
 const C = {
   en:{
     kicker:'Build your own practice', h1:'MY DRILLS',
-    sub:'Chain videos you have already trained into one drill, then drop it on the days you want to run it.',
+    sub:'A drill is a short run of videos you already know, played back to back — your own practice rather than a session someone built for you.',
     newBtn:'+ Create a drill', yours:'Your drills', weekT:'Your week',
+    saveWeek:'Save week', savedWeek:'Saved ✓', playDay:'Play day',
+    st1b:'Create a drill', st1:'Pick Train and Drill videos you have finished and put them in the order you want.',
+    st2b:'Name and save it', st2:'It joins your drills, with its total running time.',
+    st3b:'Drop it on a day', st3:'Drop it twice to run it twice. Then play the day straight through.',
     mTitle:'Create a drill', mSub:'Drag videos across in the order you want to run them. The same video can go in more than once.',
     fAll:'All', fTrain:'Train', fDrill:'Drill',
     secOpen:'Trained — ready to use', secLocked:'Not trained yet',
@@ -226,8 +247,12 @@ const C = {
   },
   ko:{
     kicker:'나만의 연습 만들기', h1:'나의 드릴',
-    sub:'이미 훈련한 영상을 하나의 드릴로 엮고, 실행할 요일에 놓으세요.',
+    sub:'드릴은 이미 아는 영상을 이어서 실행하는 짧은 흐름입니다. 남이 짜준 세션이 아니라 나만의 연습입니다.',
     newBtn:'+ 드릴 만들기', yours:'나의 드릴', weekT:'주간 계획',
+    saveWeek:'주간 저장', savedWeek:'저장됨 ✓', playDay:'이 날 실행',
+    st1b:'드릴 만들기', st1:'완료한 훈련·드릴 영상을 원하는 순서로 고릅니다.',
+    st2b:'이름 짓고 저장', st2:'총 실행 시간과 함께 나의 드릴에 추가됩니다.',
+    st3b:'요일에 놓기', st3:'두 번 놓으면 두 번 실행합니다. 그다음 그 날을 통째로 재생하세요.',
     mTitle:'드릴 만들기', mSub:'실행할 순서대로 영상을 끌어다 놓으세요. 같은 영상을 여러 번 넣어도 됩니다.',
     fAll:'전체', fTrain:'훈련', fDrill:'드릴',
     secOpen:'훈련 완료 — 사용 가능', secLocked:'아직 훈련하지 않음',
@@ -258,6 +283,22 @@ for (let s = 1; s <= 9 && locked.length < 4; s++)
   for (const v of DRILLABLE) if (!openSet.has(`${s}-${v}`) && locked.length < 4) locked.push([s, v]);
 
 let drills = [], week = [], picked = [], fresh = -1, tag = 'all', dict, lang;
+
+const addVideo = spec => { const [s, v] = spec.split('-').map(Number); picked.push([s, v]); render(); };
+
+/* The drill panel is static markup, so it is wired once. Wiring it inside
+   render() attached a fresh drop listener on every repaint, which is why one
+   drop used to add the video several times over. */
+{
+  const made = document.querySelector('.made');
+  made.addEventListener('dragover', e => { e.preventDefault(); made.classList.add('over'); });
+  made.addEventListener('dragleave', e => { if (!made.contains(e.relatedTarget)) made.classList.remove('over'); });
+  made.addEventListener('drop', e => {
+    e.preventDefault(); made.classList.remove('over');
+    const spec = e.dataTransfer.getData('text/plain');
+    if (/^\d+-\d+$/.test(spec)) addVideo(spec);
+  });
+}
 
 function render(){
   const c = dict, S = SESSIONS[lang], U = UNITS[lang];
@@ -290,8 +331,12 @@ function render(){
         ${face(d)}
       </div>`;
     }).join('');
+    const first = here[0] && drills[here[0].drill][1][0];
+    const play = here.length
+      ? `<a class="playday" href="session.html?s=${first[0]}#v${first[1]}"><span>${PLAY}</span>${esc(c.playDay)}</a>`
+      : '';
     return `<div class="day ${here.length ? 'has' : ''}" data-day="${di}">
-      <span class="dl">${esc(c.dayShort[di])}</span>
+      <span class="dl">${esc(c.dayShort[di])}${play}</span>
       <div class="zone ${here.length ? '' : 'empty'}">${chips || esc(c.dropHere)}</div>
     </div>`;
   }).join('');
@@ -336,7 +381,6 @@ function wire(){
   document.querySelectorAll('[data-tag]').forEach(b => b.addEventListener('click', () => { tag = b.dataset.tag; render(); }));
 
   /* A video can go in as many times as you like, so this always appends. */
-  const addVideo = spec => { const [s, v] = spec.split('-').map(Number); picked.push([s, v]); render(); };
   document.querySelectorAll('[data-pick]').forEach(card => {
     card.addEventListener('dragstart', e => {
       card.classList.add('dragging');
@@ -349,14 +393,6 @@ function wire(){
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); addVideo(card.dataset.pick); } });
   });
 
-  const made = document.querySelector('.made');
-  made.addEventListener('dragover', e => { e.preventDefault(); made.classList.add('over'); });
-  made.addEventListener('dragleave', e => { if (!made.contains(e.relatedTarget)) made.classList.remove('over'); });
-  made.addEventListener('drop', e => {
-    e.preventDefault(); made.classList.remove('over');
-    const spec = e.dataTransfer.getData('text/plain');
-    if (/^\d+-\d+$/.test(spec)) addVideo(spec);
-  });
   document.querySelectorAll('[data-drop]').forEach(b => b.addEventListener('click', () => {
     picked.splice(+b.dataset.drop, 1); render();
   }));
@@ -417,12 +453,20 @@ document.getElementById('save').addEventListener('click', () => {
 initLang(C, (c, l) => {
   dict = c; lang = l;
   drills = CHAINS[l].map(x => [x[0], x[1].slice()]);
-  /* one entry per run: Monday twice, Wednesday once, Friday once */
-  week = WEEK.flatMap(([day, times], i) =>
-    Array.from({ length: times }, () => ({ day, drill: i === 1 ? 1 : 0 })));
+  week = WEEK.map(w => ({ ...w }));
   render();
   if (location.hash === '#new' && veil.hidden) openModal();
 }, 'drills');
+
+/* Saving the week is a mockup: it only confirms. */
+{
+  const btn = document.getElementById('saveWeek');
+  btn.addEventListener('click', () => {
+    btn.textContent = dict.savedWeek;
+    btn.classList.add('primary'); btn.classList.remove('ghost', 'onpaper');
+    setTimeout(() => { btn.textContent = dict.saveWeek; btn.classList.remove('primary'); btn.classList.add('ghost', 'onpaper'); }, 1800);
+  });
+}
 
 document.getElementById('signout').addEventListener('click', signOut);
 </script>
