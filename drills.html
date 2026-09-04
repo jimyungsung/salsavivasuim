@@ -41,26 +41,27 @@
   .phead h2{margin:0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
   .phead .note{font-size:11px;font-weight:700;color:#9aa09b;font-variant-numeric:tabular-nums}
 
-  /* ---- a drill tile, shaped like the video cards in the dialog ---- */
-  .tile{display:block;width:100%;border-radius:15px;background:var(--ink);color:#fff;padding:10px;text-align:left}
-  .tile .thumb{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 8px,#1c241f 8px 16px);display:grid;place-items:center}
-  .tile .thumb .g{width:30px;height:30px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;color:#fff}
-  .tile .thumb .g svg{width:12px;height:12px}
-  .tile .dur{position:absolute;right:6px;bottom:6px;background:#0b0f0ee0;font-size:9.5px;font-weight:700;padding:3px 6px;border-radius:5px;font-variant-numeric:tabular-nums}
-  .tile .nm{display:block;margin-top:10px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+  /* ---- a drill tile: one small card per video it holds ---- */
+  .tile{position:relative;display:block;width:100%;border-radius:15px;background:var(--ink);color:#fff;padding:11px;text-align:left}
+  .tile .vids{display:flex;gap:6px}
+  .tile .v{flex:1;min-width:0}
+  .tile .vt{position:relative;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 7px,#1c241f 7px 14px);display:grid;place-items:center}
+  .tile .vt b{width:20px;height:20px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;color:#fff}
+  .tile .vt b svg{width:8px;height:8px}
+  .tile .vl{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:8.5px;font-weight:800;letter-spacing:.06em}
+  .tile .vl span:first-child{color:var(--lime);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .vl span:last-child{color:#ffffff70;font-variant-numeric:tabular-nums}
+  .tile .v.rest{display:grid;place-items:center;border:1px dashed #ffffff2e;border-radius:9px;font-size:10px;font-weight:800;color:#ffffff70;min-height:38px}
+  .tile .nm{display:block;margin-top:11px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
   .tile .mt{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
-  .tile .md{display:block;margin-top:9px;padding-top:8px;border-top:1px solid #ffffff1f}
-  .tile .md i{display:flex;justify-content:space-between;gap:8px;font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:#ffffff70;padding:2px 0}
-  .tile .md i span:last-child{color:#ffffff54;font-variant-numeric:tabular-nums}
 
   /* ---- your drills ---- */
   .drills{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
   .drill{cursor:grab}
   .drill:active{cursor:grabbing}
   .drill.dragging{opacity:.4}
-  .drill .grip{position:absolute;right:6px;top:6px;display:grid;grid-template-columns:repeat(2,3px);gap:3px;opacity:.5}
+  .drill .grip{position:absolute;right:8px;bottom:10px;display:grid;grid-template-columns:repeat(2,3px);gap:3px;opacity:.45}
   .drill .grip i{width:3px;height:3px;border-radius:1px;background:#fff}
-  .drill .thumb{position:relative}
   .drill.fresh{animation:pop .5s ease}
   @keyframes pop{from{transform:scale(.94)}to{transform:none}}
   .none{grid-column:1/-1;padding:30px 20px;text-align:center;color:#9aa09b;font-size:13.5px;line-height:1.6}
@@ -75,7 +76,7 @@
   .playday:hover{border-color:var(--ink);background:var(--lime)}
   .playday span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime)}
   .playday span svg{width:9px;height:9px}
-  .zone{min-height:224px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
+  .zone{min-height:168px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
   /* an empty day needs a target, not a canvas */
   .zone.empty{min-height:92px;align-items:center;justify-content:center;gap:9px;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .zone.empty .plus{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px dashed var(--line);font-size:15px;line-height:1}
@@ -332,16 +333,15 @@ function render(){
 
   /* ---- your drills ---- */
   document.getElementById('drillNote').textContent = c.nDrills(drills.length);
-  const face = (d, extra = '') => `<span class="thumb">
-      <span class="g">${PLAY}</span>
-      <span class="dur">${esc(lenOf(d[1]))}</span>
-      ${extra}
-    </span>
+  const face = (d, extra = '') => `<span class="vids">${
+      d[1].slice(0, 3).map(([, v]) => `<span class="v">
+        <span class="vt"><b>${PLAY}</b></span>
+        <span class="vl"><span>${esc(U[v - 1][0])}</span><span>${esc(U[v - 1][1])}</span></span>
+      </span>`).join('')}${
+      d[1].length > 3 ? `<span class="v rest">+${d[1].length - 3}</span>` : ''}</span>
+    ${extra}
     <span class="nm">${esc(d[0])}</span>
-    <span class="mt">${esc(c.vids(d[1].length))}</span>
-    <span class="md">${d[1].slice(0, 3).map(([, v]) =>
-        `<i><span>${esc(U[v - 1][0])}</span><span>${esc(U[v - 1][1])}</span></i>`).join('')}${
-        d[1].length > 3 ? `<i><span>${esc(c.more(d[1].length - 3))}</span><span></span></i>` : ''}</span>`;
+    <span class="mt">${esc(c.vids(d[1].length))} · ${esc(lenOf(d[1]))}</span>`;
 
   document.getElementById('drills').innerHTML = drills.length ? drills.map((d, i) =>
     `<div class="tile drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
