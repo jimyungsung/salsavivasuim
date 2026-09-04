@@ -43,16 +43,15 @@
 
   /* ---- a drill tile: one small card per video it holds ---- */
   .tile{position:relative;display:block;width:100%;border-radius:15px;background:var(--ink);color:#fff;padding:11px;text-align:left}
-  .tile .vids{display:flex;gap:9px}
-  /* each video is its own card, not a pane of one picture */
-  .tile .v{flex:1;min-width:0;background:#ffffff14;border:1px solid #ffffff1f;border-radius:11px;padding:6px}
-  .tile .vt{position:relative;aspect-ratio:16/9;border-radius:7px;overflow:hidden;background:repeating-linear-gradient(135deg,#0f1512 0 7px,#141a17 7px 14px);display:grid;place-items:center}
+  .tile .vids{display:flex;gap:6px}
+  .tile .v{flex:1;min-width:0}
+  .tile .vt{position:relative;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 7px,#1c241f 7px 14px);display:grid;place-items:center}
   .tile .vt b{width:20px;height:20px;border-radius:50%;background:#ffffff1f;display:grid;place-items:center;color:#fff}
   .tile .vt b svg{width:8px;height:8px}
-  .tile .vl{display:block;margin-top:6px;font-size:8.5px;font-weight:800;letter-spacing:.06em;text-align:center}
-  .tile .vl span:first-child{display:block;color:var(--lime);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tile .vl span:last-child{display:block;margin-top:2px;color:#ffffff70;font-variant-numeric:tabular-nums}
-  .tile .v.rest{display:grid;place-items:center;background:transparent;border-style:dashed;font-size:10px;font-weight:800;color:#ffffff70;min-height:52px}
+  .tile .vl{display:flex;justify-content:space-between;gap:4px;margin-top:5px;font-size:8.5px;font-weight:800;letter-spacing:.06em}
+  .tile .vl span:first-child{color:var(--lime);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .vl span:last-child{color:#ffffff70;font-variant-numeric:tabular-nums}
+  .tile .v.rest{display:grid;place-items:center;border:1px dashed #ffffff2e;border-radius:9px;font-size:10px;font-weight:800;color:#ffffff70;min-height:38px}
   .tile .nm{display:block;margin-top:11px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
   .tile .mt{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
 
