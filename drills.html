@@ -49,7 +49,9 @@
   .tile .dur{position:absolute;right:6px;bottom:6px;background:#0b0f0ee0;font-size:9.5px;font-weight:700;padding:3px 6px;border-radius:5px;font-variant-numeric:tabular-nums}
   .tile .nm{display:block;margin-top:10px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
   .tile .mt{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
-  .tile .md{display:block;margin-top:3px;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:#ffffff70;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .md{display:block;margin-top:9px;padding-top:8px;border-top:1px solid #ffffff1f}
+  .tile .md i{display:flex;justify-content:space-between;gap:8px;font-style:normal;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:#ffffff70;padding:2px 0}
+  .tile .md i span:last-child{color:#ffffff54;font-variant-numeric:tabular-nums}
 
   /* ---- your drills ---- */
   .drills{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -73,7 +75,7 @@
   .playday:hover{border-color:var(--ink);background:var(--lime)}
   .playday span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime)}
   .playday span svg{width:9px;height:9px}
-  .zone{min-height:200px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
+  .zone{min-height:224px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
   /* an empty day needs a target, not a canvas */
   .zone.empty{min-height:92px;align-items:center;justify-content:center;gap:9px;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .zone.empty .plus{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px dashed var(--line);font-size:15px;line-height:1}
@@ -247,7 +249,7 @@ const C = {
     kicker:'Build your own practice', h1:'MY DRILLS',
     sub:'A drill is a short run of videos you already know, played back to back — your own practice rather than a session someone built for you.',
     newBtn:'+ Create a drill', yours:'Your drills', weekT:'Your week',
-    saveWeek:'Save week', savedWeek:'Saved ✓', playDay:'Play day',
+    more:n => `+${n} more`, saveWeek:'Save week', savedWeek:'Saved ✓', playDay:'Play day',
     sumT:'This week', daysDone:'days done', plannedL:'planned', todayWord:'Today',
     streakN:n => n === 1 ? '1 day streak' : `${n} day streak`,
     st1b:'Pick videos',
@@ -271,7 +273,7 @@ const C = {
     kicker:'나만의 연습 만들기', h1:'나의 드릴',
     sub:'드릴은 이미 아는 영상을 이어서 실행하는 짧은 흐름입니다. 남이 짜준 세션이 아니라 나만의 연습입니다.',
     newBtn:'+ 드릴 만들기', yours:'나의 드릴', weekT:'주간 계획',
-    saveWeek:'주간 저장', savedWeek:'저장됨 ✓', playDay:'이 날 실행',
+    more:n => `+${n}개 더`, saveWeek:'주간 저장', savedWeek:'저장됨 ✓', playDay:'이 날 실행',
     sumT:'이번 주', daysDone:'일 완료', plannedL:'예정 시간', todayWord:'오늘',
     streakN:n => `${n}일 연속`,
     st1b:'영상 고르기',
@@ -337,7 +339,9 @@ function render(){
     </span>
     <span class="nm">${esc(d[0])}</span>
     <span class="mt">${esc(c.vids(d[1].length))}</span>
-    <span class="md">${esc(d[1].slice(0, 3).map(([, v]) => U[v - 1][0]).join(' · '))}${d[1].length > 3 ? ' …' : ''}</span>`;
+    <span class="md">${d[1].slice(0, 3).map(([, v]) =>
+        `<i><span>${esc(U[v - 1][0])}</span><span>${esc(U[v - 1][1])}</span></i>`).join('')}${
+        d[1].length > 3 ? `<i><span>${esc(c.more(d[1].length - 3))}</span><span></span></i>` : ''}</span>`;
 
   document.getElementById('drills').innerHTML = drills.length ? drills.map((d, i) =>
     `<div class="tile drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
