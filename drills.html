@@ -49,6 +49,7 @@
   .tile .dur{position:absolute;right:6px;bottom:6px;background:#0b0f0ee0;font-size:9.5px;font-weight:700;padding:3px 6px;border-radius:5px;font-variant-numeric:tabular-nums}
   .tile .nm{display:block;margin-top:10px;font-size:14px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
   .tile .mt{display:block;margin-top:4px;font-size:10.5px;font-weight:700;color:var(--lime);font-variant-numeric:tabular-nums}
+  .tile .md{display:block;margin-top:3px;font-size:9.5px;font-weight:700;letter-spacing:.05em;color:#ffffff70;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
   /* ---- your drills ---- */
   .drills{padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
@@ -72,7 +73,7 @@
   .playday:hover{border-color:var(--ink);background:var(--lime)}
   .playday span{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--lime)}
   .playday span svg{width:9px;height:9px}
-  .zone{min-height:186px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
+  .zone{min-height:200px;border:1px dashed var(--line);border-radius:16px;padding:14px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;transition:.16s}
   /* an empty day needs a target, not a canvas */
   .zone.empty{min-height:92px;align-items:center;justify-content:center;gap:9px;color:#b3b8b3;font-size:12.5px;font-weight:700}
   .zone.empty .plus{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px dashed var(--line);font-size:15px;line-height:1}
@@ -335,7 +336,8 @@ function render(){
       ${extra}
     </span>
     <span class="nm">${esc(d[0])}</span>
-    <span class="mt">${esc(d[1].slice(0, 3).map(([, v]) => U[v - 1][0]).join(' → '))}${d[1].length > 3 ? ' →' : ''}</span>`;
+    <span class="mt">${esc(c.vids(d[1].length))}</span>
+    <span class="md">${esc(d[1].slice(0, 3).map(([, v]) => U[v - 1][0]).join(' · '))}${d[1].length > 3 ? ' …' : ''}</span>`;
 
   document.getElementById('drills').innerHTML = drills.length ? drills.map((d, i) =>
     `<div class="tile drill ${i === fresh ? 'fresh' : ''}" draggable="true" data-drill="${i}">
