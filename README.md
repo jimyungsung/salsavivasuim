@@ -1,150 +1,158 @@
-# Salsa viva — SUIM landing page
+# SUIM
 
-Landing page for **SUIM**, a practice-first solo salsa training platform.
-Built from `Suim_Concept_and_Content_Playbook.docx` and `Suim_Concept_and_PRD.docx`.
+Solo salsa training, built around practice.
+
+The plan for what gets built next, in what order, is **[docs/BUILD-PLAN.md](docs/BUILD-PLAN.md)**.
+Working notes for anyone (or anything) editing this repo are in [CLAUDE.md](CLAUDE.md).
+
+## Where the project is
+
+**Phase 0 is done and Phase 1 is under way.** The repo is a Next.js app, the
+schema is written and validated, and sign-up and sign-in are built. The catalogue
+is the one screen ported; the rest of the prototype still serves, unchanged, from
+`public/prototype/`.
+
+    app/masterplan          the catalogue — ported
+    app/(auth)              register and sign in — built, not yet connected
+    supabase/migrations     the schema, RLS and the entitlement function
+    public/prototype/       everything else — still the original static files
+
+The Supabase project has not been created yet, so nothing has run against a real
+database: the auth screens render and say so. Nothing plays either — every video
+is a placeholder until Phase 3.
+
+## Run it
+
+```bash
+npm install
+npm run dev
+```
+
+<http://localhost:4478> — `/` hands off to the prototype landing page, and
+`/masterplan` is the ported screen. `npm run typecheck` and `npm run build`
+before you commit. The Claude Code preview pane starts the same server:
+`.claude/launch.json` defines a `suim` configuration on the same port.
 
 ## The flow
 
-    index.html → register.html → masterplan.html → plan.html → session.html
-    landing      create account  the masterplan    the module   the session
-                                                        ↘ program.html
-                                                          module explainer
+    index → register → masterplan → plan → session
+    landing  account    catalogue    module  the session
+                                        ↘ program
+                                          module explainer
 
-- `index.html` — the public landing page. Every CTA goes to `register.html`.
-- `register.html` — account plus the two onboarding questions.
-- `masterplan.html` — **what you see right after registering.** The catalogue:
-  a quiet left rail of the seven training areas, and an editorial grid of the
-  programs inside the selected one. Built to stay readable as the catalogue
-  grows — the rail scrolls, the grid is `auto-fill`, and a status filter and
-  "All programs" view keep 37 programs (and more) navigable. Area and filter
-  live in the URL, so a view can be linked to.
-- `masterplan-v1.html` — the previous tabbed version, kept for comparison. It is
-  not linked from anywhere; reach it by URL.
-- `plan.html` — one module (Improvisation 01) as a grid of sessions tagged by
-  level, with a level filter. Header is deliberately spare and mirrors the
-  masterplan's: crumb and resume line, then kicker, title, one paragraph and a
-  derived stat. Nothing states a session count, so the module can grow or
-  shrink without the copy going stale.
-- `session.html?s=1…9` — one session: the player, the six-step bar and the six
-  videos. Playback controls are icons overlaid on the video itself, not a row of
-  chips beneath it.
-- `training.html` — **My training**, the personal view and the only screen under
-  that nav item. A dashboard: four stat tiles (module complete with a ring,
-  practice time, streak, sessions this week), where you left off, what you have
-  saved, the drills waiting in your week (each day startable from there), and a
-  feed of recently practised videos.
-- `drills.html` — **My drills**, a layout mockup of a feature that does not
-  exist yet. The main screen is your saved drills beside a Monday-to-Sunday
-  column of drop zones. **Create a drill** opens a dialog at `#new`: video
-  previews you have trained, the ones still locked in the masterplan below them,
-  and the drill you are assembling with a running total. Save names it, closes
-  the dialog, and the drill lands in the list ready to drag onto a day.
-- `program.html` — the module *explainer* (promise, method, full plan, coach).
-  Reads like a sales page, so it sits off to the side: linked from the plan as
-  "About this module", and a candidate to fold into the landing page later.
-
-## Navigation
-
-Every signed-in screen renders the same bar from `renderNav()` in
-`assets/app.js` — **Masterplan · My training**, logo to the masterplan, language
-switch and member chip — so it cannot drift. The bar only lists screens that
-exist; there are no placeholder items pointing at `#`.
-
-The items are sections, not pages. **Masterplan** stays current for everything
-beneath it — the catalogue, a module, a session, a module explainer — because
-drilling in never leaves that section. **My training** is your own practice, and
-**My drills** is where you assemble your own. `program.html`
-is self-contained and carries a hand-matched copy of the same markup.
-
-Screens below the top level show one back link (`.crumb`) naming the screen
-above them: the module page goes back to *Masterplan*, a session and the module
-explainer go back to *Improvisation 01*, and register goes back to *suim.com*.
-`index.html` keeps its own logged-out marketing nav.
+- **index** — the public landing page. Every CTA goes to register. One
+  self-contained file — inline CSS and JS, photos as base64 — so it can be shared
+  on its own. It is ported last, not first, to keep that property as long as
+  possible.
+- **register** (`/register`) — account plus the three onboarding questions, which
+  travel as sign-up metadata and land in `profiles`. `/signin` is the same screen
+  without the questions, and it will not create an account, so a mistyped address
+  cannot become a second empty one.
+- **masterplan** (`/masterplan`) — **what you see right after registering.** A
+  quiet left rail of the seven training areas, and an editorial grid of the
+  programs inside the selected one. Built to stay readable as the catalogue grows:
+  the rail scrolls, the grid is `auto-fill`, and a status filter plus an
+  "All programs" view keep 37 programs navigable. Area and filter live in the URL,
+  so a view can be linked to.
+- **plan** — one module (Improvisation 01) as a grid of sessions tagged by level,
+  with a level filter.
+- **session** (`?s=1…9`) — one session: the player, the step bar and the session's
+  videos. Playback controls are icons overlaid on the video itself. Still the
+  prototype, and it still assumes six videos — the real one is Phase 3.
+- **training** — **My training**, the personal view: four stat tiles, where you
+  left off, what you saved, the drills waiting in your week, and a feed of
+  recently practised videos.
+- **drills** — **My drills**, a layout mockup of a feature that does not exist
+  yet. Your saved drills beside a Monday-to-Sunday column of drop zones.
+- **program** — the module *explainer* (promise, method, full plan, coach). Reads
+  like a sales page, so it sits off to the side.
+- **masterplan-v1** — the previous tabbed catalogue, kept for comparison. Not
+  linked from anywhere.
 
 ## Vocabulary
 
 **Area** (Improvisation) → **program / module** (Improvisation 01) → **session**
-(nine of them, 15–22 min each) → **video** (six per session, one per step).
+(nine of them, 15–22 min each) → **video**.
 
-## Levels
-
-Sessions carry one or more of **All level · Beginner · Intermediate · Advanced ·
-Pro**, and the scale is deliberately not a ladder: session 05 is All level +
-Beginner while session 04 before it is All level + Intermediate. A level
-describes the material, not the dancer, so a session can sit in two at once.
-Tags live in `SESSION_LEVELS` in `assets/program-data.js`. Modules carry a single
-level on the same scale.
-
-The method is six steps, and every session is those six steps in order:
+The method is six steps, and they run in this order:
 
     WATCH → UNDERSTAND → TRAIN → DRILL → TRANSFORM → IMPROVISE
 
+A session is an **ordered list of videos**, each tagged with one of those steps —
+not six videos, one per step. A session may skip a step entirely or use one
+several times: session 06 has two TRAIN videos, session 09 has no UNDERSTAND and
+two IMPROVISE. The steps describe what a video is for, not how many there are.
+
+Sessions carry one or more of **All level · Beginner · Intermediate · Advanced ·
+Pro**, and the scale is deliberately not a ladder: session 05 is All level +
+Beginner while session 04 before it is All level + Intermediate. A level describes
+the material, not the dancer, so a session can sit in two at once.
+
+## Navigation
+
+Every signed-in screen renders the same bar from `components/AppNav.tsx` —
+**Masterplan · My training · My drills**, logo to the masterplan, language switch
+and member chip — so it cannot drift. The bar only lists screens that exist; there
+are no placeholder items pointing at `#`.
+
+The items are sections, not pages. **Masterplan** stays current for everything
+beneath it — the catalogue, a module, a session, a module explainer — because
+drilling in never leaves that section. Screens below the top level show one back
+link (`.crumb`) naming the screen above them.
+
 ## Contents
 
-`index.html` and `program.html` are single self-contained files — inline CSS,
-inline JS, photos as base64 — so either can be shared on its own. The app pages
-(`register`, `plan`, `session`) share `assets/`:
+    app/                  the Next.js app (App Router)
+      globals.css         the design system — the canonical copy
+      masterplan/         the catalogue
+    components/AppNav.tsx the signed-in nav
+    lib/content.ts        the catalogue as typed data, every string { en, ko }
+    lib/lang.tsx          the EN/KO switch
+    lib/supabase/         browser, server and middleware clients
+    app/(auth)/           register and sign in
+    supabase/migrations/  the schema, RLS and the entitlement function
+    docs/BUILD-PLAN.md    the plan
+    public/prototype/     the original static prototype
 
-- `assets/app.css` — the design system
-- `assets/app.js` — language switch, link helpers, player toggles
-- `assets/program-data.js` — the seven sections and their modules, the nine
-  sessions, the three weeks and the six method steps
+`lib/content.ts` is the seam: its text fields already have the shape of the
+`jsonb` columns in the Phase 1 schema, so replacing it with Supabase queries does
+not change the components above it.
 
-If the design changes, the self-contained pages need the same change applied by
-hand. Fonts (Archivo + Noto Sans KR) load from Google Fonts.
-
-## Deploying
-
-Static files, no build step. GitHub Pages serves the repository root as-is:
-Settings → Pages → deploy from `main` / root. `404.html` is picked up
-automatically and `.nojekyll` keeps Pages from reprocessing the folder.
-
-## Run it locally
-
-```bash
-python3 -m http.server 4478
-```
-
-Then open <http://localhost:4478/> and click through. The app pages use ES
-modules, so they need the server — opening them as `file://` will not work.
-
-The Claude Code preview pane can also start it: `.claude/launch.json` defines a
-`suim-landing` configuration on the same port.
+The prototype's own `assets/app.css` is a frozen copy that serves the un-ported
+screens — edit `app/globals.css` instead. The two self-contained pages (index,
+program) carry their own inlined copy by design and are matched by hand.
 
 ## Notes
 
-- **Languages:** EN / KO toggle in the nav. The choice persists in
-  `localStorage`; `?lang=ko` forces Korean on load.
+- **Languages:** EN / KO toggle in the nav. The choice is kept in a cookie so the
+  server can set `<html lang>` before the first paint, with `localStorage` and
+  `?lang=ko` still honoured. In Phase 1 the cookie is seeded from `profiles.locale`.
 - **Nothing plays.** Every video is a hatched placeholder. The overlay controls
-  (play, speed, loop, mirror, counts, captions, full screen) only change their
-  own state, though mirror does really flip the frame and speed cycles through
-  0.5× / 0.75× / 1× / 1.25×.
-- **No accounts.** The register form submits nothing. It does set a
-  `suim-member` flag in `localStorage` so the flow stays continuous — the
-  landing page then says "Continue training" instead of "Start the 7-day
-  reset". "Sign out" in the app footer clears it.
+  (play, speed, loop, mirror, counts, captions, full screen) only change their own
+  state, though mirror does really flip the frame and speed cycles through
+  0.5× / 0.75× / 1× / 1.25×. The real thing is specified in the build plan §5.
+- **Accounts are built but not connected.** Sign-up, sign-in, the callback and
+  sign-out are all written; they need a Supabase project and the two
+  `NEXT_PUBLIC_SUPABASE_*` values in `.env.local`. Until then the screens render
+  and say plainly that accounts are not switched on.
 - **My drills is a mockup.** The path works — open the dialog, filter by type,
-  drag videos into the drill with the total updating, save under a name, drag
-  the drill onto a day, drop it again to repeat it — but nothing persists;
-  reload and it resets. Only `DRILLABLE` steps (Train, Drill) can go in a drill.
-  Its library reads `PRACTISED`, deliberately richer than `STATE` so there is
-  something to build from; everything else is shown locked.
-- **Dragging needs a mouse.** HTML5 drag and drop does not fire on touch, so
-  tapping a video adds it to the drill as a fallback. A real build would use
-  pointer events.
-- **Progress is hard-coded** in `assets/program-data.js` (`STATE`) to someone who
-  just subscribed: session 1 in progress, 2 of its 6 videos done. `RECENT` and
-  `SAVED` alongside it drive the dashboard's activity feed and saved list.
-  Change them to see the pages in a different position.
-- **Every session shares one video stack.** The six steps are the same in every
-  session, so the videos list is generated per step rather than authored nine
-  times over.
+  drag videos into the drill with the total updating, save under a name, drag the
+  drill onto a day — but nothing persists. Dragging also needs a mouse: HTML5 drag
+  and drop does not fire on touch, so tapping a video adds it as a fallback.
+- **Progress is hard-coded** in `lib/content.ts` (`STATE`) to someone who just
+  subscribed: session 1 in progress, 2 of its videos done. `RECENT`, `SAVED` and
+  `PRACTISED` alongside it drive the dashboard. Change them to see the pages in a
+  different position.
 - **Only Improvisation 01 is built out**, and it is the only card on the
   masterplan that navigates. The other 36 programs give the catalogue realistic
-  depth but are not links, because they would all land on Stop Freezing.
-  The arrow on a card is the signal that it goes somewhere.
+  depth but are not links, because they would all land on the same module.
 - **Guest programs are not named after real people.** They are labelled by
-  discipline (Body Percussion, Cuban Son Roots) rather than by an invented
-  guest artist.
-- **Pricing** ($16 monthly, $140 annual) is the indicative test range from the
-  PRD, not confirmed pricing.
+  discipline (Body Percussion, Cuban Son Roots) rather than by an invented guest.
+- **Pricing** ($16 monthly, $140 annual) on the landing page is the indicative test
+  range from the PRD, not confirmed pricing.
+
+## Deploying
+
+Vercel, from `main`. The old GitHub Pages setup served the repository root as
+static files; that stops working once this branch lands, because the HTML moved
+under `public/prototype/`.

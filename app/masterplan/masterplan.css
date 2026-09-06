@@ -1,0 +1,123 @@
+/* The masterplan — the catalogue.
+
+   Ported from the prototype's masterplan.html <style> block. Every rule is
+   scoped under .mp so page styles cannot leak into the screens ported after it;
+   the prototype's `.ghost` numeral is renamed `.numeral` because app.css already
+   uses `.ghost` for the outline button. */
+
+.mp{display:flex;flex-direction:column;min-height:100vh}
+.mp .page{flex:1;padding-top:78px;display:grid;grid-template-columns:266px 1fr;align-items:start}
+
+/* ---- areas rail ---- */
+.mp .rail{position:sticky;top:78px;height:calc(100vh - 78px);overflow-y:auto;background:#fff;border-right:1px solid var(--line);padding:30px 20px 26px;display:flex;flex-direction:column}
+.mp .rail-label{font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:#8a908b;margin:0 0 14px}
+.mp .areas{display:flex;flex-direction:column;gap:2px}
+.mp .area{display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;cursor:pointer;
+      padding:12px 12px;border:0;border-radius:12px;background:none;color:#6e746f;transition:background .16s,color .16s}
+.mp .area:hover{background:#f1f2ec;color:var(--ink)}
+.mp .area .n{font-size:9.5px;font-weight:800;letter-spacing:.1em;color:#adb2ae;font-variant-numeric:tabular-nums}
+.mp .area .nm{font-size:13.5px;font-weight:700;line-height:1.25}
+.mp .area .ct{font-size:10px;font-weight:800;color:#a5aaa6;font-variant-numeric:tabular-nums}
+.mp .area[aria-current="true"]{background:var(--ink);color:#fff}
+.mp .area[aria-current="true"] .n,.mp .area[aria-current="true"] .ct{color:var(--lime)}
+.mp .area.all{margin-bottom:8px;border-bottom:1px solid var(--line);border-radius:12px 12px 0 0;padding-bottom:16px}
+.mp .area.all[aria-current="true"]{border-bottom-color:var(--ink)}
+.mp .rail-foot{margin-top:auto;padding-top:26px;font-size:11px;color:#8a908b;line-height:1.6}
+.mp .rail-foot b{display:block;color:var(--ink);font-size:13px}
+
+/* ---- main ---- */
+.mp .main{padding:22px 40px 70px;min-width:0}
+.mp .resume{display:flex;justify-content:flex-end}
+.mp .resume a{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding-bottom:5px;border-bottom:2px solid var(--lime);color:var(--ink)}
+.mp .resume a:hover{border-bottom-color:var(--ink)}
+.mp .resume .dim{color:#8a908b;font-weight:700}
+
+.mp .hero{padding:52px 0 40px;display:flex;justify-content:space-between;align-items:flex-end;gap:40px;border-bottom:1px solid var(--line)}
+.mp .hero .kicker{color:#708000}
+.mp .hero h1{font-size:clamp(46px,6.6vw,104px);line-height:.84;letter-spacing:-.06em;font-weight:900;margin:18px 0 20px;max-width:11ch}
+.mp .hero p{margin:0;max-width:54ch;font-size:16.5px;line-height:1.6;color:var(--muted)}
+.mp .hero-side{text-align:right;white-space:nowrap}
+.mp .hero-side strong{display:block;font-size:30px;letter-spacing:-.045em;line-height:1}
+.mp .hero-side span{font-size:10px;font-weight:700;letter-spacing:.08em;color:#8b918c}
+
+.mp .bar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:30px 0 18px}
+.mp .bar h2{margin:0;font-size:19px;letter-spacing:-.035em;font-weight:900}
+.mp .bar .sub{margin:5px 0 0;font-size:11px;color:#8a908b}
+.mp .filters{display:flex;gap:6px;flex-wrap:wrap}
+.mp .f{border:1px solid var(--line);background:#fff;border-radius:24px;padding:8px 14px;font-size:11.5px;font-weight:800;letter-spacing:.03em;color:#6e746f;cursor:pointer;transition:.16s}
+.mp .f:hover{border-color:var(--ink);color:var(--ink)}
+.mp .f[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.mp .f i{font-style:normal;opacity:.65;margin-left:6px;font-variant-numeric:tabular-nums}
+
+/* ---- program cards ---- */
+.mp .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(292px,1fr));gap:14px}
+.mp .card{position:relative;display:flex;flex-direction:column;min-height:262px;padding:22px;border:1px solid var(--line);border-radius:18px;background:#fafbf6;color:inherit;overflow:hidden;transition:transform .22s,border-color .22s}
+.mp a.card:hover{transform:translateY(-5px);border-color:var(--ink)}
+.mp .card .no{position:relative;z-index:2;font-size:10px;font-weight:800;color:#9aa09b;font-variant-numeric:tabular-nums}
+.mp .card .status{position:absolute;right:18px;top:18px;z-index:2;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#8a908b}
+.mp .copy{margin-top:auto;position:relative;z-index:2}
+.mp .card .code{font-size:9px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:#748000}
+.mp .card h3{margin:9px 0 12px;font-size:31px;line-height:.96;letter-spacing:-.05em;font-weight:900;max-width:13ch}
+.mp .card .meta{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;font-weight:600;color:#767c78}
+/* a big cropped numeral so a card without a photo still has something to look at */
+.mp .numeral{position:absolute;left:-10px;top:-34px;z-index:0;font-size:150px;font-weight:900;letter-spacing:-.07em;line-height:1;color:#0b0f0e0d;pointer-events:none;font-variant-numeric:tabular-nums}
+.mp .card.lime .numeral{color:#0b0f0e1f}
+.mp .card.soon .numeral{color:#0b0f0e0a}
+
+.mp .card:not(.photo) .no{display:none}
+.mp .bars{position:relative;z-index:2;display:flex;gap:3px;margin:0 0 14px}
+.mp .bars i{height:3px;flex:1;border-radius:3px;background:#0b0f0e1a}
+.mp .bars i.on{background:var(--ink)}
+
+/* variants */
+.mp .card.lime{background:var(--lime);border-color:var(--lime)}
+.mp .card.lime .code{color:#3d4d00}
+.mp .card.lime .no,.mp .card.lime .meta,.mp .card.lime .status{color:#2c3800}
+.mp .card.lime .bars i{background:#0b0f0e29}
+.mp .card.photo{color:#fff;border-color:var(--ink);background:var(--ink);min-height:340px}
+.mp .card.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mp .card.photo:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0000 12%,#000000d9 100%)}
+.mp .card.photo .no,.mp .card.photo .meta{color:#c3c8c4}
+.mp .card.photo .code{color:var(--lime)}
+.mp .card.photo .bars i{background:#ffffff4d}
+.mp .card.photo .bars i.on{background:var(--lime)}
+.mp .card.featured{grid-column:span 2}
+.mp .card.featured h3{font-size:44px}
+.mp .card.featured .status{background:var(--lime);color:var(--ink);padding:7px 11px;border-radius:99px}
+.mp .card.stage img{object-position:center 34%}
+.mp .card.coach img{object-position:center 14%}
+.mp .card.soon{background:transparent;border-style:dashed;color:#878d88}
+.mp .card.soon .code{color:#8c928d}
+.mp .card.soon h3{color:#71776f}
+
+.mp .empty{padding:52px 0;color:#8a908b;font-size:15px}
+
+.mp .fade{animation:mp-fade .3s ease}
+@keyframes mp-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.ko .mp .card h3{font-size:26px;line-height:1.14;max-width:15ch}
+.ko .mp .card.featured h3{font-size:36px}
+.ko .mp .hero h1{font-size:clamp(38px,5.2vw,80px);line-height:1.06;letter-spacing:-.04em}
+
+@media(max-width:1180px){ .mp .card.featured{grid-column:span 1} .mp .card.featured h3{font-size:34px} }
+@media(max-width:900px){
+  .mp .page{grid-template-columns:1fr}
+  .mp .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:22px 20px}
+  .mp .areas{flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none}
+  .mp .areas::-webkit-scrollbar{display:none}
+  .mp .area{grid-template-columns:auto auto;white-space:nowrap;border-radius:24px;border:1px solid var(--line);padding:10px 14px}
+  .mp .area .n{display:none}
+  .mp .area.all{margin-bottom:0;border-bottom:1px solid var(--line);border-radius:24px;padding-bottom:10px}
+  .mp .rail-foot{display:none}
+  .mp .main{padding:18px 20px 60px}
+  .mp .hero{padding:34px 0 26px;flex-direction:column;align-items:flex-start;gap:22px}
+  .mp .hero-side{text-align:left}
+  .mp .resume{justify-content:flex-start}
+  .mp .resume .dim{display:none}
+}
+@media(prefers-reduced-motion:reduce){.mp .fade{animation:none}.mp a.card:hover{transform:none}}
+
+/* Sign out is a form button, not a link, so it needs the anchor's look back. */
+.mp .foot form{display:contents}
+.mp .signout{border:0;background:none;padding:0;font:inherit;font-weight:700;cursor:pointer;color:#ffffffb0;border-bottom:1px solid #ffffff2e;padding-bottom:1px;transition:.2s}
+.mp .signout:hover{color:var(--lime);border-bottom-color:var(--lime)}

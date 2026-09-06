@@ -1,1 +1,11 @@
 .DS_Store
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# local secrets — see .env.example for the shape
+.env
+.env*.local
+.vercel

@@ -1,0 +1,63 @@
+/* Sign up and sign in.
+
+   Ported from the prototype's register.html <style> block, scoped under .auth
+   so it cannot leak into screens ported later. The photo still comes from the
+   prototype's assets folder; it moves when the marketing page does. */
+
+  .auth{min-height:100vh;display:flex;flex-direction:column}
+  .auth .split{flex:1;display:grid;grid-template-columns:.86fr 1.14fr;min-height:100vh}
+  .auth .side{background:var(--ink);color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:34px 40px 40px}
+  .auth .side:before{content:"";position:absolute;inset:0;background:url("/prototype/assets/coach.jpg") center 12%/cover;opacity:.5}
+  .auth .side:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0b0f0eee,#0b0f0e66 42%,#0b0f0ef2)}
+  .auth .side>*{position:relative;z-index:2}
+  .auth .side .logo{display:inline-block}
+  .auth .side h2{font-size:clamp(34px,3.4vw,50px);line-height:.95;letter-spacing:-.05em;font-weight:900;margin:0 0 16px;max-width:12ch}
+  .auth .side h2 em{font-style:normal;color:var(--lime)}
+  .auth .side p{margin:0;color:#ffffffb8;max-width:36ch;line-height:1.6}
+  .auth .side .steps{display:flex;gap:8px;margin-top:26px}
+  .auth .side .steps span{height:3px;flex:1;background:#ffffff2e;border-radius:3px}
+  .auth .side .steps span.on{background:var(--lime)}
+
+  .auth .form{padding:110px 0 70px;display:flex;justify-content:center}
+  .auth .formin{width:min(100%,560px);padding:0 40px}
+  .auth .step{border-top:1px solid var(--line);padding:34px 0}
+  .auth .step:first-of-type{border-top:0;padding-top:26px}
+  .auth .stepno{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:#7b807c}
+  .auth .stepno i{width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:900}
+  .auth .step h3{margin:14px 0 0;font-size:27px;letter-spacing:-.035em;font-weight:900}
+  .auth .step .hint{margin:8px 0 0;font-size:15px;color:var(--muted);line-height:1.55}
+  .auth label{display:block;margin-top:20px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:#7b807c}
+  .auth input[type=email], .auth input[type=text]{width:100%;margin-top:9px;padding:15px 18px;border:1px solid var(--line);border-radius:14px;background:#fff;font:inherit;font-size:16px;color:var(--ink)}
+  .auth input::placeholder{color:#9aa09a}
+  .auth input:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px #c6ff0059}
+  .auth .alt{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .auth .alt .pill{flex:1;min-width:150px}
+  .auth .or{display:flex;align-items:center;gap:14px;margin:22px 0 0;font-size:11px;letter-spacing:.18em;font-weight:800;color:#9aa09a}
+  .auth .or:before, .auth .or:after{content:"";height:1px;flex:1;background:var(--line)}
+  .auth .q{margin-top:24px}
+  .auth .q p{margin:0 0 11px;font-size:15px;font-weight:700}
+  .auth .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .auth .chip{border:1px solid var(--line);background:#fff;border-radius:26px;padding:10px 16px;font-size:13.5px;font-weight:700;cursor:pointer;transition:.18s;color:var(--ink)}
+  .auth .chip:hover{border-color:var(--ink)}
+  .auth .chip[aria-pressed="true"]{background:var(--lime);border-color:var(--ink)}
+  .auth .go{margin-top:34px;display:flex;flex-direction:column;gap:12px}
+  .auth .go .pill{width:100%}
+  .auth .legal{font-size:12.5px;color:#8b918b;line-height:1.6;margin:0}
+  .auth .legal a{text-decoration:underline}
+  .auth .crumb{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:700;padding:8px 15px;border:1px solid var(--line);border-radius:26px;color:var(--muted);transition:.2s}
+  .auth .crumb:hover{color:var(--ink);border-color:var(--ink);background:#e6e8df}
+
+  @media(max-width:900px){
+    .auth .split{grid-template-columns:1fr}
+    .auth .side{min-height:340px;padding:26px 28px 34px}
+    .auth .form{padding:50px 0 60px}
+    .auth .formin{padding:0 28px}
+  }
+/* --- added in P1: states the prototype had no need for --- */
+.auth .notice{margin-top:18px;padding:13px 16px;border-radius:12px;font-size:13.5px;line-height:1.55;border:1px solid var(--line);background:#fff}
+.auth .notice.bad{border-color:#c8622f;background:#fdf3ee;color:#8c3f18}
+.auth .notice.good{border-color:#7d9c00;background:#f4fbdf;color:#3d4d00}
+.auth .notice b{display:block;font-weight:800;margin-bottom:3px}
+.auth .pill[aria-busy="true"]{opacity:.6;pointer-events:none}
+.auth .swap{margin-top:18px;font-size:13.5px;color:var(--muted)}
+.auth .swap a{font-weight:800;color:var(--ink);border-bottom:2px solid var(--lime);padding-bottom:1px}
