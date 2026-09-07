@@ -153,6 +153,28 @@ program) carry their own inlined copy by design and are matched by hand.
 
 ## Deploying
 
-Vercel, from `main`. The old GitHub Pages setup served the repository root as
-static files; that stops working once this branch lands, because the HTML moved
-under `public/prototype/`.
+Vercel, from `main`. `vercel.json` pins the framework to Next.js, because the
+project was first connected when this repository was static HTML and a stale
+"Other" preset in the dashboard would serve nothing.
+
+The deployment needs two environment variables set in **Vercel → Settings →
+Environment Variables**, for every environment. Both are safe to expose — row
+level security is the protection, not the key:
+
+    NEXT_PUBLIC_SUPABASE_URL
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+
+Without them the app still builds and renders; the auth screens simply say
+accounts are not switched on. Add them and redeploy.
+
+Supabase also has to allow the deployment back in after a sign-in — **Authentication
+→ URL Configuration**. Site URL is the production URL, and the redirect allowlist
+needs a wildcard for previews, because Vercel mints a new hostname per commit:
+
+    http://localhost:4478/**
+    https://<project>-git-main-<team>.vercel.app/**
+    https://<project>-*-<team>.vercel.app/**
+
+The old GitHub Pages setup served the repository root as static files. That stops
+working now, because the prototype moved under `public/prototype/` — its URLs are
+`/prototype/masterplan.html` rather than `/masterplan.html`.

@@ -114,9 +114,11 @@ drill_slots     ( drill_id, user_id, weekday 0-6, done_at )
   Counters drift; a log can be recomputed. Add a materialized rollup only when
   it's actually slow.
 - **An entitlement function from day one.** Everything is free now, so
-  `can_access(video_id)` returns true for any signed-in user. RLS policies call
-  that function and nothing else. When you charge, you change one function — not
-  fifty call sites. `programs.is_free` is already there for the free sample.
+  `private.can_access(video_id)` asks only whether you are signed in and the
+  material is published. RLS policies call that function and nothing else. When
+  you charge, you change one function — not fifty call sites. `programs.is_free`
+  is already there for the free sample. It lives in a `private` schema so it is
+  not reachable as a REST endpoint, while still being callable from policies.
 
 ### How video gets stored and served
 

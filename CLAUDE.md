@@ -4,12 +4,17 @@ Solo salsa training platform. **The plan lives in [docs/BUILD-PLAN.md](docs/BUIL
 read it before starting anything structural; it carries the phase order, the
 schema, and the player specification.
 
-Currently in **Phase 1**: the schema is written and validated in
-`supabase/migrations/`, sign-up and sign-in are built, and the catalogue is the
-one screen ported. The rest of the prototype still serves from
-`public/prototype/`. The Supabase project does not exist yet, so nothing that
-talks to it has run against a real database — `lib/supabase/config.ts` keeps
-those screens rendering until it does.
+Currently in **Phase 1**. The Supabase project is **Salsaviva Suim**
+(`incumqqgmueyovtzvenl`, ap-northeast-2 / Seoul): all six migrations are applied
+and the catalogue is seeded — 7 areas, 37 programs, 9 sessions, 55 videos, none
+with footage. Sign-up and sign-in are built and the screens are live against it,
+but the email round trip has not been exercised: the magic link needs the
+redirect allowlist set and real SMTP wired. The catalogue is the one screen
+ported; the rest of the prototype still serves from `public/prototype/`.
+
+`lib/supabase/config.ts` still guards every call, so the app renders without
+`.env.local` rather than crashing. Keep that until the env vars are a deployment
+requirement.
 
 ## Vocabulary
 
@@ -50,6 +55,7 @@ session can sit in two at once and session 05 can be gentler than session 04.
                           screens that have not been ported
     docs/BUILD-PLAN.md    the plan
     supabase/migrations/  the schema, RLS and the entitlement function
+    supabase/seed.sql     the catalogue, generated from lib/content.ts
     lib/supabase/         browser, server and middleware clients
     app/(auth)/           register and sign in
 
@@ -78,9 +84,19 @@ session can sit in two at once and session 05 can be gentler than session 04.
 
 RLS is the only thing that decides access — never a check in the interface, and
 never the `suim-member` flag in localStorage. Every gate goes through
-`can_access(video_id)` in the database, which is also where the paid tier will
-land; today it asks only whether you are signed in and the material is published.
+`private.can_access(video_id)`, which is also where the paid tier will land;
+today it asks only whether you are signed in and the material is published.
+
+The helpers live in the **`private` schema on purpose**: PostgREST exposes only
+`public`, so a `SECURITY DEFINER` function there would be callable as
+`/rest/v1/rpc/...`. `anon` and `authenticated` still hold EXECUTE on them,
+because an RLS policy expression runs as the querying role. Put any new
+definer-style helper in `private` too, and keep `get_advisors` clean.
+
 `profiles.plan` and `profiles.role` are deliberately not self-updatable.
+
+The catalogue is public to anyone, signed in or not — that is the marketing
+surface. What is gated is `videos`, because a video row carries its playback ids.
 
 ## Two things not to get wrong later
 
