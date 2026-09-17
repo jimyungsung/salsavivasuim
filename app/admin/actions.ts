@@ -13,7 +13,14 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/supabase/admin';
-import { METHOD_STEPS, PUBLISH_STATUSES, type MethodStep, type PublishStatus } from '@/lib/db';
+import {
+  LEVEL_KEYS,
+  METHOD_STEPS,
+  PUBLISH_STATUSES,
+  type LevelKey,
+  type MethodStep,
+  type PublishStatus,
+} from '@/lib/db';
 
 export type Result = { ok: true } | { ok: false; error: string };
 
@@ -47,14 +54,15 @@ export async function setStatus(
 /* ---------------------------------------------------------------- order ---- */
 
 /* Reordering is a swap of two `position` values, not a rewrite of the whole
-   list. The unique constraints on (area_id, position) and (program_id, position)
-   are deferrable, so both rows can move inside one transaction without the
-   halfway state tripping them — which is exactly why they were written that way.
+   list. Every one of those unique constraints — areas(position), and
+   (parent, position) below them — is deferrable, so two rows can trade places
+   inside one transaction without the halfway duplicate tripping them. That is
+   exactly why they were written that way in P1.
 
    Supabase's REST client cannot open a transaction, so the swap goes through a
    database function instead. See the swap_position migration. */
 export async function movePosition(
-  table: 'programs' | 'sessions' | 'videos',
+  table: 'areas' | 'programs' | 'sessions' | 'videos',
   id: string,
   direction: 'up' | 'down',
 ): Promise<Result> {
@@ -216,6 +224,173 @@ export async function setVideoFields(
 
   const supabase = await createClient();
   const { error } = await supabase.from('videos').update(fields).eq('id', id);
+  if (error) return fail(error.message);
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+/* ------------------------------------------------- areas and programs ---- */
+
+/* A slug is a stable identifier, so it is derived once from the English title
+   and then left alone unless someone changes it deliberately. Renaming a
+   program should not silently change its URL. */
+const slugify = (s: string): string =>
+  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+
+/** A slug nothing else is using. Suffixes -2, -3 … rather than failing. */
+async function freeSlug(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  table: 'areas' | 'programs',
+  base: string,
+): Promise<string> {
+  const root = slugify(base) || table.slice(0, -1);
+  const { data } = await supabase.from(table).select('slug').like('slug', `${root}%`);
+  const taken = new Set((data ?? []).map(r => (r as { slug: string }).slug));
+  if (!taken.has(root)) return root;
+  for (let n = 2; n < 500; n++) if (!taken.has(`${root}-${n}`)) return `${root}-${n}`;
+  return `${root}-${Date.now()}`;
+}
+
+export async function createArea(name: string): Promise<Result> {
+  await requireAdmin();
+  const en = name.trim();
+  if (!en) return fail('An area needs a name.');
+
+  const supabase = await createClient();
+  const { data: last } = await supabase
+    .from('areas').select('position').order('position', { ascending: false }).limit(1).maybeSingle();
+
+  const { error } = await supabase.from('areas').insert({
+    slug: await freeSlug(supabase, 'areas', en),
+    position: (last?.position ?? 0) + 1,
+    name_t: { en },
+    blurb_t: { en: '' },
+  });
+  if (error) return fail(error.message);
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+export async function createProgram(areaId: string, title: string): Promise<Result> {
+  await requireAdmin();
+  const en = title.trim();
+  if (!en) return fail('A program needs a title.');
+
+  const supabase = await createClient();
+  const { data: last } = await supabase
+    .from('programs').select('position').eq('area_id', areaId)
+    .order('position', { ascending: false }).limit(1).maybeSingle();
+
+  const { error } = await supabase.from('programs').insert({
+    area_id: areaId,
+    slug: await freeSlug(supabase, 'programs', en),
+    position: (last?.position ?? 0) + 1,
+    title_t: { en },
+    subtitle_t: { en: '' },
+    promise_t: { en: '' },
+    level: 'all',
+    status: 'draft',
+  });
+  if (error) return fail(error.message);
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+/** The scalar half of a program. Copy goes through setLocalized. */
+export async function setProgramFields(
+  id: string,
+  fields: { slug?: string; level?: string; weeks?: number | null; is_free?: boolean },
+): Promise<Result> {
+  await requireAdmin();
+
+  const patch: Record<string, unknown> = {};
+  if (fields.slug !== undefined) {
+    const slug = slugify(fields.slug);
+    if (!slug) return fail('A slug cannot be empty.');
+    patch.slug = slug;
+  }
+  if (fields.level !== undefined) {
+    if (!LEVEL_KEYS.includes(fields.level as LevelKey)) return fail('Unknown level.');
+    patch.level = fields.level;
+  }
+  if (fields.weeks !== undefined) {
+    if (fields.weeks !== null && (!Number.isInteger(fields.weeks) || fields.weeks < 1)) {
+      return fail('Weeks must be a whole number of at least 1.');
+    }
+    patch.weeks = fields.weeks;
+  }
+  if (fields.is_free !== undefined) patch.is_free = fields.is_free;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('programs').update(patch).eq('id', id);
+  if (error) {
+    return fail(
+      error.code === '23505' ? 'Another program already uses that slug.' : error.message,
+    );
+  }
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+export async function setAreaSlug(id: string, slug: string): Promise<Result> {
+  await requireAdmin();
+  const clean = slugify(slug);
+  if (!clean) return fail('A slug cannot be empty.');
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('areas').update({ slug: clean }).eq('id', id);
+  if (error) {
+    return fail(error.code === '23505' ? 'Another area already uses that slug.' : error.message);
+  }
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+/* -------------------------------------------------------------- delete ---- */
+
+/* An area refuses to go while it still holds programs — programs.area_id is
+   ON DELETE RESTRICT, precisely so a whole branch of the catalogue cannot
+   disappear behind one click. Move or delete the programs first. */
+export async function deleteArea(id: string): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.from('areas').delete().eq('id', id);
+  if (error) {
+    return fail(
+      error.code === '23503'
+        ? 'This area still has programs in it. Move or delete those first.'
+        : error.message,
+    );
+  }
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+/* A program takes its sessions and their videos with it — sessions.program_id
+   and videos.session_id both cascade. The caller shows what is about to go. */
+export async function deleteProgram(id: string): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.from('programs').delete().eq('id', id);
+  if (error) return fail(error.message);
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}
+
+export async function deleteSession(id: string): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { error } = await supabase.from('sessions').delete().eq('id', id);
   if (error) return fail(error.message);
 
   revalidatePath('/admin', 'layout');

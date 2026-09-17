@@ -58,6 +58,12 @@
   text-align: left; color: inherit;
 }
 .bo .arow:hover { background: #f7f8f3; }
+
+/* The area header is a row of its own so the expand button and the controls can
+   sit side by side — a button cannot contain other buttons. */
+.bo .ahead { display: flex; align-items: center; gap: 10px; padding-right: 14px; }
+.bo .ahead .arow { flex: 1; }
+.bo .actrl { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .bo .arow .n {
   font: 800 10px/1 ui-monospace, monospace; color: #a7ada8; font-variant-numeric: tabular-nums;
 }
