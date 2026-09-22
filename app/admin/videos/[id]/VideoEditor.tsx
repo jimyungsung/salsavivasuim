@@ -15,6 +15,7 @@
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import LocalizedField from '../../LocalizedField';
+import UploadField from './UploadField';
 import { setVideoFields, type Result } from '../../actions';
 import { METHOD_STEPS, mmss, type CameraAngle, type MethodStep } from '@/lib/db';
 import type { EditorVideo } from './page';
@@ -28,7 +29,13 @@ const toNum = (s: string): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-export default function VideoEditor({ video }: { video: EditorVideo }) {
+export default function VideoEditor({
+  video,
+  streamConfigured,
+}: {
+  video: EditorVideo;
+  streamConfigured: boolean;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -90,6 +97,19 @@ export default function VideoEditor({ video }: { video: EditorVideo }) {
           {error}
         </p>
       )}
+
+      <section className="panel">
+        <h2>Footage</h2>
+        <UploadField
+          videoId={video.id}
+          status={video.status}
+          durationMs={video.duration_ms}
+          posterUrl={video.poster_url}
+          providerUid={video.provider_uid}
+          configured={streamConfigured}
+          onError={setError}
+        />
+      </section>
 
       <section className="panel">
         <h2>Copy</h2>
@@ -193,10 +213,10 @@ export default function VideoEditor({ video }: { video: EditorVideo }) {
       </section>
 
       <div className="note">
-        <b>Tap tempo and the click-track preview come with the upload flow.</b>
-        Checking a BPM means hearing a click against the music, and there is no footage to
-        play it over yet. Until the video host is chosen, these fields are typed by hand and
-        the derived numbers above are the only check on them.
+        <b>Tap tempo and the click-track preview are not built yet.</b>
+        Checking a BPM properly means hearing a click against the music. Once this video is{' '}
+        <code>ready</code>, that becomes possible — until then the derived numbers above are the
+        only check on what you type.
       </div>
     </>
   );
