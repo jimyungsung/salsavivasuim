@@ -6,7 +6,8 @@
     "dev": "next dev -p 4478",
     "build": "next build",
     "start": "next start -p 4478",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:webhook": "node --experimental-strip-types scripts/check-webhook-signature.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

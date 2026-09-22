@@ -174,10 +174,11 @@ export default function SessionEditor({
       </section>
 
       <div className="note">
-        <b>Uploading is not wired up yet.</b>
-        Adding a video creates its row and its place in the session; the footage itself needs
-        the video host decided — Cloudflare Stream, Bunny or Mux. Until then every video stays{' '}
-        <code>uploading</code>, which is why members see none of them.
+        <b>Footage is uploaded on a video&rsquo;s own screen.</b>
+        Adding a video here creates its row and its place in the session; open it with{' '}
+        <strong>Edit</strong> to upload the file and set its beat grid. A video stays{' '}
+        <code>uploading</code> until Cloudflare has encoded it, and members only ever see{' '}
+        <code>ready</code> ones.
       </div>
     </>
   );

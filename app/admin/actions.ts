@@ -396,3 +396,138 @@ export async function deleteSession(id: string): Promise<Result> {
   revalidatePath('/admin', 'layout');
   return ok;
 }
+
+/* --------------------------------------------------------------- upload ---- */
+
+export type UploadTicket =
+  | { ok: true; uploadURL: string; uid: string }
+  | { ok: false; error: string };
+
+/** Asks Cloudflare for somewhere to put one file, and records the id before the
+    browser sends anything.
+
+    Writing provider_uid first matters: if the upload dies halfway, the row still
+    knows which Cloudflare asset it was reaching for, so the webhook can still
+    find it and a retry does not orphan storage. Status goes to `processing`
+    rather than `ready` — only the webhook may say a video is playable. */
+export async function requestUploadUrl(videoId: string, origin: string): Promise<UploadTicket> {
+  await requireAdmin();
+
+  const { streamConfig, createDirectUpload } = await import('@/lib/cloudflare');
+  const cfg = streamConfig();
+  if (!cfg) {
+    return {
+      ok: false,
+      error:
+        'Cloudflare Stream is not configured. Set CLOUDFLARE_ACCOUNT_ID and ' +
+        'CLOUDFLARE_STREAM_API_TOKEN.',
+    };
+  }
+
+  try {
+    const ticket = await createDirectUpload(cfg, { videoId, origin });
+
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('videos')
+      .update({ provider: 'cloudflare', provider_uid: ticket.uid, status: 'processing' })
+      .eq('id', videoId);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath('/admin', 'layout');
+    return { ok: true, uploadURL: ticket.uploadURL, uid: ticket.uid };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+/** Reads the current state from Cloudflare and writes it back.
+
+    The webhook is the normal path; this is the manual one, for when a callback
+    was missed or the webhook is not registered yet. Same rules apply — it can
+    only ever set `ready` on something Cloudflare says is ready. */
+export async function refreshVideoStatus(videoId: string): Promise<Result> {
+  await requireAdmin();
+
+  const { streamConfig, getVideo, enableDownloads, customerCodeFrom } = await import(
+    '@/lib/cloudflare'
+  );
+  const cfg = streamConfig();
+  if (!cfg) return fail('Cloudflare Stream is not configured.');
+
+  const supabase = await createClient();
+  const { data: row } = await supabase
+    .from('videos').select('provider_uid').eq('id', videoId).maybeSingle();
+  const uid = (row as { provider_uid: string | null } | null)?.provider_uid;
+  if (!uid) return fail('This video has no upload yet.');
+
+  try {
+    const v = await getVideo(cfg, uid);
+    const ready = v.status?.state === 'ready' || v.readyToStream;
+    const duration = v.duration ? Math.round(v.duration * 1000) : null;
+
+    if (ready && duration) {
+      /* MP4 renditions are opt-in per video, and the loop needs one. Asking
+         twice is harmless. */
+      try {
+        await enableDownloads(cfg, uid);
+      } catch {
+        /* Downloads can be requested again later; not worth failing the sync. */
+      }
+      const { error } = await supabase.from('videos').update({
+        status: 'ready',
+        duration_ms: duration,
+        poster_url: v.thumbnail ?? null,
+        hls_playback_id: customerCodeFrom(v.playback?.hls),
+      }).eq('id', videoId);
+      if (error) return fail(error.message);
+    } else if (v.status?.state === 'error') {
+      await supabase.from('videos').update({ status: 'failed' }).eq('id', videoId);
+      return fail(v.status.errorReasonText || 'Cloudflare could not encode that file.');
+    } else {
+      await supabase.from('videos').update({ status: 'processing' }).eq('id', videoId);
+    }
+
+    revalidatePath('/admin', 'layout');
+    return ok;
+  } catch (e) {
+    return fail(e instanceof Error ? e.message : String(e));
+  }
+}
+
+/** Detaches the footage without deleting the video row, so the slot and its
+    beat grid survive a re-upload. */
+export async function clearVideoUpload(videoId: string): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { data: row } = await supabase
+    .from('videos').select('provider_uid').eq('id', videoId).maybeSingle();
+  const uid = (row as { provider_uid: string | null } | null)?.provider_uid;
+
+  const { error } = await supabase.from('videos').update({
+    status: 'uploading',
+    provider_uid: null,
+    hls_playback_id: null,
+    mp4_url: null,
+    poster_url: null,
+    duration_ms: null,
+  }).eq('id', videoId);
+  if (error) return fail(error.message);
+
+  /* Remove it from Cloudflare too, or storage quietly accumulates orphans. */
+  if (uid) {
+    const { streamConfig, deleteVideo } = await import('@/lib/cloudflare');
+    const cfg = streamConfig();
+    if (cfg) {
+      try {
+        await deleteVideo(cfg, uid);
+      } catch {
+        /* Already gone, or Cloudflare is unhappy. The row is clean either way. */
+      }
+    }
+  }
+
+  revalidatePath('/admin', 'layout');
+  return ok;
+}

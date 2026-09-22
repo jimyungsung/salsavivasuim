@@ -238,3 +238,21 @@
   display: block; font-size: 16px; color: var(--ink); letter-spacing: -.02em;
   font-variant-numeric: tabular-nums;
 }
+
+/* ---- upload ---- */
+.bo .upload { display: flex; flex-direction: column; gap: 10px; }
+.bo .upload .poster {
+  width: 220px; aspect-ratio: 16/9; object-fit: cover; border-radius: 9px;
+  border: 1px solid var(--bo-line); background: var(--panel);
+}
+.bo .upmeta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bo .upload input[type="file"] { font-size: 12.5px; max-width: 30ch; }
+.bo .bar {
+  position: relative; height: 22px; border-radius: 6px; background: #eceee6;
+  border: 1px solid var(--bo-line); overflow: hidden; max-width: 42ch;
+}
+.bo .bar i { display: block; height: 100%; background: var(--lime); transition: width .2s; }
+.bo .bar span {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font: 800 11px/1 ui-monospace, monospace; color: var(--ink);
+}

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
 import type { LocalizedRow, VideoRow } from '@/lib/db';
+import { isStreamConfigured } from '@/lib/cloudflare';
 import VideoEditor from './VideoEditor';
 
 export interface EditorVideo extends VideoRow {
@@ -41,7 +42,9 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   }
   if (!data) notFound();
 
-  return <VideoEditor video={data as unknown as EditorVideo} />;
+  return (
+    <VideoEditor video={data as unknown as EditorVideo} streamConfigured={isStreamConfigured()} />
+  );
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
