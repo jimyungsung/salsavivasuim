@@ -34,6 +34,8 @@
     .navlinks a{padding:6px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s}
     .navlinks a:hover{color:#fff;border-bottom-color:var(--lime)}
     .tools{display:flex;gap:10px;align-items:center}
+    .navin{font-size:14px;font-weight:700;color:#ffffffc4;padding:8px 10px;border-radius:20px;transition:color .2s,background .2s}
+    .navin:hover{color:#fff;background:#ffffff14}
     .lang{display:flex;padding:4px;border:1px solid #ffffff44;border-radius:30px;background:#0004}
     .lang button{border:0;background:none;color:#ffffff99;padding:9px 12px;border-radius:22px;font-size:12px;font-weight:800;cursor:pointer;transition:background .2s,color .2s}
     .lang button[aria-pressed="true"]{background:var(--lime);color:var(--ink)}
@@ -224,6 +226,7 @@
         <button data-lang="en" aria-pressed="true">EN</button>
         <button data-lang="ko" aria-pressed="false">KO</button>
       </div>
+      <a class="navin" href="/signin" data-t="navIn">Sign in</a>
       <a class="navcta" href="/register" data-t="navCta">Start training</a>
     </div>
   </div></header>
@@ -332,7 +335,7 @@ Stay if you train.</h2></div>
   <script>
   const C={
     en:{
-      nav1:'Method',nav2:'Sessions',nav3:'Modules',nav4:'Membership',navCta:'Start training',navCtaIn:'Continue training',
+      nav1:'Method',nav2:'Sessions',nav3:'Modules',nav4:'Membership',navCta:'Start training',navCtaIn:'Continue training',navIn:'Sign in',
       eyebrow:'Solo salsa training · Improver+',head1:'FROM STEPS',head2:'TO STYLE.',
       lead:'Learn the movement. Train it. Play with it. Make it yours. A practice-led platform for salsa dancers ready to stop copying and start creating.',
       primary:'Start the 7-day reset ↗',primaryIn:'Continue training ↗',secondary:'See the method ↓',coach:'FOUNDING COACH',
@@ -362,7 +365,7 @@ Stay if you train.</h2></div>
              ['MEMBERSHIP','ANNUAL','$140','/ year','Everything monthly, with roughly two months free.','Join annually','alt']]
     },
     ko:{
-      nav1:'방법론',nav2:'세션',nav3:'모듈',nav4:'멤버십',navCta:'트레이닝 시작',navCtaIn:'이어서 트레이닝',
+      nav1:'방법론',nav2:'세션',nav3:'모듈',nav4:'멤버십',navCta:'트레이닝 시작',navCtaIn:'이어서 트레이닝',navIn:'로그인',
       eyebrow:'솔로 살사 트레이닝 · 초중급 이상',head1:'스텝을 넘어',head2:'나만의 스타일로.',
       lead:'동작을 배우는 데서 끝나지 않습니다. 반복하고, 변형하고, 연결하고, 즉흥적으로 움직이며 당신만의 춤을 만드세요.',
       primary:'7일 리셋 시작하기 ↗',primaryIn:'이어서 트레이닝 ↗',secondary:'트레이닝 방식 보기 ↓',coach:'창립 코치',

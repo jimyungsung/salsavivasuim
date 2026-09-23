@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
 import type { LocalizedRow, VideoRow } from '@/lib/db';
 import { isStreamConfigured } from '@/lib/cloudflare';
+import { signedPosters } from '@/lib/playback';
 import VideoEditor from './VideoEditor';
 
 export interface EditorVideo extends VideoRow {
@@ -42,8 +43,14 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   }
   if (!data) notFound();
 
+  const posterUrl = (await signedPosters([id]))[id] ?? null;
+
   return (
-    <VideoEditor video={data as unknown as EditorVideo} streamConfigured={isStreamConfigured()} />
+    <VideoEditor
+      video={data as unknown as EditorVideo}
+      streamConfigured={isStreamConfigured()}
+      posterUrl={posterUrl}
+    />
   );
 }
 

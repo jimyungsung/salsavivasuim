@@ -6,6 +6,7 @@ import { isConfigured } from '@/lib/supabase/config';
 import { getMember } from '@/lib/member';
 import { t } from '@/lib/content';
 import { getPlayback } from '../actions';
+import { signedPosters } from '@/lib/playback';
 import SessionPlayer from './SessionPlayer';
 import './session.css';
 
@@ -35,6 +36,7 @@ export default async function SessionPage({
   const first = session.videos.find(v => v.status === 'ready');
   const initialPlayback = first ? await getPlayback(first.id) : null;
   const signedIn = !isConfigured || Boolean(await getMember());
+  const posters = await signedPosters(session.videos.map(v => v.id));
 
   return (
     <>
@@ -43,6 +45,7 @@ export default async function SessionPage({
         session={session}
         initialVideoId={first?.id ?? null}
         initialPlayback={initialPlayback}
+        posters={posters}
         signedIn={signedIn}
       />
     </>

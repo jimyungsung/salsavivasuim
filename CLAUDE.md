@@ -20,11 +20,19 @@ Ported so far: `/masterplan`, `/programs/[slug]` (a module), `/sessions/[id]`
 (a session and its player), `/signin`, `/register`. Everything else still serves
 from `public/prototype/`.
 
-The player plays for real: signed HLS from Cloudflare, speed with pitch kept,
-mirror, full screen, and the session's videos as a step list. Pachanga 01 plays
-end to end. It is deliberately the first pass — native controls stand in for
-the scrub bar, and because they are drawn inside the `<video>`, mirroring flips
-them too. The custom scrub bar in the next pass fixes that.
+The player is the prototype's session screen made real: controls over the
+picture, a scrub bar with the loop zone and phrase marks, the session's parts in
+a strip with where each falls in the session, signed thumbnails down the side.
+Speed keeps pitch and is remembered per step; the loop is checked every frame
+off `requestVideoFrameCallback`, with `timeupdate` as the net for a hidden tab;
+mirror flips only the picture, never the controls; a finished video hands on to
+the next; a wake lock holds while playing; keyboard shortcuts per BUILD-PLAN §5.
+
+**The phrase marks, the counts overlay and "loop eight counts" need a beat
+grid** — bpm and first beat, set in the back office's video editor. No video has
+one yet, so today the scrub bar is plain, L repeats the whole video (or the
+default loop, if one is set), and there is no counts button. Fill a grid and
+they appear; nothing in the player needs changing.
 
 Footage is not all 16:9 — Pachanga 01 is filmed upright on a phone. The page
 lays out by the picture's shape: landscape fills the column with the steps
@@ -34,12 +42,14 @@ right; the player measures the loaded video and trusts that over the column.
 Full screen takes the whole player, not the `<video>`, so mirror and speed
 survive it.
 
-**Next: the precision work in BUILD-PLAN §5** — the A→B loop off
-`requestVideoFrameCallback`, the count grid from the beat grid, per-step speed,
-wake lock, and the playlist shape. `plan.html` and `session.html` are not deleted
-yet: the masterplan's "Continue training" link and the un-ported training and
-drills screens still point at them by session number, which means nothing to a
-real session id until practice_events lands.
+**Next: practice events and real progress** (BUILD-PLAN P4) — `play`,
+`heartbeat`, `loop`, `complete` into `practice_events`, then My training on real
+data. Until then nobody is "in progress": the masterplan features the first
+program with sessions instead, and its fake resume link is gone. Still to come
+in the player: dragging the loop zone's edges, the click track, a count-in, the
+audio-offset slider, and the playlist shape for drills. `plan.html` and
+`session.html` stay until training and drills are ported — they link to them by
+session number, which means nothing to a real session id.
 
 The name is an open question: the product is still SUIM throughout the code, but
 the domain bought for it is salsadrill.com, on the reasoning that a platform
@@ -84,7 +94,8 @@ session can sit in two at once and session 05 can be gentler than session 04.
       masterplan/         the catalogue, the first screen ported
       programs/[slug]/    a module: its sessions, filtered by level
       sessions/[id]/      a session: the player and its videos
-      sessions/actions.ts getPlayback() — the only place playback is signed
+      sessions/actions.ts getPlayback(), the player's way to ask for a URL
+    lib/playback.ts       every signed URL and thumbnail is minted here
     components/AppNav.tsx the nav every app screen renders. Server half: asks
                           who is signed in (lib/member.ts); AppNavBar draws it
     lib/member.ts         getMember() — name, initials, isAdmin, cached per
@@ -105,7 +116,8 @@ session can sit in two at once and session 05 can be gentler than session 04.
     docs/BUILD-PLAN.md    the plan
     supabase/migrations/  the schema, RLS and the entitlement function
     supabase/seed.sql     the catalogue, generated from lib/content.ts
-    lib/supabase/         browser, server and middleware clients
+    lib/supabase/         browser, server and session-refresh clients
+    proxy.ts              Next 16's middleware: keeps the session fresh
     app/(auth)/           register and sign in
 
 ## Conventions
@@ -171,7 +183,7 @@ to `/auth/signout` too; it used to clear only the localStorage flag.
 The catalogue is public to anyone, signed in or not — that is the marketing
 surface. What is gated is `videos`, because a video row carries its playback ids.
 
-Playback is signed in `getPlayback()` after an ordinary RLS select, so
+Playback is signed in `lib/playback.ts` after an ordinary RLS select, so
 `can_access()` has already decided before anything is signed. The client never
 sees `provider_uid`. Never use `videos.poster_url` in the member app: the webhook
 stores Cloudflare's *unsigned* thumbnail there, which answers 401. Use the signed

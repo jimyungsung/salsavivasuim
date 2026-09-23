@@ -72,24 +72,18 @@ function Gate({ reason }: { reason: 'unconfigured' | 'signed-out' | 'not-admin' 
     );
   }
 
+  /* A member who wanders in gets a sentence, not the SQL that makes an admin —
+     that lives in lib/supabase/admin.ts, for whoever runs the database. */
   return (
     <div className="gate">
-      <h1>This account is not an admin</h1>
+      <h1>The back office is not open to this account</h1>
       <p>
-        You are signed in, but your profile has <code>role = &apos;member&apos;</code>. That is
-        the only thing standing between you and the catalogue, and it is enforced in the
-        database rather than here — so changing it in the browser would achieve nothing.
+        It is where the catalogue is edited and published, and only the people who do that
+        can use it. Everything you can watch is on the site.
       </p>
-      <p>
-        <code>profiles.role</code> is deliberately not self-updatable. Run this once in the
-        Supabase SQL editor, with your own address — the editor runs as <code>postgres</code>,
-        so <code>auth.uid()</code> is null there and the row has to be found by email:
-      </p>
-      <pre>{`update public.profiles
-   set role = 'admin'
- where id = (select id from auth.users
-              where email = 'you@example.com');`}</pre>
-      <p>Then reload this page.</p>
+      <Link className="pill primary" href="/masterplan">
+        Go to the masterplan ↗
+      </Link>
     </div>
   );
 }

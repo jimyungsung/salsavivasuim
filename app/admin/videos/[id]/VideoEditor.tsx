@@ -32,9 +32,12 @@ const toNum = (s: string): number | null => {
 export default function VideoEditor({
   video,
   streamConfigured,
+  posterUrl,
 }: {
   video: EditorVideo;
   streamConfigured: boolean;
+  /** Signed on the server. videos.poster_url is unsigned and answers 401. */
+  posterUrl: string | null;
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -104,7 +107,7 @@ export default function VideoEditor({
           videoId={video.id}
           status={video.status}
           durationMs={video.duration_ms}
-          posterUrl={video.poster_url}
+          posterUrl={posterUrl}
           providerUid={video.provider_uid}
           configured={streamConfigured}
           onError={setError}

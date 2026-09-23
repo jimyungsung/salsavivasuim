@@ -13,11 +13,11 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCopy, useLang } from '@/lib/lang';
 import type { Copy } from '@/lib/lang';
-import { STATE, type Area, type Program } from '@/lib/content';
+import type { Area, Program } from '@/lib/content';
 import { ALL_AREAS, FILTERS, FILTER_COPY_KEY, type Filter } from './view';
 
 type Key =
-  | 'railLabel' | 'railTotal' | 'allAreas' | 'resumeDim' | 'resumeGo'
+  | 'railLabel' | 'railTotal' | 'allAreas'
   | 'yourPath' | 'everything' | 'heroCountL' | 'heroCountAll'
   | 'chooseT' | 'chooseS' | 'fAll' | 'fOpen' | 'fNow' | 'fSoon'
   | 'stNow' | 'stOpen' | 'stSoon' | 'stGuest' | 'empty'
@@ -26,7 +26,7 @@ type Key =
 const C: Copy<Key> = {
   en: {
     railLabel: 'Training areas', railTotal: 'programs across 7 areas',
-    allAreas: 'All programs', resumeDim: 'Improvisation 01 ·', resumeGo: 'Continue training ↗',
+    allAreas: 'All programs',
     yourPath: 'Your selected path', everything: 'Everything on the shelf',
     heroCountL: 'programs in this area', heroCountAll: 'programs in total',
     chooseT: 'Choose a program', chooseS: 'Open one to see its modules and sessions',
@@ -38,7 +38,7 @@ const C: Copy<Key> = {
   },
   ko: {
     railLabel: '트레이닝 영역', railTotal: '개 프로그램 · 7개 영역',
-    allAreas: '전체 프로그램', resumeDim: '즉흥 01 ·', resumeGo: '이어서 트레이닝 ↗',
+    allAreas: '전체 프로그램',
     yourPath: '선택한 경로', everything: '전체 목록',
     heroCountL: '이 영역의 프로그램', heroCountAll: '전체 프로그램',
     chooseT: '프로그램 선택', chooseS: '열어서 모듈과 세션을 확인하세요',
@@ -69,9 +69,10 @@ const matches = (p: Program, f: Filter) =>
   (f === 'soon' && p.status === 'soon');
 
 /* Card look is decided by what the program is, then by position, so a long grid
-   keeps a rhythm instead of turning into a wall of identical boxes. */
-function variant(e: Entry, coachCardId: string | null) {
-  if (e.program.status === 'current') return 'photo stage featured';
+   keeps a rhythm instead of turning into a wall of identical boxes. The one
+   featured card is the first program in view that has something to open. */
+function variant(e: Entry, coachCardId: string | null, featuredId: string | null) {
+  if (e.program.status === 'current' || e.program.id === featuredId) return 'photo stage featured';
   if (e.program.status === 'soon') return 'soon';
   if (e.area.id === 'guest' && e.program.id === coachCardId) return 'photo coach';
   return e.index % 3 === 1 ? 'lime' : '';
@@ -116,9 +117,10 @@ export default function Catalogue({
   /* Only one card per view carries the coach portrait. */
   const coachCardId =
     shown.find(e => e.area.id === 'guest' && e.program.status === 'open')?.program.id ?? null;
+  const featuredId = shown.find(e => e.program.linkable && e.program.status !== 'soon')?.program.id ?? null;
 
   const statusLabel = (e: Entry) =>
-    e.program.status === 'current' ? `${c.stNow} · 4%`
+    e.program.status === 'current' ? c.stNow
       : e.program.status === 'soon' ? c.stSoon
         : e.area.id === 'guest' ? c.stGuest
           : c.stOpen;
@@ -162,13 +164,6 @@ export default function Catalogue({
         </aside>
 
         <main className="main">
-          <div className="resume">
-            <Link href={`/prototype/session.html?s=${STATE.session}`}>
-              <span className="dim">{c.resumeDim}</span>
-              <span>{c.resumeGo}</span>
-            </Link>
-          </div>
-
           <section className="hero">
             <div>
               <div className="kicker">{all ? c.everything : `${two(area + 1)} · ${c.yourPath}`}</div>
@@ -187,7 +182,11 @@ export default function Catalogue({
               <p className="sub">{c.chooseS}</p>
             </div>
             <div className="filters">
-              {FILTERS.map(f => (
+              {/* A filter that would show nothing is not offered — which, until
+                  progress is real, always includes "In progress". */}
+              {FILTERS.filter(
+                f => f === 'all' || f === filter || list.some(e => matches(e.program, f)),
+              ).map(f => (
                 <button
                   key={f}
                   className="f"
@@ -210,7 +209,7 @@ export default function Catalogue({
                 <ProgramCard
                   key={e.program.id}
                   entry={e}
-                  className={variant(e, coachCardId)}
+                  className={variant(e, coachCardId, featuredId)}
                   label={statusLabel(e)}
                   showAreaName={all}
                 />
@@ -257,7 +256,6 @@ function ProgramCard({
       : null;
 
   const n = sessionCount(program);
-  const done = program.status === 'current' ? 1 : 0;
 
   const inner = (
     <>
@@ -274,7 +272,7 @@ function ProgramCard({
         <h3>{T(program.subtitle)}</h3>
         <div className="bars" aria-hidden="true">
           {Array.from({ length: n }, (_, k) => (
-            <i key={k} className={k < done ? 'on' : undefined} />
+            <i key={k} />
           ))}
         </div>
         {/* A program with no sessions yet, or no length set, leaves that field

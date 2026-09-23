@@ -64,11 +64,11 @@ const sessionsLabel = (n: number): Localized =>
     ? { en: `${n} ${n === 1 ? 'session' : 'sessions'}`, ko: `${n}개 세션` }
     : { en: '', ko: '' };
 
-/* 'current' is not a column. The database knows draft/soon/open — whether a
-   module is *the one you are in* is a fact about the dancer, not the shelf, and
-   it lives in STATE until practice_events makes it real in P4. */
-const statusOf = (slug: string, status: PublishStatus): ProgramStatus =>
-  slug === STATE.program ? 'current' : status === 'open' ? 'open' : 'soon';
+/* 'current' is not a column. Whether a module is *the one you are in* is a
+   fact about the dancer, and until practice_events makes it real in P4 there is
+   no honest answer — so no program claims it. It used to come from STATE, which
+   told every member they were 4% into Improvisation 01. */
+const statusOf = (status: PublishStatus): ProgramStatus => (status === 'open' ? 'open' : 'soon');
 
 /* ----------------------------------------------------------------- query --- */
 
@@ -131,7 +131,7 @@ export async function getCatalogue(): Promise<Area[]> {
         weeks: weeksLabel(p.weeks),
         sessions: sessionsLabel(p.sessions?.length ?? 0),
         level: LEVEL_LABELS[p.level],
-        status: statusOf(p.slug, p.status),
+        status: statusOf(p.status),
         /* p.sessions is already what "published sessions are public" let this
            viewer see (or every session, for an admin previewing a draft) — so
            a non-empty array already means there is somewhere to send them. */
@@ -289,6 +289,14 @@ export interface SessionVideoSummary {
   /** width / height, from the encode. Below 1 is portrait. Null until known —
       the player then measures it off the loaded video instead. */
   aspect: number | null;
+  /** The beat grid. Counts, phrase marks and "loop eight counts" all derive
+      from these; without a bpm the player offers none of them. */
+  bpm: number | null;
+  firstBeatMs: number | null;
+  beatsPerPhrase: number;
+  /** The loop a member gets before touching anything, set in the back office. */
+  loopStartMs: number | null;
+  loopEndMs: number | null;
 }
 
 export interface SessionDetail {
@@ -327,6 +335,11 @@ interface SessionDetailRow {
         status: VideoStatus;
         width: number | null;
         height: number | null;
+        bpm: number | null;
+        first_beat_ms: number | null;
+        beats_per_phrase: number;
+        default_loop_start_ms: number | null;
+        default_loop_end_ms: number | null;
       }[]
     | null;
 }
@@ -350,7 +363,9 @@ export async function getSession(id: string): Promise<SessionDetail | null> {
       `id, program_id, position, title_t, outcome_t, focus_t, levels,
        program:programs ( slug, title_t ),
        videos ( id, step, position, title_t, description_t, duration_ms, angle,
-                mirror_default, is_drillable, status, width, height )`,
+                mirror_default, is_drillable, status, width, height,
+                bpm, first_beat_ms, beats_per_phrase,
+                default_loop_start_ms, default_loop_end_ms )`,
     )
     .eq('id', id)
     .maybeSingle();
@@ -391,6 +406,11 @@ export async function getSession(id: string): Promise<SessionDetail | null> {
       isDrillable: v.is_drillable,
       status: v.status,
       aspect: v.width && v.height ? v.width / v.height : null,
+      bpm: v.bpm,
+      firstBeatMs: v.first_beat_ms,
+      beatsPerPhrase: v.beats_per_phrase,
+      loopStartMs: v.default_loop_start_ms,
+      loopEndMs: v.default_loop_end_ms,
     })),
     prevSessionId: at > 0 ? siblings[at - 1].id : null,
     nextSessionId: at >= 0 && at < siblings.length - 1 ? siblings[at + 1].id : null,
@@ -425,6 +445,11 @@ function staticSession(id: string): SessionDetail | null {
       isDrillable: v.isDrillable,
       status: 'ready',
       aspect: 16 / 9,
+      bpm: null,
+      firstBeatMs: null,
+      beatsPerPhrase: 8,
+      loopStartMs: null,
+      loopEndMs: null,
     })),
     prevSessionId: position > 1 ? `${STATE.program}-s${position - 1}` : null,
     nextSessionId: position < SESSIONS.length ? `${STATE.program}-s${position + 1}` : null,
