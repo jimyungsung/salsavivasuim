@@ -461,7 +461,7 @@ export async function requestUploadUrl(videoId: string, origin: string): Promise
 export async function refreshVideoStatus(videoId: string): Promise<Result> {
   await requireAdmin();
 
-  const { streamConfig, getVideo, enableDownloads, customerCodeFrom } = await import(
+  const { streamConfig, getVideo, enableDownloads, customerCodeFrom, dimensionsOf } = await import(
     '@/lib/cloudflare'
   );
   const cfg = streamConfig();
@@ -491,6 +491,7 @@ export async function refreshVideoStatus(videoId: string): Promise<Result> {
         duration_ms: duration,
         poster_url: v.thumbnail ?? null,
         hls_playback_id: customerCodeFrom(v.playback?.hls),
+        ...dimensionsOf(v),
       }).eq('id', videoId);
       if (error) return fail(error.message);
     } else if (v.status?.state === 'error') {

@@ -24,13 +24,15 @@
 .sp .lay>*{min-width:0}
 
 .sp .player{border-radius:20px;overflow:hidden;background:var(--ink)}
-.sp .frame{position:relative;aspect-ratio:16/9;background:#000}
+.sp .frame{position:relative;overflow:hidden;aspect-ratio:var(--ar,16/9);max-height:calc(100vh - 260px);width:100%;background:#000}
 .sp .frame.mirrored .sp-video{transform:scaleX(-1)}
-.sp-video{width:100%;height:100%;display:block;background:#000}
+/* Absolute, so the frame alone decides the box — its aspect ratio normally, the
+   flexed height in full screen — and the picture letterboxes inside it. */
+.sp-video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:#000}
 .sp-status{position:absolute;inset:0;z-index:3;display:grid;place-items:center;margin:0;color:#fff;font-size:13px;font-weight:700;background:#0b0f0eb0;pointer-events:none}
 
 .sp .prow{display:flex;align-items:center;gap:8px;padding:12px 16px}
-.sp .sp-title{font-size:13px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp .sp-title{min-width:0;font-size:13px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sp .sp-flex{flex:1}
 .sp .ic{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:none;color:#ffffffc4;cursor:pointer;transition:.16s;font-size:15px}
 .sp .ic:hover{background:#ffffff1f;color:#fff}
@@ -71,13 +73,33 @@
 .sp .vid[aria-current="true"] .vmeta .t{color:var(--lime)}
 .sp .vmeta .n{display:block;margin-top:2px;font-size:14px;font-weight:700;line-height:1.3}
 
+/* Portrait: the picture is tall, so its height is what has to fit the screen.
+   The player shrinks to the picture's width and the steps move beside it
+   instead of below, where they would sit under a mostly empty frame. */
+.sp .lay.portrait .stage{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
+.sp .lay.portrait .player{width:calc(min(100vh - 250px, 860px) * var(--ar));max-width:100%}
+.sp .lay.portrait .frame{max-height:none}
+.sp .lay.portrait .sp-title{display:none}
+.sp .lay.portrait .notes .steps{margin-top:0}
+
+/* Full screen takes the whole player, controls included, and lets the picture
+   letterbox inside whatever shape the screen is. */
+.sp .player:fullscreen,.sp .lay.portrait .player:fullscreen{display:flex;flex-direction:column;width:100%;max-width:none;border-radius:0;background:#000}
+.sp .player:fullscreen .frame{flex:1;min-height:0;max-height:none;aspect-ratio:auto}
+.sp .player:fullscreen .sp-title{display:block}
+
 @media(max-width:1080px){
   .sp .lay{grid-template-columns:1fr}
   .sp .side{position:static}
 }
 @media(max-width:640px){
+  /* Wrapped onto three lines it is a third of a phone screen; sticky, it would
+     sit on top of the video for the whole session. */
+  .sp .subnav{position:static}
   .sp .where h1{font-size:16px}
   .sp .steps{grid-template-columns:repeat(3,1fr)}
+  .sp .lay.portrait .stage{grid-template-columns:1fr}
+  .sp .lay.portrait .player{width:calc(min(100vh - 230px, 860px) * var(--ar));width:calc(min(100svh - 230px, 860px) * var(--ar));margin:0 auto}
 }
 
 .sp .foot form{display:contents}

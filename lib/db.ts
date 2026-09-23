@@ -102,6 +102,9 @@ export interface VideoRow {
   mp4_url: string | null;
   poster_url: string | null;
   status: VideoStatus;
+  /** Picture size after rotation, from Cloudflare. Null until encoded. */
+  width: number | null;
+  height: number | null;
   /* The beat grid. Everything about counts is derived from these three; nothing
      about counts is ever hand-drawn. */
   bpm: number | null;

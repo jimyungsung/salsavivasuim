@@ -125,6 +125,16 @@ export interface StreamVideo {
   readyToStream?: boolean;
   playback?: { hls?: string; dash?: string };
   meta?: Record<string, string>;
+  /** After rotation — a phone filmed upright reports as tall. -1 while unknown. */
+  input?: { width?: number; height?: number };
+}
+
+/** The picture size for videos.width / videos.height, or nothing while
+    Cloudflare does not know it yet — never a half-written pair. */
+export function dimensionsOf(v: StreamVideo): { width: number; height: number } | Record<string, never> {
+  const w = v.input?.width ?? -1;
+  const h = v.input?.height ?? -1;
+  return w > 0 && h > 0 ? { width: w, height: h } : {};
 }
 
 export const getVideo = (cfg: StreamConfig, uid: string) =>
