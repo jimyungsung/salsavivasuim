@@ -16,16 +16,20 @@ writing duration, poster and customer code back to the row, and the masterplan
 rendering the catalogue out of the database — so what the back office publishes
 is what the public shelf shows.
 
-Ported so far: `/masterplan`, `/signin`, `/register`. Everything else still
-serves from `public/prototype/`.
+Ported so far: `/masterplan`, `/programs/[slug]` (a module), `/sessions/[id]`
+(a session and its player), `/signin`, `/register`. Everything else still serves
+from `public/prototype/`.
 
-**Next: the module and session screens, and the player** (BUILD-PLAN §5). Right
-now a catalogue card only links when its slug matches `STATE.program`, so a real
-program with real footage behind it — Pachanga 01 has two encoded videos — is
-not reachable. That rule was written when the catalogue was invented data and 37
-fake cards would all have landed on one page; it is now the thing hiding real
-content. It should become "links when it has a published session", once there is
-a module page to link to.
+The player plays for real: signed HLS from Cloudflare, speed with pitch kept,
+mirror, and the session's videos as a step list. Pachanga 01 plays end to end.
+It is deliberately the first pass — native controls stand in for the scrub bar.
+
+**Next: the precision work in BUILD-PLAN §5** — the A→B loop off
+`requestVideoFrameCallback`, the count grid from the beat grid, per-step speed,
+wake lock, and the playlist shape. `plan.html` and `session.html` are not deleted
+yet: the masterplan's "Continue training" link and the un-ported training and
+drills screens still point at them by session number, which means nothing to a
+real session id until practice_events lands.
 
 The name is an open question: the product is still SUIM throughout the code, but
 the domain bought for it is salsadrill.com, on the reasoning that a platform
@@ -68,6 +72,9 @@ session can sit in two at once and session 05 can be gentler than session 04.
       page.tsx            / → redirects to the un-ported landing page
       globals.css         the design system — canonical copy
       masterplan/         the catalogue, the first screen ported
+      programs/[slug]/    a module: its sessions, filtered by level
+      sessions/[id]/      a session: the player and its videos
+      sessions/actions.ts getPlayback() — the only place playback is signed
     components/AppNav.tsx the signed-in nav, rendered by every app screen
     lib/catalogue.ts      the catalogue, read from Supabase — what /masterplan
                           renders
@@ -99,11 +106,10 @@ session can sit in two at once and session 05 can be gentler than session 04.
   catalogue, a module and a session, because drilling in never leaves that
   section. Screens below the top level show one `.crumb` back link naming the
   screen above them. Never add a nav item pointing at `#`.
-- **Only Improvisation 01 navigates** — and this one is due to go. It was right
-  when the catalogue was invented data: 37 fake cards all landing on one page
-  would have read as broken links. Now the rows are real, it is what hides a
-  program that has footage. Replace it with "links when it has a published
-  session" as soon as there is a module page to link to.
+- **A card links when there is somewhere to go.** A program card links when it
+  has a session this viewer can see (`Program.linkable`); a session card links
+  when it has a video this viewer can see. Both counts are what RLS returned, so
+  neither is a second access check — an admin sees their drafts as a preview.
 - **The prototype under `public/prototype/` is frozen.** Its `assets/app.css` is
   a dead copy; edit `app/globals.css` instead. Delete a prototype screen when its
   replacement lands, and update the links pointing at it.
@@ -138,6 +144,12 @@ definer-style helper in `private` too, and keep `get_advisors` clean.
 
 The catalogue is public to anyone, signed in or not — that is the marketing
 surface. What is gated is `videos`, because a video row carries its playback ids.
+
+Playback is signed in `getPlayback()` after an ordinary RLS select, so
+`can_access()` has already decided before anything is signed. The client never
+sees `provider_uid`. Never use `videos.poster_url` in the member app: the webhook
+stores Cloudflare's *unsigned* thumbnail there, which answers 401. Use the signed
+poster.
 
 ## Two things not to get wrong later
 

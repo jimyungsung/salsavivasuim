@@ -1,0 +1,57 @@
+/* A module: its sessions, tagged by level.
+
+   Ported from the prototype's plan.html <style> block, scoped under .pg so it
+   cannot leak into screens ported after it — same convention as .mp for the
+   masterplan. `.ses.soon` is new: a session with no footage yet still shows in
+   the grid, just without a link, the same "arrow-less card" signal the
+   masterplan uses for a module with no session. */
+
+.pg{display:flex;flex-direction:column;min-height:100vh}
+.pg .main{padding:100px 0 0}
+
+.pg .topline{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+.pg .hero{padding:48px 0 38px;display:flex;justify-content:space-between;align-items:flex-end;gap:44px;border-bottom:1px solid var(--line)}
+.pg .hero>div{min-width:0}
+.pg .hero .kicker{color:#708000}
+.pg .hero h1{font-size:clamp(44px,6.4vw,98px);line-height:.86;letter-spacing:-.06em;font-weight:900;margin:18px 0 20px}
+.pg .hero p{margin:0;max-width:52ch;font-size:16.5px;line-height:1.6;color:var(--muted)}
+.pg .hero-side{text-align:right;white-space:nowrap}
+.pg .hero-side strong{display:block;font-size:30px;letter-spacing:-.045em;line-height:1}
+.pg .hero-side span{font-size:10px;font-weight:700;letter-spacing:.08em;color:#8b918c}
+
+.pg .plan{padding:0 0 90px}
+.pg .levelbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:30px 0 20px}
+.pg .levelbar h2{margin:0;font-size:19px;letter-spacing:-.035em;font-weight:900}
+.pg .levelbar .sub{margin:5px 0 0;font-size:11px;color:#8a908b}
+.pg .levels{display:flex;gap:6px;flex-wrap:wrap}
+.pg .lv{border:1px solid var(--line);background:#fff;border-radius:24px;padding:9px 15px;font-size:11.5px;font-weight:800;letter-spacing:.03em;color:#6e746f;cursor:pointer;transition:.16s}
+.pg .lv:hover{border-color:var(--ink);color:var(--ink)}
+.pg .lv[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.pg .lv i{font-style:normal;opacity:.6;margin-left:6px;font-variant-numeric:tabular-nums}
+
+.pg .sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.pg .ses{position:relative;display:flex;flex-direction:column;min-height:238px;padding:22px;border:1px solid #11111f22;border-radius:20px;background:var(--card);color:inherit;overflow:hidden;transition:transform .22s,border-color .22s}
+.pg a.ses:hover{transform:translateY(-5px);border-color:var(--ink)}
+.pg .ses .ghost{position:absolute;left:-10px;top:-32px;z-index:0;font-size:140px;font-weight:900;letter-spacing:-.07em;line-height:1;color:#0b0f0e0d;pointer-events:none;font-variant-numeric:tabular-nums}
+.pg .ses .copy{margin-top:auto;position:relative;z-index:2}
+.pg .ses h3{margin:0 0 9px;font-size:24px;line-height:1.04;letter-spacing:-.04em;font-weight:900;max-width:16ch}
+.pg .ses p{margin:0 0 14px;font-size:14px;line-height:1.5;color:#4d534e}
+.pg .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.pg .tag{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:800;padding:5px 9px;border-radius:20px;border:1px solid #11111f26;color:#5b615c}
+.pg .tag.all{background:#0b0f0e0d}
+.pg .ses .foot{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid #11111f24;padding-top:13px;font-size:12px;font-weight:700;color:#5b615c;position:relative;z-index:2}
+.pg .ses.soon{background:transparent;border-style:dashed;color:#878d88}
+.pg .ses.soon h3{color:#71776f}
+.pg .empty{padding:46px 0;color:#8a908b;font-size:15px}
+
+.ko .pg .ses h3{font-size:21px;line-height:1.2}
+@media(max-width:900px){
+  .pg .hero{flex-direction:column;align-items:flex-start;gap:26px;padding:32px 0 28px}
+  .pg .hero-side{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){.pg a.ses:hover{transform:none}}
+
+.pg .foot form{display:contents}
+.pg .signout{border:0;background:none;padding:0;font:inherit;font-weight:700;cursor:pointer;color:#ffffffb0;border-bottom:1px solid #ffffff2e;padding-bottom:1px;transition:.2s}
+.pg .signout:hover{color:var(--lime);border-bottom-color:var(--lime)}

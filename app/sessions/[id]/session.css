@@ -1,0 +1,83 @@
+/* The session player, first pass — proves the signing path, not the precision
+   work in BUILD-PLAN §5. Ported from the prototype's session.html <style>
+   block, scoped under .sp; the scrub bar, loop zone and count overlay it drew
+   for a placeholder video are gone because a real <video> element draws its
+   own — that part comes back, off the beat grid, when the loop lands. */
+
+.sp{display:flex;flex-direction:column;min-height:100vh}
+.sp-empty{padding:120px 0;text-align:center;color:#8a908b}
+
+.sp .subnav{position:sticky;top:78px;margin-top:78px;z-index:15;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.sp .subin{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 0;flex-wrap:wrap}
+.sp .where{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;min-width:0}
+.sp .where .lv{font-size:10.5px;letter-spacing:.17em;text-transform:uppercase;font-weight:800;color:#708000}
+.sp .where h1{margin:0;font-size:19px;letter-spacing:-.035em;font-weight:900}
+.sp .where .len{font-size:11.5px;font-weight:700;color:#8a908b;font-variant-numeric:tabular-nums}
+.sp .hop{display:flex;gap:7px}
+.sp .hop a{display:grid;place-items:center;min-width:40px;height:40px;padding:0 15px;border:1px solid var(--line);border-radius:26px;font-size:12.5px;font-weight:800;color:var(--muted);transition:.18s}
+.sp .hop a:hover{color:var(--ink);border-color:var(--ink);background:#e6e8df}
+.sp .hop a.off{opacity:.35;pointer-events:none}
+
+.sp .lay{display:grid;grid-template-columns:1fr 356px;gap:22px;padding:26px 0 70px;align-items:start}
+.sp .lay>*{min-width:0}
+
+.sp .player{border-radius:20px;overflow:hidden;background:var(--ink)}
+.sp .frame{position:relative;aspect-ratio:16/9;background:#000}
+.sp .frame.mirrored .sp-video{transform:scaleX(-1)}
+.sp-video{width:100%;height:100%;display:block;background:#000}
+.sp-status{position:absolute;inset:0;z-index:3;display:grid;place-items:center;margin:0;color:#fff;font-size:13px;font-weight:700;background:#0b0f0eb0;pointer-events:none}
+
+.sp .prow{display:flex;align-items:center;gap:8px;padding:12px 16px}
+.sp .sp-title{font-size:13px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp .sp-flex{flex:1}
+.sp .ic{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:none;color:#ffffffc4;cursor:pointer;transition:.16s;font-size:15px}
+.sp .ic:hover{background:#ffffff1f;color:#fff}
+.sp .ic[aria-pressed="true"]{background:var(--lime);color:var(--ink)}
+.sp .ic.play{background:var(--lime);color:var(--ink)}
+.sp .ic.play:hover{background:#d6ff3d}
+.sp .speed{border:0;background:none;color:#ffffffc4;font:inherit;font-size:12px;font-weight:800;letter-spacing:.03em;padding:8px 11px;border-radius:20px;cursor:pointer;transition:.16s;min-width:52px}
+.sp .speed:hover{background:#ffffff1f;color:#fff}
+.sp .speed[data-on="true"]{background:var(--lime);color:var(--ink)}
+
+.sp .steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;margin-top:12px}
+.sp .step{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px 9px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--muted);font:inherit;cursor:pointer;transition:.16s;min-width:0}
+.sp .step:hover{border-color:var(--ink);color:var(--ink)}
+.sp .step:disabled{opacity:.4;cursor:not-allowed}
+.sp .step .sn{font-size:9px;font-weight:800;opacity:.6}
+.sp .step .st{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-align:center;line-height:1.2}
+.sp .step .slen{margin-top:3px;font-size:12px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.sp .step[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.sp .step[aria-current="true"] .st,.sp .step[aria-current="true"] .slen{color:var(--lime)}
+
+.sp .about{margin-top:20px;border:1px solid var(--line);border-radius:20px;padding:24px;background:var(--card)}
+.sp .about h3{margin:0;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#8a908b}
+.sp .about p{margin:12px 0 0;font-size:14.5px;line-height:1.55;color:#4d534e}
+
+.sp .side{border:1px solid var(--line);border-radius:20px;background:#fff;overflow:hidden;position:sticky;top:158px}
+.sp .shead{padding:17px 20px;border-bottom:1px solid var(--line)}
+.sp .shead b{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+.sp .vid{display:grid;grid-template-columns:92px 1fr;gap:13px;align-items:center;width:100%;padding:12px 16px;border:0;border-bottom:1px solid #11111f12;background:none;color:inherit;text-align:left;cursor:pointer;font:inherit;transition:background .16s}
+.sp .vid:last-of-type{border-bottom:0}
+.sp .vid:hover{background:#f1f2ec}
+.sp .vid:disabled{opacity:.45;cursor:not-allowed}
+.sp .vid[aria-current="true"]{background:var(--ink);color:#fff}
+.sp .vthumb{position:relative;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:repeating-linear-gradient(135deg,#e7e8e1 0 7px,#eff0e9 7px 14px);display:grid;place-items:center}
+.sp .vid[aria-current="true"] .vthumb{background:repeating-linear-gradient(135deg,#1a221d 0 7px,#20291f 7px 14px)}
+.sp .vthumb .d{position:absolute;right:4px;bottom:4px;background:#0b0f0ed9;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px}
+.sp .vmeta{min-width:0}
+.sp .vmeta .t{display:block;font-size:9.5px;letter-spacing:.15em;font-weight:800;color:#708000}
+.sp .vid[aria-current="true"] .vmeta .t{color:var(--lime)}
+.sp .vmeta .n{display:block;margin-top:2px;font-size:14px;font-weight:700;line-height:1.3}
+
+@media(max-width:1080px){
+  .sp .lay{grid-template-columns:1fr}
+  .sp .side{position:static}
+}
+@media(max-width:640px){
+  .sp .where h1{font-size:16px}
+  .sp .steps{grid-template-columns:repeat(3,1fr)}
+}
+
+.sp .foot form{display:contents}
+.sp .signout{border:0;background:none;padding:0;font:inherit;font-weight:700;cursor:pointer;color:#ffffffb0;border-bottom:1px solid #ffffff2e;padding-bottom:1px;transition:.2s}
+.sp .signout:hover{color:var(--lime);border-bottom-color:var(--lime)}

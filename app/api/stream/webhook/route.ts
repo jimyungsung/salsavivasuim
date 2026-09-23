@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import {
   customerCodeFrom,
+  enableDownloads,
   streamConfig,
   verifyWebhook,
   type StreamVideo,
@@ -77,6 +78,15 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('[stream webhook] ready update failed', error.message);
       return NextResponse.json({ error: 'Write failed' }, { status: 500 });
+    }
+
+    /* MP4 renditions are opt-in per video, and the drill loop plays from one.
+       Asking on every ready event is harmless; a failure here must not make
+       Cloudflare retry a webhook whose write already landed. */
+    try {
+      await enableDownloads(cfg, uid);
+    } catch (e) {
+      console.error('[stream webhook] enabling downloads failed', e);
     }
   } else if (state === 'error') {
     const { error } = await supabase
