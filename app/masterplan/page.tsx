@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import AppNav from '@/components/AppNav';
 import Catalogue from './Catalogue';
 import { ALL_AREAS, FILTERS, type Filter } from './view';
-import { AREA_COUNT } from '@/lib/content';
+import { getCatalogue } from '@/lib/catalogue';
 import './masterplan.css';
 
 export const metadata: Metadata = {
@@ -19,16 +19,20 @@ export default async function MasterplanPage({
 }) {
   const { area, f } = await searchParams;
 
+  /* The shelf comes from the database now, so what the back office publishes is
+     what this page shows. */
+  const areas = await getCatalogue();
+
   /* Area and filter are read on the server so a linked view renders correctly
      on first paint rather than snapping into place after hydration. */
   const initialArea =
-    area === 'all' ? ALL_AREAS : clamp(parseInt(area ?? '', 10) || 0, 0, AREA_COUNT - 1);
+    area === 'all' ? ALL_AREAS : clamp(parseInt(area ?? '', 10) || 0, 0, Math.max(0, areas.length - 1));
   const initialFilter: Filter = FILTERS.includes(f as Filter) ? (f as Filter) : 'all';
 
   return (
     <>
       <AppNav current="masterplan" />
-      <Catalogue initialArea={initialArea} initialFilter={initialFilter} />
+      <Catalogue areas={areas} initialArea={initialArea} initialFilter={initialFilter} />
     </>
   );
 }
