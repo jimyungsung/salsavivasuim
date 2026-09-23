@@ -291,11 +291,12 @@ function ProgramCard({
     </>
   );
 
-  /* Improvisation 01 is the only module built out, so it is the only card that
-     navigates — the rest would all land on it, which reads as a broken link.
-     The arrow-less card is the signal that it goes nowhere yet. */
-  return program.status === 'current' ? (
-    <Link className={`card ${className}`} href="/prototype/plan.html">
+  /* A card navigates once its module has a session to show — real footage
+     behind it, not just a catalogue row. Everything else would land on an
+     empty module page, which reads as a broken link; the arrow-less card is
+     the signal that it goes nowhere yet. */
+  return program.linkable ? (
+    <Link className={`card ${className}`} href={`/programs/${program.id}`}>
       {inner}
     </Link>
   ) : (

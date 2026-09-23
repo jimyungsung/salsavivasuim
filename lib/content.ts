@@ -42,6 +42,11 @@ export interface Program {
   sessions: Localized;
   level: Localized;
   status: ProgramStatus;
+  /** Whether a module page exists to link to — this program has at least one
+      session the viewer may see. Supabase computes it from what RLS actually
+      returned; the static fallback approximates it with STATE.program, the
+      only program the hard-coded data below has sessions for. */
+  linkable: boolean;
 }
 
 export interface Area {
@@ -49,6 +54,16 @@ export interface Area {
   name: Localized;
   blurb: Localized;
   programs: Program[];
+}
+
+/** The literal catalogue below predates `linkable` — it is filled in once,
+    from STATE, after the array closes. */
+type ProgramSeed = Omit<Program, 'linkable'>;
+interface AreaSeed {
+  id: string;
+  name: Localized;
+  blurb: Localized;
+  programs: ProgramSeed[];
 }
 
 /* A session is an ordered sequence of videos, each tagged with one of the six
@@ -102,7 +117,7 @@ export const LEVEL_LABELS: Record<LevelKey, Localized> = {
   pro: { en: "Pro", ko: "프로" },
 };
 
-export const AREAS: Area[] = [
+const AREA_SEEDS: AreaSeed[] = [
   {
     id: "improvisation",
     name: { en: "Improvisation", ko: "즉흥" },
@@ -743,6 +758,13 @@ export const STATE = {
   /** 0 = Monday */
   today: 3,
 } as const;
+
+/** `linkable` needs STATE, which is declared above this line on purpose — the
+    seed literal is otherwise identical to what AREAS used to be. */
+export const AREAS: Area[] = AREA_SEEDS.map(area => ({
+  ...area,
+  programs: area.programs.map(p => ({ ...p, linkable: p.id === STATE.program })),
+}));
 
 /** Newest first: [session, step (1-based), when, what]. */
 export const RECENT: [number, number, string, string][] = [[1,2,"today","completed"],[1,1,"today","completed"],[1,3,"yesterday","started"],[5,1,"days3","watched"]];
