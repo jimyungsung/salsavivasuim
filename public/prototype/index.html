@@ -415,9 +415,9 @@ Stay if you train.</h2></div>
   function applyMember(c){
     if(!isMember())return;
     const set=(sel,label,href)=>{const el=document.querySelector(sel);if(el){el.textContent=label;el.setAttribute('href',href)}};
-    set('.navcta',c.navCtaIn,'masterplan.html');
-    set('.hero .primary',c.primaryIn,'masterplan.html');
-    set('.final .pill',c.finalCIn,'masterplan.html');
+    set('.navcta',c.navCtaIn,'/masterplan');
+    set('.hero .primary',c.primaryIn,'/masterplan');
+    set('.final .pill',c.finalCIn,'/masterplan');
   }
 
   document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));

@@ -22,14 +22,14 @@ export const NAV = {
 /* Only screens that exist. A nav item pointing at "#" is a dead end.
    "Masterplan" stays current for everything below it — a module, a session, a
    module explainer — because drilling in never leaves that section. */
-const NAV_ITEMS = [['masterplan', 'masterplan.html'], ['training', 'training.html'], ['drills', 'drills.html']];
+const NAV_ITEMS = [['masterplan', '/masterplan'], ['training', 'training.html'], ['drills', 'drills.html']];
 
 export function renderNav(lang, current){
   const host = document.getElementById('appnav');
   if (!host) return;
   const n = NAV[lang] || NAV.en;
   host.innerHTML = `<div class="wrap">
-    <a class="logo" href="masterplan.html">SUIM<span class="dot">.</span></a>
+    <a class="logo" href="/masterplan">SUIM<span class="dot">.</span></a>
     <nav class="navlinks" aria-label="Main">
       ${NAV_ITEMS.map(([k, href]) =>
         `<a href="${href}"${k === current ? ' aria-current="page"' : ''}>${esc(n[k])}</a>`).join('')}
