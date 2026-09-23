@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useCopy, useLang } from '@/lib/lang';
 import type { Copy } from '@/lib/lang';
-import { AREAS, STATE, type Area, type Program } from '@/lib/content';
+import { STATE, type Area, type Program } from '@/lib/content';
 import { ALL_AREAS, FILTERS, FILTER_COPY_KEY, type Filter } from './view';
 
 type Key =
@@ -78,9 +78,13 @@ function variant(e: Entry, coachCardId: string | null) {
 }
 
 export default function Catalogue({
+  areas,
   initialArea,
   initialFilter,
 }: {
+  /* Passed in rather than imported: the catalogue is read from the database on
+     the server, and a 'use client' module cannot do that. */
+  areas: Area[];
   initialArea: number;
   initialFilter: Filter;
 }) {
@@ -100,11 +104,11 @@ export default function Catalogue({
   }, [area, filter]);
 
   const all = area === ALL_AREAS;
-  const section = all ? null : AREAS[area];
-  const total = AREAS.reduce((n, a) => n + a.programs.length, 0);
+  const section = all ? null : areas[area];
+  const total = areas.reduce((n, a) => n + a.programs.length, 0);
 
   const list: Entry[] = all
-    ? AREAS.flatMap(a => a.programs.map((program, index) => ({ program, index, area: a })))
+    ? areas.flatMap(a => a.programs.map((program, index) => ({ program, index, area: a })))
     : section!.programs.map((program, index) => ({ program, index, area: section! }));
 
   const shown = list.filter(e => matches(e.program, filter));
@@ -136,7 +140,7 @@ export default function Catalogue({
               <span className="nm">{c.allAreas}</span>
               <span className="ct">{total}</span>
             </button>
-            {AREAS.map((a, i) => (
+            {areas.map((a, i) => (
               <button
                 key={a.id}
                 className="area"
@@ -273,10 +277,15 @@ function ProgramCard({
             <i key={k} className={k < done ? 'on' : undefined} />
           ))}
         </div>
+        {/* A program with no sessions yet, or no length set, leaves that field
+            empty — rendering the span anyway would print a stray separator. */}
         <div className="meta">
-          <span>{T(program.weeks)}</span>
-          <span>{T(program.sessions)}</span>
-          <span>{T(program.level)}</span>
+          {[program.weeks, program.sessions, program.level]
+            .map(field => T(field))
+            .filter(text => text !== '')
+            .map((text, i) => (
+              <span key={i}>{text}</span>
+            ))}
         </div>
       </div>
     </>

@@ -24,6 +24,18 @@ import {
 
 export type Result = { ok: true } | { ok: false; error: string };
 
+/* The back office and the public shelf read the same rows, so a write that
+   changes the catalogue has to clear both caches.
+
+   This is deliberately blunt: a video edit revalidates the masterplan too, even
+   though no video appears there. A wasted re-render costs one request; a missed
+   one leaves the public page showing yesterday's catalogue with nothing to
+   suggest anything is wrong. */
+const revalidateCatalogue = () => {
+  revalidatePath('/admin', 'layout');
+  revalidatePath('/masterplan');
+};
+
 const ok: Result = { ok: true };
 const fail = (error: string): Result => ({ ok: false, error });
 
@@ -47,7 +59,7 @@ export async function setStatus(
   const { error } = await supabase.from(table).update(patch).eq('id', id);
   if (error) return fail(error.message);
 
-  revalidatePath('/admin');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -76,7 +88,7 @@ export async function movePosition(
   });
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -109,7 +121,7 @@ export async function createSession(programId: string): Promise<Result> {
   });
   if (error) return fail(error.message);
 
-  revalidatePath('/admin');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -178,7 +190,7 @@ export async function setLocalized(
   const { error } = await supabase.from(table).update({ [column]: payload }).eq('id', id);
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -226,7 +238,7 @@ export async function setVideoFields(
   const { error } = await supabase.from('videos').update(fields).eq('id', id);
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -269,7 +281,7 @@ export async function createArea(name: string): Promise<Result> {
   });
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -295,7 +307,7 @@ export async function createProgram(areaId: string, title: string): Promise<Resu
   });
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -332,7 +344,7 @@ export async function setProgramFields(
     );
   }
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -347,7 +359,7 @@ export async function setAreaSlug(id: string, slug: string): Promise<Result> {
     return fail(error.code === '23505' ? 'Another area already uses that slug.' : error.message);
   }
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -369,7 +381,7 @@ export async function deleteArea(id: string): Promise<Result> {
     );
   }
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -382,7 +394,7 @@ export async function deleteProgram(id: string): Promise<Result> {
   const { error } = await supabase.from('programs').delete().eq('id', id);
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -393,7 +405,7 @@ export async function deleteSession(id: string): Promise<Result> {
   const { error } = await supabase.from('sessions').delete().eq('id', id);
   if (error) return fail(error.message);
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
 
@@ -434,7 +446,7 @@ export async function requestUploadUrl(videoId: string, origin: string): Promise
       .eq('id', videoId);
     if (error) return { ok: false, error: error.message };
 
-    revalidatePath('/admin', 'layout');
+    revalidateCatalogue();
     return { ok: true, uploadURL: ticket.uploadURL, uid: ticket.uid };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
@@ -488,7 +500,7 @@ export async function refreshVideoStatus(videoId: string): Promise<Result> {
       await supabase.from('videos').update({ status: 'processing' }).eq('id', videoId);
     }
 
-    revalidatePath('/admin', 'layout');
+    revalidateCatalogue();
     return ok;
   } catch (e) {
     return fail(e instanceof Error ? e.message : String(e));
@@ -528,6 +540,6 @@ export async function clearVideoUpload(videoId: string): Promise<Result> {
     }
   }
 
-  revalidatePath('/admin', 'layout');
+  revalidateCatalogue();
   return ok;
 }
