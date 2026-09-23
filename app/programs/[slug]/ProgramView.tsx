@@ -13,7 +13,7 @@ import type { ProgramDetail, SessionSummary } from '@/lib/catalogue';
 
 type Key =
   | 'crumb' | 'moduleWord' | 'totalMinL' | 'chooseT' | 'chooseS' | 'everySession'
-  | 'footer' | 'signout' | 'videosWord' | 'empty' | 'processing';
+  | 'footer' | 'signout' | 'videosWord' | 'empty' | 'processing' | 'signIn';
 
 const C: Copy<Key> = {
   en: {
@@ -21,7 +21,7 @@ const C: Copy<Key> = {
     chooseT: 'Choose a session', chooseS: 'Open one to see its videos',
     everySession: 'Every session', videosWord: 'videos',
     empty: 'No session carries that level. Try another one.',
-    processing: 'Being filmed',
+    processing: 'Being filmed', signIn: 'Sign in to watch',
     footer: 'Solo salsa training · Built around practice', signout: 'Sign out',
   },
   ko: {
@@ -29,7 +29,7 @@ const C: Copy<Key> = {
     chooseT: '세션 선택', chooseS: '열어서 영상을 확인하세요',
     everySession: '전체 세션', videosWord: '개 영상',
     empty: '해당 레벨의 세션이 없습니다. 다른 레벨을 골라보세요.',
-    processing: '촬영 중',
+    processing: '촬영 중', signIn: '로그인하고 보기',
     footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
   },
 };
@@ -38,7 +38,13 @@ const two = (n: number) => String(n).padStart(2, '0');
 const hasLevel = (s: SessionSummary, level: LevelKey | 'every') =>
   level === 'every' || s.levels.includes(level);
 
-export default function ProgramView({ program }: { program: ProgramDetail }) {
+export default function ProgramView({
+  program,
+  signedIn,
+}: {
+  program: ProgramDetail;
+  signedIn: boolean;
+}) {
   const { T } = useLang();
   const c = useCopy(C);
   const [level, setLevel] = useState<LevelKey | 'every'>('every');
@@ -108,7 +114,7 @@ export default function ProgramView({ program }: { program: ProgramDetail }) {
           ) : (
             <div className="sessions">
               {shown.map(session => (
-                <SessionCard key={session.id} session={session} c={c} />
+                <SessionCard key={session.id} session={session} signedIn={signedIn} c={c} />
               ))}
             </div>
           )}
@@ -130,15 +136,33 @@ export default function ProgramView({ program }: { program: ProgramDetail }) {
   );
 }
 
-function SessionCard({ session, c }: { session: SessionSummary; c: Record<Key, string> }) {
+function SessionCard({
+  session,
+  signedIn,
+  c,
+}: {
+  session: SessionSummary;
+  signedIn: boolean;
+  c: Record<Key, string>;
+}) {
   const { T } = useLang();
   /* videoCount is already what private.can_access() let this viewer see, admin
      bypass included — the same "drafts are a preview, not a leak" rule
-     getCatalogue() relies on, not a second access check layered on top. */
-  const playable = session.videoCount > 0;
-  const foot = playable
-    ? `${mmss(session.durationMs)} · ${session.videoCount} ${c.videosWord}`
-    : c.processing;
+     getCatalogue() relies on, not a second access check layered on top.
+     Signed out it is always zero, so an open session says "sign in" rather
+     than pretending to be unfilmed; the session page then says whether it is. */
+  const href =
+    session.videoCount > 0
+      ? `/sessions/${session.id}`
+      : !signedIn && session.status === 'open'
+        ? `/signin?next=${encodeURIComponent(`/sessions/${session.id}`)}`
+        : null;
+  const foot =
+    session.videoCount > 0
+      ? `${mmss(session.durationMs)} · ${session.videoCount} ${c.videosWord}`
+      : href
+        ? c.signIn
+        : c.processing;
 
   const inner = (
     <>
@@ -155,14 +179,14 @@ function SessionCard({ session, c }: { session: SessionSummary; c: Record<Key, s
         <p>{T(session.outcome)}</p>
         <span className="foot">
           <span>{foot}</span>
-          {playable && <span>→</span>}
+          {href && <span>→</span>}
         </span>
       </div>
     </>
   );
 
-  return playable ? (
-    <Link className="ses" href={`/sessions/${session.id}`}>
+  return href ? (
+    <Link className="ses" href={href}>
       {inner}
     </Link>
   ) : (

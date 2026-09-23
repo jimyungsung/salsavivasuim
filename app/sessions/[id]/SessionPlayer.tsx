@@ -27,7 +27,7 @@ import { getPlayback, type PlaybackResult } from '../actions';
 
 type Key =
   | 'sessionOf' | 'total' | 'prevS' | 'nextS' | 'lastSession'
-  | 'listT' | 'notReady' | 'loading'
+  | 'listT' | 'notReady' | 'loading' | 'signInT' | 'signInGo'
   | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror'
   | 'footer' | 'signout';
 
@@ -36,6 +36,7 @@ const C: Copy<Key> = {
     sessionOf: 'Session', total: 'total', prevS: '← Previous', nextS: 'Next session →',
     lastSession: 'Last session',
     listT: 'Videos in this session', notReady: 'Being filmed', loading: 'Loading…',
+    signInT: 'Sign in to watch this session.', signInGo: 'Sign in ↗',
     aPlay: 'Play', aPause: 'Pause', aSpeed: 'Playback speed', aMirror: 'Mirror the picture',
     footer: 'Solo salsa training · Built around practice', signout: 'Sign out',
   },
@@ -43,6 +44,7 @@ const C: Copy<Key> = {
     sessionOf: '세션', total: '분량', prevS: '← 이전', nextS: '다음 세션 →',
     lastSession: '마지막 세션',
     listT: '이 세션의 영상', notReady: '촬영 중', loading: '불러오는 중…',
+    signInT: '로그인하면 이 세션을 볼 수 있습니다.', signInGo: '로그인 ↗',
     aPlay: '재생', aPause: '일시정지', aSpeed: '재생 속도', aMirror: '좌우 반전',
     footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
   },
@@ -61,10 +63,12 @@ export default function SessionPlayer({
   session,
   initialVideoId,
   initialPlayback,
+  signedIn,
 }: {
   session: SessionDetail;
   initialVideoId: string | null;
   initialPlayback: PlaybackResult | null;
+  signedIn: boolean;
 }) {
   const { T } = useLang();
   const c = useCopy(C);
@@ -152,10 +156,30 @@ export default function SessionPlayer({
     else el.pause();
   }, []);
 
+  /* Signed out, RLS returns no videos, so "being filmed" would be a lie. */
   if (!current) {
     return (
       <div className="sp">
-        <p className="sp-empty">{c.notReady}</p>
+        <div className="sp-empty">
+          <Link className="crumb" href={`/programs/${session.program.id}`}>
+            <span aria-hidden="true">←</span>
+            <span>{T(session.program.title)}</span>
+          </Link>
+          <h1>{T(session.title)}</h1>
+          {signedIn ? (
+            <p>{c.notReady}</p>
+          ) : (
+            <>
+              <p>{c.signInT}</p>
+              <Link
+                className="pill primary sm"
+                href={`/signin?next=${encodeURIComponent(`/sessions/${session.id}`)}`}
+              >
+                {c.signInGo}
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     );
   }

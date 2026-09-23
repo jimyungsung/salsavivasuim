@@ -74,7 +74,15 @@ const C: Copy<Key> = {
 
 type Status = { kind: 'idle' | 'sending' } | { kind: 'sent'; email: string } | { kind: 'error'; message: string };
 
-export default function AuthPanel({ mode }: { mode: 'register' | 'signin' }) {
+export default function AuthPanel({
+  mode,
+  next = '/masterplan',
+}: {
+  mode: 'register' | 'signin';
+  /** Where to land after the link is followed. Already checked to be a path on this site. */
+  next?: string;
+}) {
+  const callback = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
   const { lang, T } = useLang();
   const c = useCopy(C);
   const registering = mode === 'register';
@@ -103,7 +111,7 @@ export default function AuthPanel({ mode }: { mode: 'register' | 'signin' }) {
           /* Registering creates the account; signing in must not, so a mistyped
              address cannot silently become a second empty account. */
           shouldCreateUser: registering,
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/masterplan`,
+          emailRedirectTo: callback(),
           data: { locale: lang, ...(withAnswers ? answers : {}) },
         },
       });
@@ -123,7 +131,7 @@ export default function AuthPanel({ mode }: { mode: 'register' | 'signin' }) {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/auth/callback?next=/masterplan` },
+        options: { redirectTo: callback() },
       });
       if (error) setStatus({ kind: 'error', message: error.message });
     } catch (e) {
