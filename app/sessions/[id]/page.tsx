@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import AppNav from '@/components/AppNav';
 import { getSession } from '@/lib/catalogue';
+import { isConfigured } from '@/lib/supabase/config';
+import { getUser } from '@/lib/supabase/server';
 import { t } from '@/lib/content';
 import { getPlayback } from '../actions';
 import SessionPlayer from './SessionPlayer';
@@ -32,6 +34,7 @@ export default async function SessionPage({
      asks getPlayback() again, client-side. */
   const first = session.videos.find(v => v.status === 'ready');
   const initialPlayback = first ? await getPlayback(first.id) : null;
+  const signedIn = !isConfigured || Boolean(await getUser());
 
   return (
     <>
@@ -40,6 +43,7 @@ export default async function SessionPage({
         session={session}
         initialVideoId={first?.id ?? null}
         initialPlayback={initialPlayback}
+        signedIn={signedIn}
       />
     </>
   );

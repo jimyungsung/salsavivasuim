@@ -5,7 +5,9 @@
    own — that part comes back, off the beat grid, when the loop lands. */
 
 .sp{display:flex;flex-direction:column;min-height:100vh}
-.sp-empty{padding:120px 0;text-align:center;color:#8a908b}
+.sp-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:140px 20px 80px;text-align:center}
+.sp-empty h1{margin:8px 0 0;font-size:clamp(28px,4vw,44px);letter-spacing:-.045em;font-weight:900}
+.sp-empty p{margin:0;color:var(--muted);font-size:15px}
 
 .sp .subnav{position:sticky;top:78px;margin-top:78px;z-index:15;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .sp .subin{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 0;flex-wrap:wrap}

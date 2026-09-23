@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import AppNav from '@/components/AppNav';
 import { getProgram } from '@/lib/catalogue';
+import { isConfigured } from '@/lib/supabase/config';
+import { getUser } from '@/lib/supabase/server';
 import { t } from '@/lib/content';
 import ProgramView from './ProgramView';
 import './program.css';
@@ -29,10 +31,14 @@ export default async function ProgramPage({
   const program = await getProgram(slug);
   if (!program) notFound();
 
+  /* Signed out, RLS returns no videos at all, so every session would read as
+     unfilmed. Knowing who is asking lets the page say "sign in" instead. */
+  const signedIn = !isConfigured || Boolean(await getUser());
+
   return (
     <>
       <AppNav current="masterplan" />
-      <ProgramView program={program} />
+      <ProgramView program={program} signedIn={signedIn} />
     </>
   );
 }
