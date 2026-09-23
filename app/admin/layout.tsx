@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { adminGate } from '@/lib/supabase/admin';
+import SignInLink from './SignInLink';
 import './admin.css';
 
 /* The back office is one language — English — deliberately, against the rule
@@ -66,9 +67,7 @@ function Gate({ reason }: { reason: 'unconfigured' | 'signed-out' | 'not-admin' 
           The back office is gated on your account, not on a shared password — every
           write goes through row-level security as you.
         </p>
-        <Link className="pill primary" href="/signin">
-          Sign in ↗
-        </Link>
+        <SignInLink />
       </div>
     );
   }

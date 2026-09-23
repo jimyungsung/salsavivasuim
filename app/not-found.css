@@ -1,0 +1,14 @@
+/* The 404. Ported from the prototype's 404.html <style> block, scoped under .nf
+   instead of styling body, so it cannot leak into the screens around it. */
+
+.nf{background:var(--ink);color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.nf:before{content:"";position:absolute;width:620px;height:620px;border-radius:50%;background:#c6ff0022;filter:blur(110px);left:-220px;top:-220px}
+.nf .in{position:relative;padding:60px 0}
+.nf .brand{font-size:27px;font-weight:900;letter-spacing:-.06em;display:inline-block;margin-bottom:44px}
+.nf .code{font-size:12px;letter-spacing:.25em;text-transform:uppercase;font-weight:800;color:var(--lime)}
+.nf h1{font-size:clamp(44px,8vw,104px);line-height:.9;letter-spacing:-.055em;font-weight:900;margin:16px 0 0;max-width:14ch}
+.nf p{margin:22px 0 0;font-size:18px;line-height:1.6;color:#ffffffb5;max-width:46ch}
+.nf .go{display:flex;gap:12px;margin-top:36px;flex-wrap:wrap}
+.nf .counts{margin-top:56px;display:flex;gap:clamp(12px,3vw,30px);font-size:clamp(14px,2vw,19px);font-weight:800;color:#ffffff3d;font-variant-numeric:tabular-nums}
+.nf .counts b{color:var(--lime);font-weight:800}
+.ko .nf h1{line-height:1.1;letter-spacing:-.04em}

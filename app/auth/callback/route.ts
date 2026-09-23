@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { isConfigured } from '@/lib/supabase/config';
+import { safeNext, signInHref } from '@/lib/safe-next';
 
 /* Where the email link and the OAuth providers come back to.
 
@@ -9,11 +10,15 @@ import { isConfigured } from '@/lib/supabase/config';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;
   const code = searchParams.get('code');
-  const nextParam = searchParams.get('next') ?? '/masterplan';
-  const next = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/masterplan';
+  const next = safeNext(searchParams.get('next'));
 
-  const fail = (reason: string) =>
-    NextResponse.redirect(`${origin}/signin?error=${encodeURIComponent(reason)}`);
+  /* An expired or reused link lands back on sign-in with the reason shown, and
+     still knows where the member was going. */
+  const fail = (reason: string) => {
+    const back = new URL(signInHref(next), origin);
+    back.searchParams.set('error', reason);
+    return NextResponse.redirect(back);
+  };
 
   if (!isConfigured) return fail('Accounts are not switched on yet.');
   if (!code) return fail(searchParams.get('error_description') ?? 'That link is missing its code.');

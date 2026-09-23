@@ -7,7 +7,9 @@ export async function POST(request: NextRequest) {
   if (isConfigured) {
     const { createClient } = await import('@/lib/supabase/server');
     const supabase = await createClient();
-    await supabase.auth.signOut();
+    /* This device only. The default, 'global', ends every session on the
+       account — signing out on a phone would sign the laptop out too. */
+    await supabase.auth.signOut({ scope: 'local' });
   }
   return NextResponse.redirect(`${request.nextUrl.origin}/prototype/index.html`, { status: 303 });
 }
