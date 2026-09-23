@@ -85,7 +85,12 @@ session can sit in two at once and session 05 can be gentler than session 04.
       programs/[slug]/    a module: its sessions, filtered by level
       sessions/[id]/      a session: the player and its videos
       sessions/actions.ts getPlayback() — the only place playback is signed
-    components/AppNav.tsx the signed-in nav, rendered by every app screen
+    components/AppNav.tsx the nav every app screen renders. Server half: asks
+                          who is signed in (lib/member.ts); AppNavBar draws it
+    lib/member.ts         getMember() — name, initials, isAdmin, cached per
+                          request. For chrome only; never an access check
+    lib/safe-next.ts      the one check on a `next` return path, and
+                          signInHref() for links that come back afterwards
     lib/catalogue.ts      the catalogue, read from Supabase — what /masterplan
                           renders
     lib/content.ts        the same shape as hand-written data. No longer the
@@ -94,8 +99,9 @@ session can sit in two at once and session 05 can be gentler than session 04.
                           hard-coded dancer) until practice_events lands
     lib/lang.tsx          the EN/KO switch
     public/prototype/     the original static prototype, still serving the
-                          screens that have not been ported. masterplan.html is
-                          deleted and its links repointed at /masterplan
+                          screens that have not been ported. masterplan.html,
+                          register.html and 404.html are deleted; the landing
+                          page's sign-up buttons go to /register
     docs/BUILD-PLAN.md    the plan
     supabase/migrations/  the schema, RLS and the entitlement function
     supabase/seed.sql     the catalogue, generated from lib/content.ts
@@ -115,7 +121,12 @@ session can sit in two at once and session 05 can be gentler than session 04.
 - **Nav items are sections, not pages.** "Masterplan" stays current for the
   catalogue, a module and a session, because drilling in never leaves that
   section. Screens below the top level show one `.crumb` back link naming the
-  screen above them. Never add a nav item pointing at `#`.
+  screen above them. Never add a nav item pointing at `#`. **Admin** appears
+  only for admins; signed out, the member chip becomes a Sign in button.
+- **Every way into sign-in carries where you were.** Link with
+  `signInHref(path)`, never a bare `/signin`: it becomes `?next=`, which
+  survives the email link, Google, switching to register, and a failed link.
+  Pass any `next` through `safeNext()` — it is attacker-controlled.
 - **A card links when there is somewhere to go.** A program card links when it
   has a session this viewer can see (`Program.linkable`); a session card links
   when it has a video this viewer can see. Both counts are what RLS returned, so
@@ -151,6 +162,11 @@ because an RLS policy expression runs as the querying role. Put any new
 definer-style helper in `private` too, and keep `get_advisors` clean.
 
 `profiles.plan` and `profiles.role` are deliberately not self-updatable.
+
+Signing out ends this device's session only (`scope: 'local'`). The default,
+`global`, signs every device out — which is how testing once logged the owner
+out of their own browser. The prototype's `signOut()` in `assets/app.js` posts
+to `/auth/signout` too; it used to clear only the localStorage flag.
 
 The catalogue is public to anyone, signed in or not — that is the marketing
 surface. What is gated is `videos`, because a video row carries its playback ids.

@@ -8,7 +8,14 @@ export const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt
 const MEMBER_KEY = 'suim-member';
 export const isMember = () => { try { return localStorage.getItem(MEMBER_KEY) === '1'; } catch (e) { return false; } };
 export const signIn  = () => { try { localStorage.setItem(MEMBER_KEY, '1'); } catch (e) {} };
-export const signOut = () => { try { localStorage.removeItem(MEMBER_KEY); } catch (e) {} };
+/* Real accounts exist now, so signing out has to end the Supabase session as
+   well as clear the flag — clearing only the flag left the member signed in.
+   The link's own navigation is held back until the POST has landed. */
+export const signOut = e => {
+  try { localStorage.removeItem(MEMBER_KEY); } catch (err) {}
+  if (e) e.preventDefault();
+  fetch('/auth/signout', { method: 'POST' }).finally(() => { location.href = '/prototype/index.html'; });
+};
 
 /* The signed-in navigation. Every app screen renders this same markup from
    here, so the bar cannot drift between screens. `current` is one of the item

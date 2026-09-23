@@ -340,6 +340,8 @@ interface SessionDetailRow {
     id falls back to not-found, same reasoning as getProgram(). */
 export async function getSession(id: string): Promise<SessionDetail | null> {
   if (!isConfigured) return staticSession(id);
+  /* Any mistyped URL would otherwise reach Postgres and log a uuid cast error. */
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
 
   const supabase = await createClient();
   const { data, error } = await supabase

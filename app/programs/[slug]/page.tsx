@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import AppNav from '@/components/AppNav';
 import { getProgram } from '@/lib/catalogue';
 import { isConfigured } from '@/lib/supabase/config';
-import { getUser } from '@/lib/supabase/server';
+import { getMember } from '@/lib/member';
 import { t } from '@/lib/content';
 import ProgramView from './ProgramView';
 import './program.css';
@@ -15,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const program = await getProgram(slug);
-  if (!program) return {};
+  if (!program) notFound();
   return {
     title: t(program.title, 'en'),
     description: t(program.promise, 'en'),
@@ -33,7 +33,7 @@ export default async function ProgramPage({
 
   /* Signed out, RLS returns no videos at all, so every session would read as
      unfilmed. Knowing who is asking lets the page say "sign in" instead. */
-  const signedIn = !isConfigured || Boolean(await getUser());
+  const signedIn = !isConfigured || Boolean(await getMember());
 
   return (
     <>

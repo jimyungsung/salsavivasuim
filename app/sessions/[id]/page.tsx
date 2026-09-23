@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import AppNav from '@/components/AppNav';
 import { getSession } from '@/lib/catalogue';
 import { isConfigured } from '@/lib/supabase/config';
-import { getUser } from '@/lib/supabase/server';
+import { getMember } from '@/lib/member';
 import { t } from '@/lib/content';
 import { getPlayback } from '../actions';
 import SessionPlayer from './SessionPlayer';
@@ -16,7 +16,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const session = await getSession(id);
-  if (!session) return {};
+  if (!session) notFound();
   return { title: t(session.title, 'en') };
 }
 
@@ -34,7 +34,7 @@ export default async function SessionPage({
      asks getPlayback() again, client-side. */
   const first = session.videos.find(v => v.status === 'ready');
   const initialPlayback = first ? await getPlayback(first.id) : null;
-  const signedIn = !isConfigured || Boolean(await getUser());
+  const signedIn = !isConfigured || Boolean(await getMember());
 
   return (
     <>

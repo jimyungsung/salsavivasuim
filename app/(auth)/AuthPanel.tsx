@@ -15,6 +15,7 @@ import type { Copy } from '@/lib/lang';
 import { isConfigured } from '@/lib/supabase/config';
 import { createClient } from '@/lib/supabase/client';
 import { QUESTIONS, type Answers } from './onboarding';
+import { signInHref } from '@/lib/safe-next';
 
 type Key =
   | 'sideH1' | 'sideH2' | 'sideP' | 'back'
@@ -23,13 +24,16 @@ type Key =
   | 's2' | 's2h' | 's2p'
   | 'cta' | 'skip' | 'ctaIn' | 'sending' | 'legal'
   | 'sentH' | 'sentP' | 'failH' | 'setupH' | 'setupP'
-  | 'noEmailH' | 'noEmailP' | 'toSignIn' | 'toRegister' | 'toSignInQ' | 'toRegisterQ';
+  | 'noEmailH' | 'noEmailP' | 'toSignIn' | 'toRegister' | 'toSignInQ' | 'toRegisterQ'
+  | 'linkH' | 'linkP';
 
 const C: Copy<Key> = {
   en: {
     sideH1: 'Ten movements you understand beat', sideH2: 'fifty you memorised.',
     sideP: 'Three questions about your dancing, then your first session is ready. No card, nothing to install.',
-    back: 'suim.com',
+    back: 'Home',
+    linkH: 'That sign-in link did not work',
+    linkP: 'Links expire and work once. Ask for a new one below.',
     s1: 'Your account', s1h: 'Create your account',
     s1p: 'We send a sign-in link — there is no password to remember.',
     signInH: 'Sign in', signInP: 'We send a link to your email. No password to remember.',
@@ -51,7 +55,9 @@ const C: Copy<Key> = {
   ko: {
     sideH1: '제대로 이해한 10개의 동작이', sideH2: '외운 50개보다 낫습니다.',
     sideP: '세 가지 질문에 답하면 첫 세션이 준비됩니다. 카드 등록도, 설치할 것도 없습니다.',
-    back: 'suim.com',
+    back: '홈으로',
+    linkH: '로그인 링크가 동작하지 않았습니다',
+    linkP: '링크는 한 번만, 정해진 시간 안에만 쓸 수 있습니다. 아래에서 새 링크를 받으세요.',
     s1: '계정', s1h: '계정 만들기',
     s1p: '로그인 링크를 보내드립니다. 기억할 비밀번호가 없습니다.',
     signInH: '로그인', signInP: '이메일로 링크를 보내드립니다. 비밀번호는 필요 없습니다.',
@@ -77,10 +83,13 @@ type Status = { kind: 'idle' | 'sending' } | { kind: 'sent'; email: string } | {
 export default function AuthPanel({
   mode,
   next = '/masterplan',
+  linkError,
 }: {
   mode: 'register' | 'signin';
   /** Where to land after the link is followed. Already checked to be a path on this site. */
   next?: string;
+  /** Why the last sign-in link failed, as /auth/callback reported it. */
+  linkError?: string;
 }) {
   const callback = () => `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
   const { lang, T } = useLang();
@@ -265,6 +274,12 @@ export default function AuthPanel({
                 </div>
               )}
 
+              {linkError && status.kind === 'idle' && (
+                <div className="notice bad">
+                  <b>{c.linkH}</b>
+                  {c.linkP} ({linkError})
+                </div>
+              )}
               {status.kind === 'sent' && (
                 <div className="notice good">
                   <b>{c.sentH}</b>
@@ -283,7 +298,7 @@ export default function AuthPanel({
 
               <p className="swap">
                 {registering ? c.toSignInQ : c.toRegisterQ}{' '}
-                <Link href={registering ? '/signin' : '/register'}>
+                <Link href={signInHref(next, registering ? 'signin' : 'register')}>
                   {registering ? c.toSignIn : c.toRegister}
                 </Link>
               </p>
