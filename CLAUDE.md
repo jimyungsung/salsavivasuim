@@ -99,9 +99,11 @@ session can sit in two at once and session 05 can be gentler than session 04.
   catalogue, a module and a session, because drilling in never leaves that
   section. Screens below the top level show one `.crumb` back link naming the
   screen above them. Never add a nav item pointing at `#`.
-- **Only Improvisation 01 navigates.** The other 36 programs give the catalogue
-  realistic depth but are not links — they would all land on the same module,
-  which reads as a broken link.
+- **Only Improvisation 01 navigates** — and this one is due to go. It was right
+  when the catalogue was invented data: 37 fake cards all landing on one page
+  would have read as broken links. Now the rows are real, it is what hides a
+  program that has footage. Replace it with "links when it has a published
+  session" as soon as there is a module page to link to.
 - **The prototype under `public/prototype/` is frozen.** Its `assets/app.css` is
   a dead copy; edit `app/globals.css` instead. Delete a prototype screen when its
   replacement lands, and update the links pointing at it.
