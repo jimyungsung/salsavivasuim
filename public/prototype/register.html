@@ -103,8 +103,8 @@
     </div>
 
     <div class="go">
-      <a class="pill primary" href="masterplan.html" data-t="cta">Create account and see the modules ↗</a>
-      <a class="pill ghost onpaper" href="masterplan.html" data-t="skip">Skip the questions</a>
+      <a class="pill primary" href="/masterplan" data-t="cta">Create account and see the modules ↗</a>
+      <a class="pill ghost onpaper" href="/masterplan" data-t="skip">Skip the questions</a>
       <p class="legal" data-t="legal">By continuing you agree to the terms and privacy policy. This is a prototype — nothing is submitted anywhere.</p>
     </div>
   </div></section>
@@ -149,7 +149,7 @@ const C = {
 };
 
 /* Either button finishes sign-up: the questions are optional. */
-document.querySelectorAll('a[href^="masterplan.html"]').forEach(a => a.addEventListener('click', signIn));
+document.querySelectorAll('a[href^="/masterplan"]').forEach(a => a.addEventListener('click', signIn));
 
 /* Remember which chip was picked so switching language does not clear it. */
 const picked = { exp:0, timing:0, pain:0 };
