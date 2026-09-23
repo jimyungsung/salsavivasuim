@@ -8,7 +8,7 @@ schema, and the player specification.
 [salsadrill.com](https://www.salsadrill.com) on Vercel (project
 `veriveri/salsavivasuim`), `www` canonical with the apex redirecting to it. The
 Supabase project is **Salsaviva Suim** (`incumqqgmueyovtzvenl`, ap-northeast-2 /
-Seoul); nine migrations are applied.
+Seoul); ten migrations are applied.
 
 What works end to end: sign-in by magic link, an admin promoted by hand, upload
 straight to Cloudflare Stream from the browser, a signature-verified webhook
@@ -21,8 +21,18 @@ Ported so far: `/masterplan`, `/programs/[slug]` (a module), `/sessions/[id]`
 from `public/prototype/`.
 
 The player plays for real: signed HLS from Cloudflare, speed with pitch kept,
-mirror, and the session's videos as a step list. Pachanga 01 plays end to end.
-It is deliberately the first pass — native controls stand in for the scrub bar.
+mirror, full screen, and the session's videos as a step list. Pachanga 01 plays
+end to end. It is deliberately the first pass — native controls stand in for
+the scrub bar, and because they are drawn inside the `<video>`, mirroring flips
+them too. The custom scrub bar in the next pass fixes that.
+
+Footage is not all 16:9 — Pachanga 01 is filmed upright on a phone. The page
+lays out by the picture's shape: landscape fills the column with the steps
+below; portrait is fitted to the screen's height with the steps beside it.
+`videos.width`/`height` come from Cloudflare on encode so the first paint is
+right; the player measures the loaded video and trusts that over the column.
+Full screen takes the whole player, not the `<video>`, so mirror and speed
+survive it.
 
 **Next: the precision work in BUILD-PLAN §5** — the A→B loop off
 `requestVideoFrameCallback`, the count grid from the beat grid, per-step speed,

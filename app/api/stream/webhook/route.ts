@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import {
   customerCodeFrom,
+  dimensionsOf,
   enableDownloads,
   streamConfig,
   verifyWebhook,
@@ -63,6 +64,9 @@ export async function POST(request: NextRequest) {
       /* Not an id but the customer-xxxx subdomain every playback URL sits
          under — see the column comment. Signed URLs are built from it. */
       hls_playback_id: customerCode,
+      /* So the session page picks the portrait or landscape layout on first
+         paint rather than after the metadata loads. */
+      ...dimensionsOf(body),
     };
     /* videos_ready_is_playable refuses status='ready' without a duration, so a
        webhook that somehow arrives without one leaves the row in processing

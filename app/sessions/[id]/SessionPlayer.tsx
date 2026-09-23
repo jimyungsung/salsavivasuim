@@ -28,7 +28,7 @@ import { getPlayback, type PlaybackResult } from '../actions';
 type Key =
   | 'sessionOf' | 'total' | 'prevS' | 'nextS' | 'lastSession'
   | 'listT' | 'notReady' | 'loading' | 'signInT' | 'signInGo'
-  | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror'
+  | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror' | 'aFull' | 'aExitFull'
   | 'footer' | 'signout';
 
 const C: Copy<Key> = {
@@ -38,6 +38,7 @@ const C: Copy<Key> = {
     listT: 'Videos in this session', notReady: 'Being filmed', loading: 'Loading…',
     signInT: 'Sign in to watch this session.', signInGo: 'Sign in ↗',
     aPlay: 'Play', aPause: 'Pause', aSpeed: 'Playback speed', aMirror: 'Mirror the picture',
+    aFull: 'Full screen', aExitFull: 'Exit full screen',
     footer: 'Solo salsa training · Built around practice', signout: 'Sign out',
   },
   ko: {
@@ -46,6 +47,7 @@ const C: Copy<Key> = {
     listT: '이 세션의 영상', notReady: '촬영 중', loading: '불러오는 중…',
     signInT: '로그인하면 이 세션을 볼 수 있습니다.', signInGo: '로그인 ↗',
     aPlay: '재생', aPause: '일시정지', aSpeed: '재생 속도', aMirror: '좌우 반전',
+    aFull: '전체 화면', aExitFull: '전체 화면 종료',
     footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
   },
 };
@@ -85,8 +87,13 @@ export default function SessionPlayer({
   const [speedIx, setSpeedIx] = useState(1);
   const [mirrored, setMirrored] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  /* width / height as the browser actually decoded it, per video. Trusted over
+     the stored value, which only exists to get the first paint right. */
+  const [measured, setMeasured] = useState<Record<string, number>>({});
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playerRef = useRef<HTMLDivElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
 
   const current = session.videos.find(v => v.id === currentId) ?? null;
@@ -156,6 +163,48 @@ export default function SessionPlayer({
     else el.pause();
   }, []);
 
+  /* The whole player goes full screen, not just the <video>: that keeps the
+     mirror (a transform on the video) and the speed control with it. The
+     native controls' own full-screen button is hidden for the same reason. */
+  useEffect(() => {
+    const onChange = () => {
+      const on = fullscreenElement() === playerRef.current;
+      setFullscreen(on);
+      if (!on) (screen.orientation as LockableOrientation | undefined)?.unlock?.();
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('webkitfullscreenchange', onChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('webkitfullscreenchange', onChange);
+    };
+  }, []);
+
+  const aspect = (current && (measured[current.id] ?? current.aspect)) || 16 / 9;
+  const orientation: 'portrait' | 'landscape' = aspect < 1 ? 'portrait' : 'landscape';
+
+  const toggleFullscreen = useCallback(async () => {
+    const player = playerRef.current as FullscreenCapable | null;
+    const video = videoRef.current as FullscreenCapable | null;
+    if (!player) return;
+    if (fullscreenElement()) {
+      await (document.exitFullscreen?.() ?? (document as FullscreenDocument).webkitExitFullscreen?.());
+      return;
+    }
+    try {
+      if (player.requestFullscreen) await player.requestFullscreen();
+      else if (player.webkitRequestFullscreen) player.webkitRequestFullscreen();
+      /* iPhone Safari has no element full screen — only the video's own, which
+         drops the mirror and the speed control. Better than nothing. */
+      else video?.webkitEnterFullscreen?.();
+    } catch {
+      return;
+    }
+    /* On a phone, turn the screen the way the picture is shot. Android honours
+       this; iOS ignores it and the user rotates by hand. */
+    (screen.orientation as LockableOrientation | undefined)?.lock?.(orientation).catch(() => {});
+  }, [orientation]);
+
   /* Signed out, RLS returns no videos, so "being filmed" would be a lie. */
   if (!current) {
     return (
@@ -221,9 +270,9 @@ export default function SessionPlayer({
         </div>
       </div>
 
-      <main className="wrap lay">
-        <div>
-          <div className="player">
+      <main className={`wrap lay ${orientation}`}>
+        <div className="stage" style={{ '--ar': String(aspect) } as React.CSSProperties}>
+          <div className="player" ref={playerRef}>
             <div className={`frame${mirrored ? ' mirrored' : ''}`}>
               {loading && <p className="sp-status">{c.loading}</p>}
               {playback && !playback.ok && <p className="sp-status">{playback.error}</p>}
@@ -232,7 +281,15 @@ export default function SessionPlayer({
                 className="sp-video"
                 poster={playback?.ok ? playback.poster : undefined}
                 controls
+                controlsList="nofullscreen"
                 playsInline
+                onDoubleClick={toggleFullscreen}
+                onLoadedMetadata={e => {
+                  const { videoWidth: w, videoHeight: h } = e.currentTarget;
+                  if (!w || !h) return;
+                  const id = current.id;
+                  setMeasured(m => (Math.abs((m[id] ?? 0) - w / h) < 0.01 ? m : { ...m, [id]: w / h }));
+                }}
                 onPlay={() => setPlaying(true)}
                 onPause={() => setPlaying(false)}
                 onError={() => {
@@ -273,32 +330,45 @@ export default function SessionPlayer({
               >
                 ⇋
               </button>
+              <button
+                className="ic"
+                type="button"
+                aria-pressed={fullscreen}
+                onClick={toggleFullscreen}
+                aria-label={fullscreen ? c.aExitFull : c.aFull}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d={fullscreen ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'} />
+                </svg>
+              </button>
             </div>
           </div>
 
-          <div className="steps">
-            {session.videos.map(v => {
-              const step = stepOf(v.step);
-              return (
-                <button
-                  key={v.id}
-                  className="step"
-                  type="button"
-                  aria-current={v.id === current.id}
-                  disabled={v.status !== 'ready'}
-                  onClick={() => setCurrentId(v.id)}
-                >
-                  <span className="sn">{v.position}</span>
-                  <span className="st">{T(step.name)}</span>
-                  <span className="slen">{mmss(v.durationMs)}</span>
-                </button>
-              );
-            })}
-          </div>
+          <div className="notes">
+            <div className="steps">
+              {session.videos.map(v => {
+                const step = stepOf(v.step);
+                return (
+                  <button
+                    key={v.id}
+                    className="step"
+                    type="button"
+                    aria-current={v.id === current.id}
+                    disabled={v.status !== 'ready'}
+                    onClick={() => setCurrentId(v.id)}
+                  >
+                    <span className="sn">{v.position}</span>
+                    <span className="st">{T(step.name)}</span>
+                    <span className="slen">{mmss(v.durationMs)}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-          <div className="about">
-            <h3>{T(session.focus)}</h3>
-            <p>{T(current.description)}</p>
+            <div className="about">
+              <h3>{T(session.focus)}</h3>
+              <p>{T(current.description)}</p>
+            </div>
           </div>
         </div>
 
@@ -347,3 +417,20 @@ export default function SessionPlayer({
     </div>
   );
 }
+
+/* Full screen is still partly prefixed: Safari before 16.4 on the element, and
+   iPhone Safari only on the <video> itself. */
+type FullscreenCapable = HTMLElement & {
+  webkitRequestFullscreen?: () => void;
+  webkitEnterFullscreen?: () => void;
+};
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void>;
+};
+type LockableOrientation = ScreenOrientation & {
+  lock?: (orientation: 'portrait' | 'landscape') => Promise<void>;
+};
+
+const fullscreenElement = (): Element | null =>
+  document.fullscreenElement ?? (document as FullscreenDocument).webkitFullscreenElement ?? null;

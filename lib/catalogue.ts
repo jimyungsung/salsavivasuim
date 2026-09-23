@@ -286,6 +286,9 @@ export interface SessionVideoSummary {
   mirrorDefault: boolean;
   isDrillable: boolean;
   status: VideoStatus;
+  /** width / height, from the encode. Below 1 is portrait. Null until known —
+      the player then measures it off the loaded video instead. */
+  aspect: number | null;
 }
 
 export interface SessionDetail {
@@ -322,6 +325,8 @@ interface SessionDetailRow {
         mirror_default: boolean;
         is_drillable: boolean;
         status: VideoStatus;
+        width: number | null;
+        height: number | null;
       }[]
     | null;
 }
@@ -343,7 +348,7 @@ export async function getSession(id: string): Promise<SessionDetail | null> {
       `id, program_id, position, title_t, outcome_t, focus_t, levels,
        program:programs ( slug, title_t ),
        videos ( id, step, position, title_t, description_t, duration_ms, angle,
-                mirror_default, is_drillable, status )`,
+                mirror_default, is_drillable, status, width, height )`,
     )
     .eq('id', id)
     .maybeSingle();
@@ -383,6 +388,7 @@ export async function getSession(id: string): Promise<SessionDetail | null> {
       mirrorDefault: v.mirror_default,
       isDrillable: v.is_drillable,
       status: v.status,
+      aspect: v.width && v.height ? v.width / v.height : null,
     })),
     prevSessionId: at > 0 ? siblings[at - 1].id : null,
     nextSessionId: at >= 0 && at < siblings.length - 1 ? siblings[at + 1].id : null,
@@ -416,6 +422,7 @@ function staticSession(id: string): SessionDetail | null {
       mirrorDefault: v.step === 'train',
       isDrillable: v.isDrillable,
       status: 'ready',
+      aspect: 16 / 9,
     })),
     prevSessionId: position > 1 ? `${STATE.program}-s${position - 1}` : null,
     nextSessionId: position < SESSIONS.length ? `${STATE.program}-s${position + 1}` : null,
