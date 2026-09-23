@@ -4,13 +4,34 @@ Solo salsa training platform. **The plan lives in [docs/BUILD-PLAN.md](docs/BUIL
 read it before starting anything structural; it carries the phase order, the
 schema, and the player specification.
 
-Currently in **Phase 1**. The Supabase project is **Salsaviva Suim**
-(`incumqqgmueyovtzvenl`, ap-northeast-2 / Seoul): all six migrations are applied
-and the catalogue is seeded — 7 areas, 37 programs, 9 sessions, 55 videos, none
-with footage. Sign-up and sign-in are built and the screens are live against it,
-but the email round trip has not been exercised: the magic link needs the
-redirect allowlist set and real SMTP wired. The catalogue is the one screen
-ported; the rest of the prototype still serves from `public/prototype/`.
+**Phase 3 is done and live.** The site is at
+[salsadrill.com](https://www.salsadrill.com) on Vercel (project
+`veriveri/salsavivasuim`), `www` canonical with the apex redirecting to it. The
+Supabase project is **Salsaviva Suim** (`incumqqgmueyovtzvenl`, ap-northeast-2 /
+Seoul); nine migrations are applied.
+
+What works end to end: sign-in by magic link, an admin promoted by hand, upload
+straight to Cloudflare Stream from the browser, a signature-verified webhook
+writing duration, poster and customer code back to the row, and the masterplan
+rendering the catalogue out of the database — so what the back office publishes
+is what the public shelf shows.
+
+Ported so far: `/masterplan`, `/signin`, `/register`. Everything else still
+serves from `public/prototype/`.
+
+**Next: the module and session screens, and the player** (BUILD-PLAN §5). Right
+now a catalogue card only links when its slug matches `STATE.program`, so a real
+program with real footage behind it — Pachanga 01 has two encoded videos — is
+not reachable. That rule was written when the catalogue was invented data and 37
+fake cards would all have landed on one page; it is now the thing hiding real
+content. It should become "links when it has a published session", once there is
+a module page to link to.
+
+The name is an open question: the product is still SUIM throughout the code, but
+the domain bought for it is salsadrill.com, on the reasoning that a platform
+meant to carry other teachers should not be named after one of them. Renaming is
+roughly eight live files — wordmark, titles, og tags, seed — and has not been
+done.
 
 `lib/supabase/config.ts` still guards every call, so the app renders without
 `.env.local` rather than crashing. Keep that until the env vars are a deployment
@@ -48,11 +69,16 @@ session can sit in two at once and session 05 can be gentler than session 04.
       globals.css         the design system — canonical copy
       masterplan/         the catalogue, the first screen ported
     components/AppNav.tsx the signed-in nav, rendered by every app screen
-    lib/content.ts        the catalogue as typed data — the seam that becomes
-                          Supabase queries in P1
+    lib/catalogue.ts      the catalogue, read from Supabase — what /masterplan
+                          renders
+    lib/content.ts        the same shape as hand-written data. No longer the
+                          catalogue's source: it is the fallback when Supabase
+                          is unconfigured, and still holds STATE (the prototype's
+                          hard-coded dancer) until practice_events lands
     lib/lang.tsx          the EN/KO switch
     public/prototype/     the original static prototype, still serving the
-                          screens that have not been ported
+                          screens that have not been ported. masterplan.html is
+                          deleted and its links repointed at /masterplan
     docs/BUILD-PLAN.md    the plan
     supabase/migrations/  the schema, RLS and the entitlement function
     supabase/seed.sql     the catalogue, generated from lib/content.ts
@@ -79,6 +105,19 @@ session can sit in two at once and session 05 can be gentler than session 04.
 - **The prototype under `public/prototype/` is frozen.** Its `assets/app.css` is
   a dead copy; edit `app/globals.css` instead. Delete a prototype screen when its
   replacement lands, and update the links pointing at it.
+
+## Two caches, one catalogue
+
+The back office and the public shelf read the same rows, so a write has to clear
+both. `revalidateCatalogue()` in `app/admin/actions.ts` does that, and is blunt
+on purpose: a video edit revalidates `/masterplan` too, though no video appears
+there. A wasted re-render costs one request; a missed one leaves the public page
+quietly stale.
+
+`lib/catalogue.ts` does not filter drafts — the `published programs are public`
+policy already does, in the one place that cannot be forgotten. An admin
+browsing the shelf therefore sees their own drafts, which is a preview rather
+than a leak.
 
 ## Access
 
