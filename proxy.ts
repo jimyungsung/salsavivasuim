@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
-export async function middleware(request: NextRequest) {
+/* Next 16's name for what was middleware.ts: runs before every matched
+   request, here only to keep the Supabase session fresh. */
+export async function proxy(request: NextRequest) {
   return updateSession(request);
 }
 

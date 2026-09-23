@@ -420,7 +420,8 @@
     try{localStorage.setItem('suim-lang',l)}catch(e){}
   }
 
-  document.getElementById('signout').addEventListener('click',()=>{try{localStorage.removeItem('suim-member')}catch(e){}});
+  /* Ends the real session too; clearing the flag alone left the member signed in. */
+  document.getElementById('signout').addEventListener('click',e=>{e.preventDefault();try{localStorage.removeItem('suim-member')}catch(err){}fetch('/auth/signout',{method:'POST'}).finally(()=>{location.href='/prototype/index.html'})});
   document.querySelectorAll('[data-lang]').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
   let saved=new URLSearchParams(location.search).get('lang');
   if(!saved){try{saved=localStorage.getItem('suim-lang')}catch(e){}}

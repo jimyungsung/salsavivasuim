@@ -27,10 +27,6 @@
 
 /* ---- main ---- */
 .mp .main{padding:22px 40px 70px;min-width:0}
-.mp .resume{display:flex;justify-content:flex-end}
-.mp .resume a{display:inline-flex;align-items:center;gap:9px;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding-bottom:5px;border-bottom:2px solid var(--lime);color:var(--ink)}
-.mp .resume a:hover{border-bottom-color:var(--ink)}
-.mp .resume .dim{color:#8a908b;font-weight:700}
 
 .mp .hero{padding:52px 0 40px;display:flex;justify-content:space-between;align-items:flex-end;gap:40px;border-bottom:1px solid var(--line)}
 .mp .hero .kicker{color:#708000}
@@ -112,8 +108,6 @@
   .mp .main{padding:18px 20px 60px}
   .mp .hero{padding:34px 0 26px;flex-direction:column;align-items:flex-start;gap:22px}
   .mp .hero-side{text-align:left}
-  .mp .resume{justify-content:flex-start}
-  .mp .resume .dim{display:none}
 }
 @media(prefers-reduced-motion:reduce){.mp .fade{animation:none}.mp a.card:hover{transform:none}}
 

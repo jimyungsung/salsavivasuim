@@ -103,7 +103,8 @@ footer{background:var(--ink);color:#ffffff8f;border-top:1px solid #ffffff20;padd
 @media(max-width:560px){
   .wrap{width:min(calc(100% - 28px),1360px)}
   .strip .wrap{grid-template-columns:1fr}
-  .me span{display:none}
+  .me span:not(.av){display:none}
+  .me{padding:5px}
   .foot{flex-direction:column}
 }
 @media(prefers-reduced-motion:reduce){
