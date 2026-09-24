@@ -25,13 +25,18 @@
 
 /* ---- the player: an ink card, controls over the picture ---- */
 .sp .player{border-radius:20px;overflow:hidden;background:var(--ink);container-type:inline-size}
-.sp .frame{position:relative;overflow:hidden;aspect-ratio:var(--ar,16/9);max-height:calc(100vh - 200px);width:100%;background:#000}
+.sp .frame{position:relative;overflow:hidden;aspect-ratio:16/9;max-height:calc(100vh - 200px);width:100%;background:#000}
 /* Absolute, so the frame alone decides the box — its aspect ratio normally, the
    whole screen in full screen — and the picture letterboxes inside it. */
-.sp-video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:#000;cursor:pointer}
+.sp-video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:transparent;cursor:pointer}
+/* The frame is always landscape. A picture of any other shape sits in the
+   middle at its own proportions, over its poster — cropped to cover, blurred
+   and darkened — so a phone video has soft colour at its sides, not black
+   bars. Oversized, so the blur's faded edge falls outside the frame. */
+.sp .ambient{position:absolute;inset:-12%;background:center/cover no-repeat;filter:blur(32px) saturate(1.25) brightness(.5);pointer-events:none}
 /* Only the picture flips. Controls, counts and captions sit outside it, so
    nothing a dancer reads is ever backwards. */
-.sp .frame.mirrored .sp-video{transform:scaleX(-1)}
+.sp .frame.mirrored .sp-video,.sp .frame.mirrored .ambient{transform:scaleX(-1)}
 .sp-status{position:absolute;inset:0;z-index:3;display:grid;place-items:center;margin:0;color:#fff;font-size:13px;font-weight:700;background:#0b0f0eb0;pointer-events:none}
 
 /* before the first play: what this part is for */
@@ -41,6 +46,7 @@
 .sp .stack small{font-size:10.5px;letter-spacing:.2em;font-weight:800;color:var(--lime)}
 .sp .stack h2{margin:0;font-size:30px;letter-spacing:-.04em;font-weight:900;color:#fff;line-height:1.05}
 .sp .stack p{margin:0;max-width:42ch;font-size:14.5px;line-height:1.55;color:#ffffffc4}
+.ko .sp .stack h2{font-size:25px;line-height:1.2}
 
 /* the eight counts, off the beat grid */
 .sp .counts{position:absolute;left:16px;top:16px;z-index:3;display:flex;gap:4px;padding:6px 8px;border-radius:14px;background:#0b0f0eb3;backdrop-filter:blur(6px);transition:opacity .3s}
@@ -70,12 +76,17 @@
 .sp .speed[data-on="true"]{background:var(--lime);color:var(--ink)}
 .sp .time{font-size:11.5px;font-weight:700;color:#ffffffa3;font-variant-numeric:tabular-nums;padding-left:4px;white-space:nowrap}
 
-/* A narrow player — a portrait video, or a phone — drops what it can spare. */
+/* A narrow player — on a phone — drops what it can spare. */
 @container (max-width:420px){
   .sp .time{display:none}
   .sp .ic{width:32px;height:32px}
   .sp .speed{min-width:44px;padding:8px 8px}
-  .sp .stack h2{font-size:22px}
+  /* A 16:9 frame on a phone is under 200px tall: the overlay has to fit
+     between the top and the controls. */
+  .sp .stack{gap:6px;padding:0 16px 52px}
+  .sp .stack .big{width:52px;height:52px}
+  .sp .stack .big svg{width:20px;height:20px}
+  .sp .stack h2,.ko .sp .stack h2{font-size:18px}
   .sp .stack p{display:none}
   .sp .pc{padding:30px 10px 10px}
   .sp .counts b{width:20px;height:20px;font-size:11px}
@@ -126,20 +137,11 @@
 .sp .sfoot{padding:14px 16px;border-top:1px solid var(--line)}
 .sp .sfoot .pill{width:100%}
 
-/* Portrait: the picture is tall, so its height is what has to fit the screen.
-   The player shrinks to the picture's width and the parts move beside it
-   instead of below, where they would sit under a mostly empty frame. */
-.sp .lay.portrait .stage{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:start}
-.sp .lay.portrait .player{width:calc(min(100vh - 200px, 860px) * var(--ar));max-width:100%}
-.sp .lay.portrait .frame{max-height:none}
-.sp .lay.portrait .notes .steps{margin-top:0}
-
 /* Full screen takes the whole player, controls included, and lets the picture
    letterbox inside whatever shape the screen is. */
-.sp .player:fullscreen,.sp .lay.portrait .player:fullscreen{width:100%;max-width:none;border-radius:0;background:#000}
+.sp .player:fullscreen{width:100%;max-width:none;border-radius:0;background:#000}
 .sp .player:fullscreen .frame{height:100%;max-height:none;aspect-ratio:auto}
 
-.ko .sp .stack h2{font-size:25px;line-height:1.2}
 @media(max-width:1080px){
   .sp .lay{grid-template-columns:1fr}
   .sp .side{position:static}
@@ -150,8 +152,6 @@
   .sp .subnav{position:static}
   .sp .where h1{font-size:16px}
   .sp .steps{grid-template-columns:repeat(3,1fr)}
-  .sp .lay.portrait .stage{grid-template-columns:1fr}
-  .sp .lay.portrait .player{width:calc(min(100vh - 170px, 860px) * var(--ar));width:calc(min(100svh - 170px, 860px) * var(--ar));margin:0 auto}
 }
 @media(prefers-reduced-motion:reduce){.sp .pc,.sp .counts,.sp .stack .big{transition:none}}
 
