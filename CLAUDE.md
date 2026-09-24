@@ -34,13 +34,21 @@ one yet, so today the scrub bar is plain, L repeats the whole video (or the
 default loop, if one is set), and there is no counts button. Fill a grid and
 they appear; nothing in the player needs changing.
 
-Footage is not all 16:9 — Pachanga 01 is filmed upright on a phone. The page
-lays out by the picture's shape: landscape fills the column with the steps
-below; portrait is fitted to the screen's height with the steps beside it.
-`videos.width`/`height` come from Cloudflare on encode so the first paint is
-right; the player measures the loaded video and trusts that over the column.
-Full screen takes the whole player, not the `<video>`, so mirror and speed
-survive it.
+Footage is not all 16:9 — Pachanga 01 is filmed upright on a phone — but the
+frame always is. A picture of another shape sits in the middle at its own
+proportions over its poster, blurred, so the sides are soft colour rather than
+black bars (the YouTube look). The poster rather than live frames: no per-frame
+work, and no need to load the video with CORS, which Cloudflare grants only to
+the origins a video was uploaded from — ask for it and playback fails on
+localhost and preview deploys. `videos.width`/`height` (from Cloudflare on
+encode, corrected by the loaded video) now only decide which way a phone turns
+in full screen. Full screen takes the whole player, not the `<video>`, so
+mirror and speed survive it.
+
+Testing note: the browser pane's screenshots do not capture a playing
+full-resolution video (it is hardware-composited), so the frame looks blank
+there. Check `requestVideoFrameCallback`'s `presentedFrames` instead — it
+counts frames actually put on screen.
 
 **Next: practice events and real progress** (BUILD-PLAN P4) — `play`,
 `heartbeat`, `loop`, `complete` into `practice_events`, then My training on real

@@ -165,8 +165,9 @@ export default function SessionPlayer({
   const [beat, setBeat] = useState<number | null>(null);
   const [idle, setIdle] = useState(false);
   const [durationS, setDurationS] = useState(0);
-  /* width / height as the browser actually decoded it, per video. Trusted over
-     the stored value, which only exists to get the first paint right. */
+  /* width / height as the browser actually decoded it, per video, trusted over
+     the stored value. The page layout no longer depends on it — the frame is
+     always landscape — but full screen on a phone turns the screen to match. */
   const [measured, setMeasured] = useState<Record<string, number>>({});
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -563,8 +564,8 @@ export default function SessionPlayer({
         </div>
       </div>
 
-      <main className={`wrap lay ${orientation}`}>
-        <div className="stage" style={{ '--ar': String(aspect) } as React.CSSProperties}>
+      <main className="wrap lay">
+        <div className="stage">
           <div
             className={`player${playing ? ' playing' : ''}${idle && playing ? ' idle' : ''}`}
             ref={playerRef}
@@ -572,6 +573,21 @@ export default function SessionPlayer({
             onPointerDown={wake}
           >
             <div className={`frame${mirrored ? ' mirrored' : ''}`}>
+              {/* The frame is always landscape. A picture of another shape sits
+                  in the middle at its own proportions, over its poster — cropped
+                  to cover, blurred — so a phone video has soft colour at its
+                  sides instead of black bars. The poster rather than the moving
+                  video: no per-frame work, and no need for the video to load
+                  with CORS, which Cloudflare only grants to the origins a video
+                  was uploaded from. A backdrop this blurred barely changes as
+                  the dancer moves. */}
+              {playback?.ok && (
+                <div
+                  className="ambient"
+                  aria-hidden="true"
+                  style={{ backgroundImage: `url("${playback.poster}")` }}
+                />
+              )}
               <video
                 ref={videoRef}
                 className="sp-video"
