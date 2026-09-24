@@ -6,7 +6,8 @@
 
    The items are sections, not pages. "Masterplan" stays current for everything
    beneath it — the catalogue, a module, a session — because drilling in never
-   leaves that section. Only screens that exist are listed; a nav item pointing
+   leaves that section — which is why it is read from the path rather than
+   passed in: the bar sits in a layout that outlives the page. Only screens that exist are listed; a nav item pointing
    at "#" is a dead end. The back office is listed only for admins. */
 
 import Link from 'next/link';
@@ -16,7 +17,14 @@ import { signInHref } from '@/lib/safe-next';
 import type { Localized } from '@/lib/content';
 import type { Member } from '@/lib/member';
 
-export type NavSection = 'masterplan' | 'training' | 'drills';
+type NavSection = 'masterplan' | 'training' | 'drills';
+
+const sectionOf = (path: string): NavSection | undefined =>
+  /^\/(masterplan|programs|sessions)(\/|$)/.test(path)
+    ? 'masterplan'
+    : /^\/drills(\/|$)/.test(path)
+      ? 'drills'
+      : undefined;
 
 const ITEMS: { key: NavSection | 'admin'; href: string; label: Localized }[] = [
   { key: 'masterplan', href: '/masterplan', label: { en: 'Masterplan', ko: '마스터플랜' } },
@@ -26,15 +34,10 @@ const ITEMS: { key: NavSection | 'admin'; href: string; label: Localized }[] = [
 
 const ADMIN = { key: 'admin' as const, href: '/admin', label: { en: 'Admin', ko: '관리' } };
 
-export default function AppNavBar({
-  current,
-  member,
-}: {
-  current?: NavSection;
-  member: Member | null;
-}) {
+export default function AppNavBar({ member }: { member: Member | null }) {
   const { lang, setLang, T } = useLang();
   const pathname = usePathname();
+  const current = sectionOf(pathname);
   const items = member?.isAdmin ? [...ITEMS, ADMIN] : ITEMS;
 
   return (

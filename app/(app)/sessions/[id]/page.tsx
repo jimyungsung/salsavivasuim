@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AppNav from '@/components/AppNav';
 import { getSession } from '@/lib/catalogue';
 import { sessionPlaylist } from '@/lib/playlist';
 import { isConfigured } from '@/lib/supabase/config';
@@ -37,13 +36,15 @@ export default async function SessionPage({
   const playlist = sessionPlaylist(session);
   const firstIndex = playlist.entries.findIndex(e => e.video.status === 'ready');
   const first = firstIndex >= 0 ? playlist.entries[firstIndex].video : null;
-  const initialPlayback = first ? await getPlayback(first.id) : null;
-  const signedIn = !isConfigured || Boolean(await getMember());
-  const posters = await signedPosters(session.videos.map(v => v.id));
+  const [initialPlayback, member, posters] = await Promise.all([
+    first ? getPlayback(first.id) : null,
+    getMember(),
+    signedPosters(session.videos.map(v => v.id)),
+  ]);
+  const signedIn = !isConfigured || Boolean(member);
 
   return (
     <>
-      <AppNav current="masterplan" />
       <Player
         playlist={playlist}
         initialIndex={first ? firstIndex : null}

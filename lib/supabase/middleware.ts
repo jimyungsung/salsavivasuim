@@ -22,8 +22,11 @@ export async function updateSession(request: NextRequest) {
   });
 
   /* Do not put anything between the client above and this call: it is what
-     rotates the token, and a slow import in between is a logged-out member. */
-  await supabase.auth.getUser();
+     rotates the token, and a slow import in between is a logged-out member.
+     getClaims() rather than getUser(): it refreshes an expired session the
+     same way, but verifies the token against the project's signing keys
+     instead of asking the auth server — one round trip fewer on every page. */
+  await supabase.auth.getClaims();
 
   return response;
 }

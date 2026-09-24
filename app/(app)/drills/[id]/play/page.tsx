@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AppNav from '@/components/AppNav';
 import Player from '@/components/Player';
 import { getDrill, drillPlaylist } from '@/lib/drills';
 import { getMember } from '@/lib/member';
 import { signedPosters } from '@/lib/playback';
-import { getPlayback } from '@/app/sessions/actions';
+import { getPlayback } from '@/app/(app)/sessions/actions';
 import '@/components/player.css';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -32,7 +31,6 @@ export default async function DrillPlayPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <AppNav current="drills" />
       <Player
         playlist={playlist}
         initialIndex={first ? firstIndex : null}

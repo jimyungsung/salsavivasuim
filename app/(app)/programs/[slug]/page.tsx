@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AppNav from '@/components/AppNav';
 import { getProgram } from '@/lib/catalogue';
 import { isConfigured } from '@/lib/supabase/config';
 import { getMember } from '@/lib/member';
@@ -37,7 +36,6 @@ export default async function ProgramPage({
 
   return (
     <>
-      <AppNav current="masterplan" />
       <ProgramView program={program} signedIn={signedIn} />
     </>
   );

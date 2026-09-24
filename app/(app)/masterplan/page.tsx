@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppNav from '@/components/AppNav';
 import Catalogue from './Catalogue';
 import { ALL_AREAS, FILTERS, type Filter } from './view';
 import { getCatalogue } from '@/lib/catalogue';
@@ -31,7 +30,6 @@ export default async function MasterplanPage({
 
   return (
     <>
-      <AppNav current="masterplan" />
       <Catalogue areas={areas} initialArea={initialArea} initialFilter={initialFilter} />
     </>
   );

@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import AppNav from '@/components/AppNav';
 import { getDrillLibrary, getDrills } from '@/lib/drills';
 import { getMember } from '@/lib/member';
 import { signedPosters } from '@/lib/playback';
@@ -24,7 +23,6 @@ export default async function DrillsPage() {
 
   return (
     <>
-      <AppNav current="drills" />
       <DrillsView drills={drills} library={library} posters={posters} signedIn={Boolean(member)} />
     </>
   );

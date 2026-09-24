@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { createClient } from './supabase/server';
 import { isConfigured } from './supabase/config';
 import {
@@ -196,7 +197,7 @@ interface ProgramDetailRow {
     Falls back to the static catalogue when Supabase is not configured, same as
     getCatalogue() — but the static data only has sessions for STATE.program,
     so any other slug falls back to not-found rather than an empty page. */
-export async function getProgram(slug: string): Promise<ProgramDetail | null> {
+async function loadProgram(slug: string): Promise<ProgramDetail | null> {
   if (!isConfigured) return staticProgram(slug);
 
   const supabase = await createClient();
@@ -376,7 +377,7 @@ interface SessionDetailRow {
 
     Falls back to the static session data only for STATE.program; every other
     id falls back to not-found, same reasoning as getProgram(). */
-export async function getSession(id: string): Promise<SessionDetail | null> {
+async function loadSession(id: string): Promise<SessionDetail | null> {
   if (!isConfigured) return staticSession(id);
   /* Any mistyped URL would otherwise reach Postgres and log a uuid cast error. */
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
@@ -460,3 +461,8 @@ function staticSession(id: string): SessionDetail | null {
     nextSessionId: position < SESSIONS.length ? `${STATE.program}-s${position + 1}` : null,
   };
 }
+
+/* Cached per request: generateMetadata and the page both ask for the same row,
+   and each ask is a round trip to the database. */
+export const getProgram = cache(loadProgram);
+export const getSession = cache(loadSession);
