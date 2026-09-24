@@ -422,8 +422,17 @@ export type UploadTicket =
     knows which Cloudflare asset it was reaching for, so the webhook can still
     find it and a retry does not orphan storage. Status goes to `processing`
     rather than `ready` — only the webhook may say a video is playable. */
-export async function requestUploadUrl(videoId: string, origin: string): Promise<UploadTicket> {
+export async function requestUploadUrl(
+  videoId: string,
+  origin: string,
+  size: number,
+): Promise<UploadTicket> {
   await requireAdmin();
+
+  /* Cloudflare's own ceiling for one file is 30 GB. */
+  if (!Number.isSafeInteger(size) || size <= 0 || size > 30 * 1024 ** 3) {
+    return { ok: false, error: 'That file size is not one Cloudflare will take.' };
+  }
 
   const { streamConfig, createDirectUpload } = await import('@/lib/cloudflare');
   const cfg = streamConfig();
@@ -437,7 +446,7 @@ export async function requestUploadUrl(videoId: string, origin: string): Promise
   }
 
   try {
-    const ticket = await createDirectUpload(cfg, { videoId, origin });
+    const ticket = await createDirectUpload(cfg, { videoId, origin, size });
 
     const supabase = await createClient();
     const { error } = await supabase

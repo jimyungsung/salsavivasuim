@@ -12,7 +12,8 @@ Seoul); ten migrations are applied. Functions are pinned to Seoul too (`icn1`
 in `vercel.json`) — in the default `iad1` every query crossed the Pacific.
 
 What works end to end: sign-in by magic link, an admin promoted by hand, upload
-straight to Cloudflare Stream from the browser, a signature-verified webhook
+straight to Cloudflare Stream from the browser (resumable, by tus, so
+any size — the simple upload stopped at 200 MB), a signature-verified webhook
 writing duration, poster and customer code back to the row, and the masterplan
 rendering the catalogue out of the database — so what the back office publishes
 is what the public shelf shows.

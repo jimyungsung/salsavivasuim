@@ -12,7 +12,7 @@ export { customerCodeFrom, verifyWebhook } from './stream-signature';
    Three things this file is responsible for getting right:
 
    1. Files never pass through Vercel. The server asks Cloudflare for a one-time
-      upload URL and the browser POSTs the file straight there — a request body
+      upload URL and the browser sends the file straight there — a request body
       through a Vercel function is capped at 4.5 MB, which no drill video will
       respect.
 
@@ -86,34 +86,68 @@ async function cf<T>(
 /* --------------------------------------------------------------- upload ---- */
 
 export interface DirectUpload {
-  /** One-time URL the browser POSTs the file to. Expires quickly. */
+  /** One-time tus URL the browser sends the file to, in chunks. */
   uploadURL: string;
   /** Cloudflare's id for the video. Becomes videos.provider_uid. */
   uid: string;
 }
 
-/** Asks for somewhere to put one file.
+/** tus metadata: comma-separated `key base64(value)` pairs; a flag is a bare key. */
+const tusMetadata = (pairs: Record<string, string | true>) =>
+  Object.entries(pairs)
+    .map(([k, v]) => (v === true ? k : `${k} ${Buffer.from(v).toString('base64')}`))
+    .join(',');
+
+/** Asks for somewhere to put one file — as a resumable (tus) upload, which is
+    the only kind Cloudflare accepts past 200 MB, and which carries on from the
+    last chunk after a dropped connection instead of starting again.
+
+    The server creates the upload so the API token never leaves it; the browser
+    is handed only the one-time URL, and sends the file straight there.
 
     `maxDurationSeconds` is a guard rail, not a promise: Cloudflare rejects the
     upload if the video turns out longer. An hour is far beyond any session
     video and stops a wrong file quietly costing storage. */
 export async function createDirectUpload(
   cfg: StreamConfig,
-  opts: { videoId: string; origin: string; maxDurationSeconds?: number },
+  opts: { videoId: string; origin: string; size: number; maxDurationSeconds?: number },
 ): Promise<DirectUpload> {
-  return cf<DirectUpload>(cfg, '/direct_upload', {
+  const response = await fetch(`${API}/accounts/${cfg.accountId}/stream?direct_user=true`, {
     method: 'POST',
-    body: {
-      maxDurationSeconds: opts.maxDurationSeconds ?? 3600,
-      /* No public URL, ever. */
-      requireSignedURLs: true,
-      /* The browser posts from our origin; anything else is not our upload. */
-      allowedOrigins: [new URL(opts.origin).host],
-      /* Our own id travels with the file, so the webhook can find the row it
-         belongs to without keeping a second lookup table. */
-      meta: { videoId: opts.videoId, name: opts.videoId },
+    headers: {
+      Authorization: `Bearer ${cfg.apiToken}`,
+      'Tus-Resumable': '1.0.0',
+      'Upload-Length': String(opts.size),
+      'Upload-Metadata': tusMetadata({
+        name: opts.videoId,
+        maxDurationSeconds: String(opts.maxDurationSeconds ?? 3600),
+        /* No public URL, ever. */
+        requiresignedurls: true,
+        /* The browser sends from our origin; anything else is not our upload. */
+        allowedorigins: new URL(opts.origin).host,
+        /* Long enough for a big file on a slow line; the default is minutes. */
+        expiry: new Date(Date.now() + 5 * 3600_000).toISOString(),
+      }),
     },
+    cache: 'no-store',
   });
+
+  const uploadURL = response.headers.get('Location');
+  const uid = response.headers.get('stream-media-id');
+  if (!response.ok || !uploadURL || !uid) {
+    const text = await response.text().catch(() => '');
+    throw new Error(text.trim() || `Cloudflare Stream: HTTP ${response.status}`);
+  }
+
+  /* Our own id travels with the file, so the webhook can find the row even if
+     writing provider_uid somehow failed. tus metadata has no room for custom
+     keys, so it is set on the video afterwards. Best effort: provider_uid is
+     the real link, written before the browser sends anything. */
+  await cf(cfg, `/${uid}`, { method: 'POST', body: { meta: { videoId: opts.videoId, name: opts.videoId } } }).catch(
+    () => {},
+  );
+
+  return { uploadURL, uid };
 }
 
 /** Cloudflare's view of one video, as the webhook and polling both return it. */
