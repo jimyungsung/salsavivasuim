@@ -14,7 +14,6 @@ export interface EditorProgram {
   level: LevelKey;
   weeks: number | null;
   status: PublishStatus;
-  is_free: boolean;
   published_at: string | null;
   area: { id: string; name_t: LocalizedRow } | null;
   sessions: {
@@ -35,7 +34,7 @@ export default async function ProgramPage({ params }: { params: Promise<{ id: st
   const { data, error } = await supabase
     .from('programs')
     .select(
-      `id, slug, position, title_t, subtitle_t, promise_t, level, weeks, status, is_free, published_at,
+      `id, slug, position, title_t, subtitle_t, promise_t, level, weeks, status, published_at,
        area:areas ( id, name_t ),
        sessions ( id, position, title_t, status, videos ( id, position, step, status, duration_ms ) )`,
     )

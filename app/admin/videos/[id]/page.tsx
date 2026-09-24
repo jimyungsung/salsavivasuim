@@ -29,7 +29,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   const { data, error } = await supabase
     .from('videos')
     .select(
-      `id, session_id, step, position, title_t, description_t, angle, duration_ms,
+      `id, session_id, step, position, title_t, description_t, duration_ms,
        provider, provider_uid, hls_playback_id, mp4_url, poster_url, status,
        bpm, first_beat_ms, beats_per_phrase,
        default_loop_start_ms, default_loop_end_ms, mirror_default, is_drillable,

@@ -12,7 +12,8 @@ Seoul); ten migrations are applied. Functions are pinned to Seoul too (`icn1`
 in `vercel.json`) — in the default `iad1` every query crossed the Pacific.
 
 What works end to end: sign-in by magic link, an admin promoted by hand, upload
-straight to Cloudflare Stream from the browser, a signature-verified webhook
+straight to Cloudflare Stream from the browser (resumable, by tus, so
+any size — the simple upload stopped at 200 MB), a signature-verified webhook
 writing duration, poster and customer code back to the row, and the masterplan
 rendering the catalogue out of the database — so what the back office publishes
 is what the public shelf shows.
@@ -38,7 +39,8 @@ mirror flips only the picture, never the controls; a finished video hands on to
 the next; a wake lock holds while playing; keyboard shortcuts per BUILD-PLAN §5.
 
 **The phrase marks, the counts overlay and "loop eight counts" need a beat
-grid** — bpm and first beat, set in the back office's video editor. No video has
+grid** — bpm and first beat, set in the back office's video editor (the
+"Beat grid" panel, folded closed until a video has one). No video has
 one yet, so today the scrub bar is plain, L repeats the whole video (or the
 default loop, if one is set), and there is no counts button. Fill a grid and
 they appear; nothing in the player needs changing.

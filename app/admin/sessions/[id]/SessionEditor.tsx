@@ -225,7 +225,6 @@ function VideoCard({
         </Link>
         <div className="vmeta">
           <span>{video.is_drillable ? 'Drillable' : 'Not drillable'}</span>
-          <span>{video.angle} camera</span>
           {video.mirror_default && <span>Opens mirrored</span>}
           <span>{video.bpm ? `${video.bpm} bpm` : 'No beat grid'}</span>
           {untranslated(video.title_t, video.description_t) && <span className="chip ko">needs KO</span>}

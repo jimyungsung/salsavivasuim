@@ -143,13 +143,20 @@
   background: #fff; border: 1px solid var(--bo-line); border-radius: 14px;
   padding: 22px 24px; margin-bottom: 18px;
 }
-.bo .panel > h2, .bo .ph h2 {
+.bo .panel > h2, .bo .ph h2, .bo .panel.fold > summary h2 {
   margin: 0 0 18px; font-size: 12.5px; font-weight: 800; letter-spacing: .16em;
   text-transform: uppercase; color: var(--bo-dim);
 }
 .bo .ph { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
 .bo .ph h2 { margin: 0; }
 .bo .ph .aside-note { font-size: 13.5px; color: var(--bo-dim); }
+/* a panel folded until needed: the summary is the heading, with a chevron */
+.bo .panel.fold > summary { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; cursor: pointer; list-style: none; }
+.bo .panel.fold > summary::-webkit-details-marker { display: none; }
+.bo .panel.fold > summary h2 { margin: 0; }
+.bo .panel.fold > summary h2::before { content: "▸"; display: inline-block; width: 1.1em; transition: transform .15s; }
+.bo .panel.fold[open] > summary { margin-bottom: 16px; }
+.bo .panel.fold[open] > summary h2::before { transform: rotate(90deg); }
 .bo .panel .sub-h { margin: 22px 0 14px; font-size: 12.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--bo-dim); }
 
 /* ---- buttons and inputs ---- */

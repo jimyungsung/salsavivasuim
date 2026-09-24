@@ -20,12 +20,11 @@ import StepStrip, { type StripVideo } from '../../StepStrip';
 import UploadField from './UploadField';
 import { setVideoFields, type Result } from '../../actions';
 import { stepOf } from '@/lib/content';
-import { METHOD_STEPS, mmss, type CameraAngle, type MethodStep } from '@/lib/db';
+import { METHOD_STEPS, mmss, type MethodStep } from '@/lib/db';
 import type { EditorVideo } from './page';
 
 const two = (n: number) => String(n).padStart(2, '0');
 
-const ANGLES: CameraAngle[] = ['front', 'back', 'detail'];
 
 const toNum = (s: string): number | null => {
   const t = s.trim();
@@ -49,6 +48,11 @@ export default function VideoEditor({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  /* Decided once, on arrival: re-deciding on every save would fold the panel
+     shut under the cursor the moment its last value is cleared. */
+  const [gridOpen] = useState(
+    () => video.bpm != null || video.default_loop_start_ms != null || video.default_loop_end_ms != null,
+  );
 
   const [bpm, setBpm] = useState(video.bpm?.toString() ?? '');
   const [firstBeat, setFirstBeat] = useState(video.first_beat_ms?.toString() ?? '');
@@ -127,8 +131,13 @@ export default function VideoEditor({
             />
           </section>
 
-          <section className="panel">
-            <h2>Beat grid</h2>
+          {/* Optional, and folded until used: only counts, phrase marks and
+              "loop eight counts" in the player need it. Open when set. */}
+          <details className="panel fold" open={gridOpen}>
+            <summary>
+              <h2>Beat grid</h2>
+              <span className="hint">optional · counts, phrase marks and loop 8 counts in the player</span>
+            </summary>
             <div className="fields">
               <Labelled label="BPM">
                 <input className="num" value={bpm} disabled={pending} inputMode="decimal" onChange={e => setBpm(e.target.value)} onBlur={() => save({ bpm: toNum(bpm) })} placeholder="—" />
@@ -180,13 +189,13 @@ export default function VideoEditor({
                 <Hint>What a member gets when they press loop.</Hint>
               </Labelled>
             </div>
-          </section>
 
-          <div className="note">
-            <b>Tap tempo and the click-track preview are not built yet.</b>
-            Checking a BPM properly means hearing a click against the music. Until then the derived
-            numbers above are the only check on what you type.
-          </div>
+            <div className="note" style={{ marginTop: 18 }}>
+              <b>Tap tempo and the click-track preview are not built yet.</b>
+              Checking a BPM properly means hearing a click against the music. Until then the derived
+              numbers above are the only check on what you type.
+            </div>
+          </details>
         </div>
 
         <div>
@@ -208,19 +217,7 @@ export default function VideoEditor({
               </Hint>
             </div>
 
-            <div className="fields">
-              <Labelled label="Camera angle">
-                <select className="field" value={video.angle} disabled={pending} onChange={e => save({ angle: e.target.value })}>
-                  {ANGLES.map(a => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </Labelled>
-            </div>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14.5, marginTop: 16 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14.5 }}>
               <input type="checkbox" checked={video.mirror_default} disabled={pending} onChange={e => save({ mirror_default: e.target.checked })} />
               Opens mirrored
             </label>

@@ -198,13 +198,6 @@ export default function ProgramEditor({ program }: { program: EditorProgram }) {
               The level describes the material, not the dancer. The session count is counted, never stored.
             </p>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 14.5, marginBottom: 4 }}>
-              <input type="checkbox" checked={program.is_free} disabled={pending}
-                onChange={e => run(() => setProgramFields(program.id, { is_free: e.target.checked }))} />
-              Stays free when the paid tier lands
-            </label>
-            <p className="hint" style={{ margin: '0 0 16px' }}>Everything is free today; this marks the sample that stays.</p>
-
             <div className="fieldset" style={{ maxWidth: 'none' }}>
               <span className="lf-label">Slug</span>
               <input className="num" style={{ width: '100%' }} value={slug} disabled={pending}
