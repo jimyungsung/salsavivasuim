@@ -39,7 +39,8 @@ mirror flips only the picture, never the controls; a finished video hands on to
 the next; a wake lock holds while playing; keyboard shortcuts per BUILD-PLAN §5.
 
 **The phrase marks, the counts overlay and "loop eight counts" need a beat
-grid** — bpm and first beat, set in the back office's video editor. No video has
+grid** — bpm and first beat, set in the back office's video editor (the
+"Beat grid" panel, folded closed until a video has one). No video has
 one yet, so today the scrub bar is plain, L repeats the whole video (or the
 default loop, if one is set), and there is no counts button. Fill a grid and
 they appear; nothing in the player needs changing.

@@ -206,7 +206,6 @@ export async function setVideoFields(
   id: string,
   fields: {
     step?: string;
-    angle?: string;
     mirror_default?: boolean;
     bpm?: number | null;
     first_beat_ms?: number | null;
@@ -219,9 +218,6 @@ export async function setVideoFields(
 
   if (fields.step && !METHOD_STEPS.includes(fields.step as MethodStep)) {
     return fail('Unknown step.');
-  }
-  if (fields.angle && !['front', 'back', 'detail'].includes(fields.angle)) {
-    return fail('Unknown camera angle.');
   }
   if (fields.bpm != null && (fields.bpm <= 0 || fields.bpm > 400)) {
     return fail('BPM should be between 1 and 400.');
@@ -314,7 +310,7 @@ export async function createProgram(areaId: string, title: string): Promise<Resu
 /** The scalar half of a program. Copy goes through setLocalized. */
 export async function setProgramFields(
   id: string,
-  fields: { slug?: string; level?: string; weeks?: number | null; is_free?: boolean },
+  fields: { slug?: string; level?: string; weeks?: number | null },
 ): Promise<Result> {
   await requireAdmin();
 
@@ -334,7 +330,6 @@ export async function setProgramFields(
     }
     patch.weeks = fields.weeks;
   }
-  if (fields.is_free !== undefined) patch.is_free = fields.is_free;
 
   const supabase = await createClient();
   const { error } = await supabase.from('programs').update(patch).eq('id', id);
