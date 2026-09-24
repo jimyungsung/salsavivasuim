@@ -155,6 +155,22 @@ session can sit in two at once and session 05 can be gentler than session 04.
   a dead copy; edit `app/globals.css` instead. Delete a prototype screen when its
   replacement lands, and update the links pointing at it.
 
+## The back office
+
+`/admin` is a sidebar and a work area. The sidebar (`app/admin/Sidebar.tsx`,
+fed by the layout) is the whole catalogue — areas, programs, sessions — with the
+current branch open and a search box; every screen has breadcrumbs. A session
+opens on its **running order**: `StepStrip` draws its videos in order, coloured
+by method step and sized by length (hatched until footage lands), and
+`StepLegend` shows how often each of the six steps is used. The same strip, small,
+sits on every session row in the overview and the program page, and on a video's
+page with that video outlined. One colour per step, defined once in `admin.css`
+as `[data-step]` variables — reuse them rather than inventing more.
+
+Scope admin classes under `.bo` **and** check `app/globals.css` for the name
+first: it styles bare `.nav`, `.strip`, `.title`, `.frame` and others globally,
+which is why the sidebar's list is `.bonav` and the strip is `.rstrip`.
+
 ## Two caches, one catalogue
 
 The back office and the public shelf read the same rows, so a write has to clear

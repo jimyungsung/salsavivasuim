@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { adminGate } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
+import type { LocalizedRow, PublishStatus } from '@/lib/db';
 import SignInLink from './SignInLink';
+import Sidebar, { type NavArea } from './Sidebar';
 import './admin.css';
 
 /* The back office is one language — English — deliberately, against the rule
@@ -15,13 +18,67 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+interface TreeRow {
+  id: string;
+  position: number;
+  name_t: LocalizedRow;
+  programs: {
+    id: string;
+    position: number;
+    title_t: LocalizedRow;
+    status: PublishStatus;
+    sessions: {
+      id: string;
+      position: number;
+      title_t: LocalizedRow;
+      status: PublishStatus;
+      videos: { id: string }[] | null;
+    }[] | null;
+  }[] | null;
+}
+
+const byPosition = <T extends { position: number }>(rows: T[] | null | undefined): T[] =>
+  [...(rows ?? [])].sort((a, b) => a.position - b.position);
+
+/* The sidebar's tree, read once per request. Every back office write already
+   revalidates this layout, so a rename or a new session shows up in it at once. */
+async function navTree(): Promise<NavArea[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('areas')
+    .select(
+      `id, position, name_t,
+       programs ( id, position, title_t, status,
+         sessions ( id, position, title_t, status, videos ( id ) ) )`,
+    )
+    .order('position');
+
+  return byPosition(data as unknown as TreeRow[]).map(area => ({
+    id: area.id,
+    name: area.name_t.en,
+    programs: byPosition(area.programs).map(p => ({
+      id: p.id,
+      title: p.title_t.en || 'Untitled program',
+      status: p.status,
+      sessions: byPosition(p.sessions).map(s => ({
+        id: s.id,
+        position: s.position,
+        title: s.title_t.en || 'Untitled session',
+        status: s.status,
+        videoIds: (s.videos ?? []).map(v => v.id),
+      })),
+    })),
+  }));
+}
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const gate = await adminGate();
+  const tree = gate.ok ? await navTree() : [];
 
   return (
     <div className="bo">
       <header className="bobar">
-        <div className="wrap">
+        <div className="barin">
           <Link className="logo" href="/admin">
             SUIM<span className="dot" style={{ color: 'var(--lime)' }}>.</span>
           </Link>
@@ -34,9 +91,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <main>
-        <div className="wrap">{gate.ok ? children : <Gate reason={gate.reason} />}</div>
-      </main>
+      {gate.ok ? (
+        <div className="shell">
+          <Sidebar tree={tree} />
+          <main className="work">{children}</main>
+        </div>
+      ) : (
+        <main className="work">
+          <Gate reason={gate.reason} />
+        </main>
+      )}
     </div>
   );
 }

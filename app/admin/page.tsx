@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
-import type { LevelKey, LocalizedRow, PublishStatus, VideoStatus } from '@/lib/db';
+import type { LevelKey, LocalizedRow, MethodStep, PublishStatus, VideoStatus } from '@/lib/db';
 import Tree from './Tree';
 
 /* The catalogue tree: areas, the programs inside them, and the sessions inside
@@ -9,7 +9,10 @@ import Tree from './Tree';
 
 export interface TreeVideo {
   id: string;
+  position: number;
+  step: MethodStep;
   status: VideoStatus;
+  duration_ms: number | null;
 }
 
 export interface TreeSession {
@@ -54,7 +57,8 @@ export default async function AdminHome() {
     .select(
       `id, slug, position, name_t,
        programs ( id, slug, position, title_t, subtitle_t, level, status,
-         sessions ( id, position, title_t, status, videos ( id, status ) ) )`,
+         sessions ( id, position, title_t, status,
+           videos ( id, position, step, status, duration_ms ) ) )`,
     )
     .order('position');
 
@@ -73,7 +77,7 @@ export default async function AdminHome() {
     ...(a as unknown as TreeArea),
     programs: byPosition((a as unknown as TreeArea).programs).map(p => ({
       ...p,
-      sessions: byPosition(p.sessions),
+      sessions: byPosition(p.sessions).map(s => ({ ...s, videos: byPosition(s.videos) })),
     })),
   }));
 

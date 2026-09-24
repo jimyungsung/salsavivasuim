@@ -22,7 +22,8 @@ import {
   setStatus,
   type Result,
 } from './actions';
-import { PUBLISH_STATUSES, untranslated, type PublishStatus } from '@/lib/db';
+import { PUBLISH_STATUSES, mmss, sessionLength, untranslated, type PublishStatus } from '@/lib/db';
+import StepStrip from './StepStrip';
 import type { TreeArea, TreeProgram, TreeSession } from './page';
 
 export default function Tree({ areas }: { areas: TreeArea[] }) {
@@ -49,7 +50,7 @@ export default function Tree({ areas }: { areas: TreeArea[] }) {
   return (
     <>
       {error && (
-        <p className="chip warn" style={{ display: 'block', marginBottom: 12, padding: '10px 12px' }}>
+        <p className="banner">
           {error}
         </p>
       )}
@@ -182,11 +183,12 @@ function ProgramRow({
     <>
       <div className="prow">
         <div className="t">
-          <b>{program.title_t.en}</b> <span>· {program.subtitle_t.en}</span>
-          {untranslated(program.title_t, program.subtitle_t) && <> <span className="chip ko">needs KO</span></>}
+          <Link href={`/admin/programs/${program.id}`}>{program.title_t.en}</Link>
+          {program.subtitle_t.en && <span>{program.subtitle_t.en}</span>}
+          {untranslated(program.title_t, program.subtitle_t) && <span className="chip ko">needs KO</span>}
         </div>
         <div className="meta">
-          <span style={{ fontSize: 11.5, color: 'var(--bo-dim)' }}>
+          <span className="count">
             {program.sessions.length} session{program.sessions.length === 1 ? '' : 's'}
             {all.length > 0 && ` · ${ready}/${all.length} with footage`}
           </span>
@@ -195,7 +197,7 @@ function ProgramRow({
           <button className="btn tiny" type="button" disabled={pending || first} onClick={() => run(() => movePosition('programs', program.id, 'up'))} aria-label="Move up">↑</button>
           <button className="btn tiny" type="button" disabled={pending || last} onClick={() => run(() => movePosition('programs', program.id, 'down'))} aria-label="Move down">↓</button>
           <button className="btn tiny" type="button" onClick={onToggle} aria-expanded={expanded}>
-            {expanded ? 'Hide sessions' : 'Sessions'}
+            {expanded ? 'Hide sessions ▴' : 'Show sessions ▾'}
           </button>
         </div>
       </div>
@@ -252,14 +254,18 @@ function SessionRow({
       <span>
         <Link className="name" href={`/admin/sessions/${session.id}`}>
           {session.title_t.en || 'Untitled session'}
-        </Link>
-        {untranslated(session.title_t) && <> <span className="chip ko">needs KO</span></>}
-      </span>
-      <span style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        </Link>{' '}
+        {untranslated(session.title_t) && <span className="chip ko">needs KO</span>}
+        <br />
         <span className="vids">
           {/* Never "of 6" — how many videos a session has is the session's own business. */}
-          {session.videos.length === 0 ? 'no videos' : `${ready}/${session.videos.length} with footage`}
+          {session.videos.length === 0
+            ? 'No videos'
+            : `${session.videos.length} videos · ${mmss(sessionLength(session.videos))} · ${ready} with footage`}
         </span>
+      </span>
+      <StepStrip videos={session.videos} hrefFor={() => `/admin/sessions/${session.id}`} />
+      <span className="end">
         <StatusPicker table="sessions" id={session.id} value={session.status} disabled={pending} onRun={run} />
         <button className="btn tiny" type="button" disabled={pending || first} onClick={() => run(() => movePosition('sessions', session.id, 'up'))} aria-label="Move up">↑</button>
         <button className="btn tiny" type="button" disabled={pending || last} onClick={() => run(() => movePosition('sessions', session.id, 'down'))} aria-label="Move down">↓</button>

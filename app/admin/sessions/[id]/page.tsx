@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
+import { signedPosters } from '@/lib/playback';
 import type { LocalizedRow, PublishStatus, VideoRow } from '@/lib/db';
 import SessionEditor from './SessionEditor';
 
@@ -12,7 +12,13 @@ export interface EditorSession {
   outcome_t: LocalizedRow;
   focus_t: LocalizedRow;
   status: PublishStatus;
-  program: { id: string; title_t: LocalizedRow; subtitle_t: LocalizedRow } | null;
+  program: {
+    id: string;
+    title_t: LocalizedRow;
+    subtitle_t: LocalizedRow;
+    status: PublishStatus;
+    area: { id: string; name_t: LocalizedRow } | null;
+  } | null;
 }
 
 export default async function SessionPage({ params }: { params: Promise<{ id: string }> }) {
@@ -27,7 +33,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
       .from('sessions')
       .select(
         `id, position, title_t, outcome_t, focus_t, status,
-         program:programs ( id, title_t, subtitle_t )`,
+         program:programs ( id, title_t, subtitle_t, status, area:areas ( id, name_t ) )`,
       )
       .eq('id', id)
       .maybeSingle(),
@@ -53,12 +59,11 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
   }
   if (!session) notFound();
 
-  return (
-    <SessionEditor
-      session={session as unknown as EditorSession}
-      videos={(videos ?? []) as unknown as VideoRow[]}
-    />
-  );
+  const rows = (videos ?? []) as unknown as VideoRow[];
+  /* Thumbnails for the cards: signed, because the stored poster_url is not. */
+  const posters = await signedPosters(rows.map(v => v.id));
+
+  return <SessionEditor session={session as unknown as EditorSession} videos={rows} posters={posters} />;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {

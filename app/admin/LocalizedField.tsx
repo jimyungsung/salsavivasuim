@@ -20,6 +20,7 @@ export default function LocalizedField({
   label,
   value,
   multiline = false,
+  stacked = false,
   onError,
 }: {
   table: 'areas' | 'programs' | 'sessions' | 'videos';
@@ -28,6 +29,8 @@ export default function LocalizedField({
   label: string;
   value: LocalizedRow;
   multiline?: boolean;
+  /** EN above KO, for a narrow column; side by side otherwise. */
+  stacked?: boolean;
   onError: (message: string | null) => void;
 }) {
   const [en, setEn] = useState(value.en ?? '');
@@ -61,14 +64,14 @@ export default function LocalizedField({
         {!pending && saved === 'saved' && <em className="ok">saved</em>}
         {!pending && saved === 'idle' && !ko.trim() && <em className="todo">needs KO</em>}
       </div>
-      <div className="lf-pair">
+      <div className={`lf-pair${stacked ? ' stacked' : ''}`}>
         <label>
           <span>EN</span>
-          <Field value={en} onChange={e => setEn(e.target.value)} onBlur={commit} rows={multiline ? 2 : undefined} />
+          <Field value={en} onChange={e => setEn(e.target.value)} onBlur={commit} rows={multiline ? 3 : undefined} />
         </label>
         <label>
           <span>KO</span>
-          <Field value={ko} onChange={e => setKo(e.target.value)} onBlur={commit} rows={multiline ? 2 : undefined} placeholder="—" />
+          <Field value={ko} onChange={e => setKo(e.target.value)} onBlur={commit} rows={multiline ? 3 : undefined} placeholder="—" />
         </label>
       </div>
     </div>

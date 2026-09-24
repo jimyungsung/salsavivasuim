@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
-import type { LevelKey, LocalizedRow, PublishStatus, VideoStatus } from '@/lib/db';
+import type { LevelKey, LocalizedRow, MethodStep, PublishStatus, VideoStatus } from '@/lib/db';
 import ProgramEditor from './ProgramEditor';
 
 export interface EditorProgram {
@@ -22,7 +22,7 @@ export interface EditorProgram {
     position: number;
     title_t: LocalizedRow;
     status: PublishStatus;
-    videos: { id: string; status: VideoStatus }[];
+    videos: { id: string; position: number; step: MethodStep; status: VideoStatus; duration_ms: number | null }[];
   }[];
 }
 
@@ -37,7 +37,7 @@ export default async function ProgramPage({ params }: { params: Promise<{ id: st
     .select(
       `id, slug, position, title_t, subtitle_t, promise_t, level, weeks, status, is_free, published_at,
        area:areas ( id, name_t ),
-       sessions ( id, position, title_t, status, videos ( id, status ) )`,
+       sessions ( id, position, title_t, status, videos ( id, position, step, status, duration_ms ) )`,
     )
     .eq('id', id)
     .maybeSingle();
@@ -53,7 +53,9 @@ export default async function ProgramPage({ params }: { params: Promise<{ id: st
   if (!data) notFound();
 
   const program = data as unknown as EditorProgram;
-  program.sessions = [...(program.sessions ?? [])].sort((a, b) => a.position - b.position);
+  program.sessions = [...(program.sessions ?? [])]
+    .sort((a, b) => a.position - b.position)
+    .map(s => ({ ...s, videos: [...(s.videos ?? [])].sort((a, b) => a.position - b.position) }));
 
   return <ProgramEditor program={program} />;
 }
