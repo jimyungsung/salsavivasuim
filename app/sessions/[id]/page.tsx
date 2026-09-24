@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import AppNav from '@/components/AppNav';
 import { getSession } from '@/lib/catalogue';
+import { sessionPlaylist } from '@/lib/playlist';
 import { isConfigured } from '@/lib/supabase/config';
 import { getMember } from '@/lib/member';
 import { t } from '@/lib/content';
 import { getPlayback } from '../actions';
 import { signedPosters } from '@/lib/playback';
-import SessionPlayer from './SessionPlayer';
-import './session.css';
+import Player from '@/components/Player';
+import '@/components/player.css';
 
 export async function generateMetadata({
   params,
@@ -33,7 +34,9 @@ export default async function SessionPage({
   /* The first playable video's playback is minted here, server-side, so the
      player has something to show on first paint. Switching videos afterwards
      asks getPlayback() again, client-side. */
-  const first = session.videos.find(v => v.status === 'ready');
+  const playlist = sessionPlaylist(session);
+  const firstIndex = playlist.entries.findIndex(e => e.video.status === 'ready');
+  const first = firstIndex >= 0 ? playlist.entries[firstIndex].video : null;
   const initialPlayback = first ? await getPlayback(first.id) : null;
   const signedIn = !isConfigured || Boolean(await getMember());
   const posters = await signedPosters(session.videos.map(v => v.id));
@@ -41,9 +44,9 @@ export default async function SessionPage({
   return (
     <>
       <AppNav current="masterplan" />
-      <SessionPlayer
-        session={session}
-        initialVideoId={first?.id ?? null}
+      <Player
+        playlist={playlist}
+        initialIndex={first ? firstIndex : null}
         initialPlayback={initialPlayback}
         posters={posters}
         signedIn={signedIn}

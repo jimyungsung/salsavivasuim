@@ -21,7 +21,7 @@ export type NavSection = 'masterplan' | 'training' | 'drills';
 const ITEMS: { key: NavSection | 'admin'; href: string; label: Localized }[] = [
   { key: 'masterplan', href: '/masterplan', label: { en: 'Masterplan', ko: '마스터플랜' } },
   { key: 'training', href: '/prototype/training.html', label: { en: 'My training', ko: '나의 트레이닝' } },
-  { key: 'drills', href: '/prototype/drills.html', label: { en: 'My drills', ko: '나의 드릴' } },
+  { key: 'drills', href: '/drills', label: { en: 'My drills', ko: '나의 드릴' } },
 ];
 
 const ADMIN = { key: 'admin' as const, href: '/admin', label: { en: 'Admin', ko: '관리' } };
