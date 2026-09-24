@@ -17,8 +17,16 @@ rendering the catalogue out of the database — so what the back office publishe
 is what the public shelf shows.
 
 Ported so far: `/masterplan`, `/programs/[slug]` (a module), `/sessions/[id]`
-(a session and its player), `/signin`, `/register`. Everything else still serves
+(a session and its player), `/drills` (My drills, with `/drills/[id]/play` and
+`/drills/day/[weekday]`), `/signin`, `/register`. Everything else still serves
 from `public/prototype/`.
+
+**The player takes a playlist** (`lib/playlist.ts`): a session, a drill, or a
+day of drills are all the same shape — entries of `{ video, repeats, speed }`
+with a title, a back link and a next link — and `components/Player.tsx` plays
+any of them. The selection is an entry index, because a drill can hold the same
+video twice. `sessionPlaylist()` is pure; `drillPlaylist()` and `dayPlaylist()`
+live in `lib/drills.ts`.
 
 The player is the prototype's session screen made real: controls over the
 picture, a scrub bar with the loop zone and phrase marks, the session's parts in
@@ -50,14 +58,25 @@ full-resolution video (it is hardware-composited), so the frame looks blank
 there. Check `requestVideoFrameCallback`'s `presentedFrames` instead — it
 counts frames actually put on screen.
 
+**My drills is real** (BUILD-PLAN P5, minus what needs P4). A member builds a
+drill from the drillable videos they can see, orders it, names it, places it
+on days of the week (twice for two runs) and plays a drill or a whole day. The
+"own drill items" policy is what keeps non-drillable or unwatchable videos out
+of a drill; the page checks nothing itself. Placing on a day is a row of day
+buttons on the drill, not a drag — drag does not fire on touch. Not yet: the
+library narrowed to videos the member has *practised* (needs practice_events),
+per-item loop/speed/repeats in the dialog (the columns exist and the player
+honours them), and marking a slot done. **No TRAIN or DRILL video has footage
+yet**, so the library is empty until one is uploaded.
+
 **Next: practice events and real progress** (BUILD-PLAN P4) — `play`,
 `heartbeat`, `loop`, `complete` into `practice_events`, then My training on real
 data. Until then nobody is "in progress": the masterplan features the first
 program with sessions instead, and its fake resume link is gone. Still to come
-in the player: dragging the loop zone's edges, the click track, a count-in, the
-audio-offset slider, and the playlist shape for drills. `plan.html` and
-`session.html` stay until training and drills are ported — they link to them by
-session number, which means nothing to a real session id.
+in the player: dragging the loop zone's edges, the click track, a count-in, and
+the audio-offset slider. `plan.html` and `session.html` stay until training is
+ported — it links to them by session number, which means nothing to a real
+session id.
 
 The name is an open question: the product is still SUIM throughout the code, but
 the domain bought for it is salsadrill.com, on the reasoning that a platform
@@ -101,8 +120,12 @@ session can sit in two at once and session 05 can be gentler than session 04.
       globals.css         the design system — canonical copy
       masterplan/         the catalogue, the first screen ported
       programs/[slug]/    a module: its sessions, filtered by level
-      sessions/[id]/      a session: the player and its videos
+      sessions/[id]/      a session, as a playlist for the player
       sessions/actions.ts getPlayback(), the player's way to ask for a URL
+      drills/             My drills: the page, its actions, and the play routes
+    components/Player.tsx the player, and player.css beside it
+    lib/playlist.ts       the Playlist shape, and sessionPlaylist()
+    lib/drills.ts         a member's drills, the library, drill/day playlists
     lib/playback.ts       every signed URL and thumbnail is minted here
     components/AppNav.tsx the nav every app screen renders. Server half: asks
                           who is signed in (lib/member.ts); AppNavBar draws it
@@ -119,8 +142,8 @@ session can sit in two at once and session 05 can be gentler than session 04.
     lib/lang.tsx          the EN/KO switch
     public/prototype/     the original static prototype, still serving the
                           screens that have not been ported. masterplan.html,
-                          register.html and 404.html are deleted; the landing
-                          page's sign-up buttons go to /register
+                          register.html, drills.html and 404.html are deleted;
+                          the landing page's sign-up buttons go to /register
     docs/BUILD-PLAN.md    the plan
     supabase/migrations/  the schema, RLS and the entitlement function
     supabase/seed.sql     the catalogue, generated from lib/content.ts
@@ -217,10 +240,10 @@ poster.
 
 - **Minutes practised is wall-clock, not media time.** Four minutes of footage at
   0.5× is eight minutes of practice.
-- **The player takes a playlist, not a video.** A session is its videos in order;
-  a drill is a different set of entries. Building it any other way means
-  rebuilding it — and a playlist is the shape that survives sessions of different
-  lengths.
+- **The player takes a playlist, not a video.** Done: `lib/playlist.ts`. A
+  session is its videos in order; a drill is a different set of entries. Keep
+  it that way — anything new the player plays is another builder, not another
+  player.
 
 ## Running it
 

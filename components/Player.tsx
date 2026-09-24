@@ -2,6 +2,11 @@
 
 /* The practice player.
 
+   It plays a playlist — a session, a drill, or a day of drills — never a bare
+   video (lib/playlist.ts). An entry is a video plus how to play it: repeats,
+   and a speed of its own. The same video may appear twice, so the selection is
+   an entry index, not a video id.
+
    Drawn the way the prototype's session.html drew it — controls laid over the
    picture, a scrub bar carrying the loop zone and the phrase marks, a strip of
    the session's parts underneath — but every mark on it is real:
@@ -24,25 +29,26 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { useCopy, useLang } from '@/lib/lang';
 import type { Copy } from '@/lib/lang';
-import { LEVEL_LABELS, stepOf } from '@/lib/content';
+import { stepOf } from '@/lib/content';
 import { mmss } from '@/lib/db';
 import { signInHref } from '@/lib/safe-next';
-import type { SessionDetail, SessionVideoSummary } from '@/lib/catalogue';
-import { getPlayback, type PlaybackResult } from '../actions';
+import type { SessionVideoSummary } from '@/lib/catalogue';
+import { playlistLengthMs, type Playlist } from '@/lib/playlist';
+import { getPlayback, type PlaybackResult } from '@/app/sessions/actions';
 
 type Key =
-  | 'sessionOf' | 'total' | 'prevS' | 'nextS' | 'lastSession' | 'finish'
-  | 'listT' | 'notReady' | 'loading' | 'signInT' | 'signInGo' | 'focus' | 'keys'
+  | 'total' | 'listSession' | 'listDrill' | 'listDay' | 'notReady' | 'nothing'
+  | 'loading' | 'signInT' | 'signInGo' | 'focus' | 'keys'
   | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror' | 'aFull' | 'aExitFull' | 'aCounts'
   | 'aLoop8' | 'aLoopAB' | 'aRepeat' | 'aSeek'
   | 'footer' | 'signout';
 
 const C: Copy<Key> = {
   en: {
-    sessionOf: 'Session', total: 'total', prevS: '← Previous', nextS: 'Next session →',
-    lastSession: 'Last session', finish: 'Finish the module →',
-    listT: 'Videos in this session', notReady: 'Being filmed', loading: 'Loading…',
-    signInT: 'Sign in to watch this session.', signInGo: 'Sign in ↗',
+    total: 'total',
+    listSession: 'Videos in this session', listDrill: 'In this drill', listDay: 'Drills for the day',
+    notReady: 'Being filmed', nothing: 'Nothing to play here yet.', loading: 'Loading…',
+    signInT: 'Sign in to watch.', signInGo: 'Sign in ↗',
     focus: 'What to focus on',
     keys: 'Space play · ← → 5 s · , . one frame · L loop · M mirror · 1–4 speed · F full screen',
     aPlay: 'Play', aPause: 'Pause', aSpeed: 'Playback speed', aMirror: 'Mirror the picture',
@@ -52,10 +58,10 @@ const C: Copy<Key> = {
     footer: 'Solo salsa training · Built around practice', signout: 'Sign out',
   },
   ko: {
-    sessionOf: '세션', total: '분량', prevS: '← 이전', nextS: '다음 세션 →',
-    lastSession: '마지막 세션', finish: '모듈 마치기 →',
-    listT: '이 세션의 영상', notReady: '촬영 중', loading: '불러오는 중…',
-    signInT: '로그인하면 이 세션을 볼 수 있습니다.', signInGo: '로그인 ↗',
+    total: '분량',
+    listSession: '이 세션의 영상', listDrill: '이 드릴의 영상', listDay: '오늘의 드릴',
+    notReady: '촬영 중', nothing: '아직 재생할 것이 없습니다.', loading: '불러오는 중…',
+    signInT: '로그인하면 볼 수 있습니다.', signInGo: '로그인 ↗',
     focus: '이것에 집중하세요',
     keys: 'Space 재생 · ← → 5초 · , . 한 프레임 · L 반복 · M 반전 · 1–4 속도 · F 전체 화면',
     aPlay: '재생', aPause: '일시정지', aSpeed: '재생 속도', aMirror: '좌우 반전',
@@ -128,15 +134,16 @@ const countLabels = (beats: number) =>
 
 /* ---- the component ------------------------------------------------------- */
 
-export default function SessionPlayer({
-  session,
-  initialVideoId,
+export default function Player({
+  playlist,
+  initialIndex,
   initialPlayback,
   posters,
   signedIn,
 }: {
-  session: SessionDetail;
-  initialVideoId: string | null;
+  playlist: Playlist;
+  /** Which entry opens, or null when nothing in the list is playable. */
+  initialIndex: number | null;
   initialPlayback: PlaybackResult | null;
   /** Signed thumbnails by video id, for the list beside the player. */
   posters: Record<string, string>;
@@ -144,8 +151,12 @@ export default function SessionPlayer({
 }) {
   const { T } = useLang();
   const c = useCopy(C);
+  const { entries } = playlist;
 
-  const [currentId, setCurrentId] = useState(initialVideoId);
+  const [index, setIndex] = useState(initialIndex ?? -1);
+  const entry = entries[index] ?? null;
+  const current = entry?.video ?? null;
+  const initialVideoId = initialIndex != null ? entries[initialIndex]?.video.id ?? null : null;
   /* Keyed by video so a signed URL can never be attached to a different video
      than the one it was minted for — including going back to the first one. */
   const [signed, setSigned] = useState<{ videoId: string; result: PlaybackResult } | null>(
@@ -179,29 +190,47 @@ export default function SessionPlayer({
   const fillRef = useRef<HTMLSpanElement | null>(null);
   const autoplayRef = useRef(false);
   const overriddenMirror = useRef(false);
+  /* How many times the current entry has played through, for `repeats`. */
+  const lapsRef = useRef(0);
+  const [lap, setLap] = useState(1);
 
-  const current = session.videos.find(v => v.id === currentId) ?? null;
-  const index = current ? session.videos.indexOf(current) : -1;
   const grid = Boolean(current?.bpm);
 
-  /* ---- per video: mirror default, remembered speed, fresh state ---------- */
+  /* ---- per entry: mirror default, speed, fresh state --------------------- */
 
   useEffect(() => {
-    if (!current) return;
-    if (!overriddenMirror.current) setMirrored(current.mirrorDefault);
+    if (!entry) return;
+    const video = entry.video;
+    if (!overriddenMirror.current) setMirrored(video.mirrorDefault);
     let stored: Record<string, number> = {};
     try {
       stored = JSON.parse(localStorage.getItem(SPEED_STORE) ?? '{}');
     } catch {
       /* private mode: every step starts at its default */
     }
-    setSpeed(stored[current.step] ?? (current.isDrillable ? 0.75 : 1));
+    /* An entry's own speed first; otherwise what the dancer last chose for
+       this step; otherwise slow for the two steps you repeat. */
+    setSpeed(entry.speed ?? stored[video.step] ?? (video.isDrillable ? 0.75 : 1));
     setStarted(false);
     setRegion(null);
     setLoopOn(false);
     setBeat(null);
-    setDurationS((current.durationMs ?? 0) / 1000);
-  }, [current]);
+    setDurationS((video.durationMs ?? 0) / 1000);
+    lapsRef.current = 0;
+    setLap(1);
+    /* The same video again — a drill can hold it twice in a row — keeps its
+       source, so it has to be wound back by hand. */
+    const el = videoRef.current;
+    if (el && signed?.videoId === video.id && signed.result.ok) {
+      el.currentTime = 0;
+      if (autoplayRef.current) {
+        autoplayRef.current = false;
+        el.play().catch(() => {});
+      }
+    }
+    // signed is read, not depended on: this runs when the entry changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry]);
 
   const chooseSpeed = useCallback(
     (next: number) => {
@@ -219,6 +248,7 @@ export default function SessionPlayer({
 
   /* ---- signed source ------------------------------------------------------ */
 
+  const currentId = current?.id ?? null;
   const playback = signed && signed.videoId === currentId ? signed.result : null;
   const loading = Boolean(currentId) && !playback;
   useEffect(() => {
@@ -348,19 +378,30 @@ export default function SessionPlayer({
     setMirrored(m => !m);
   }, []);
 
-  const pick = useCallback((id: string) => {
+  const pick = useCallback((i: number) => {
     autoplayRef.current = Boolean(videoRef.current && !videoRef.current.paused);
-    setCurrentId(id);
+    setIndex(i);
   }, []);
 
   const onEnded = useCallback(() => {
-    if (loopOn) return;
-    const next = session.videos.slice(index + 1).find(v => v.status === 'ready');
-    if (next) {
-      autoplayRef.current = true;
-      setCurrentId(next.id);
+    if (loopOn || !entry) return;
+    /* This entry again, until it has played its repeats. */
+    lapsRef.current += 1;
+    if (lapsRef.current < entry.repeats) {
+      setLap(lapsRef.current + 1);
+      const el = videoRef.current;
+      if (el) {
+        el.currentTime = 0;
+        el.play().catch(() => {});
+      }
+      return;
     }
-  }, [index, loopOn, session.videos]);
+    const offset = entries.slice(index + 1).findIndex(e => e.video.status === 'ready');
+    if (offset >= 0) {
+      autoplayRef.current = true;
+      setIndex(index + 1 + offset);
+    }
+  }, [index, loopOn, entry, entries]);
 
   /* Scrubbing: press anywhere on the bar, drag to keep seeking. */
   const seekTo = (clientX: number) => {
@@ -483,21 +524,21 @@ export default function SessionPlayer({
 
   /* ---- signed out, or nothing filmed yet --------------------------------- */
 
-  if (!current) {
+  if (!current || !entry) {
     return (
       <div className="sp">
         <div className="sp-empty">
-          <Link className="crumb" href={`/programs/${session.program.id}`}>
+          <Link className="crumb" href={playlist.back.href}>
             <span aria-hidden="true">←</span>
-            <span>{T(session.program.title)}</span>
+            <span>{T(playlist.back.label)}</span>
           </Link>
-          <h1>{T(session.title)}</h1>
+          <h1>{T(playlist.title)}</h1>
           {signedIn ? (
-            <p>{c.notReady}</p>
+            <p>{entries.length ? c.notReady : c.nothing}</p>
           ) : (
             <>
               <p>{c.signInT}</p>
-              <Link className="pill primary sm" href={signInHref(`/sessions/${session.id}`)}>
+              <Link className="pill primary sm" href={signInHref(playlist.href)}>
                 {c.signInGo}
               </Link>
             </>
@@ -507,59 +548,42 @@ export default function SessionPlayer({
     );
   }
 
-  const hasPrev = Boolean(session.prevSessionId);
-  const hasNext = Boolean(session.nextSessionId);
   const step = stepOf(current.step);
   const durationMs = durationS * 1000 || current.durationMs || 0;
   const marks = phraseMarks(current, durationMs);
   const shownRegion = loopOn && region && durationMs ? region : null;
   const loopLabel =
     current.loopStartMs != null && current.loopEndMs != null ? c.aLoopAB : grid ? c.aLoop8 : c.aRepeat;
-  const levels = session.levels.map(k => T(LEVEL_LABELS[k])).join(' · ');
+  const listTitle = playlist.kind === 'session' ? c.listSession : playlist.kind === 'drill' ? c.listDrill : c.listDay;
 
-  /* Where each part sits in the session, summed from the videos' own lengths. */
+  /* Where each part sits in the whole, summed from the videos' own lengths. */
   let at = 0;
-  const spans = session.videos.map(v => {
+  const spans = entries.map(e => {
     const from = at;
-    at += (v.durationMs ?? 0) / 1000;
-    return { from, to: at, known: v.durationMs != null };
+    at += ((e.video.durationMs ?? 0) * e.repeats) / 1000;
+    return { from, to: at, known: e.video.durationMs != null };
   });
 
-  const nextHref = hasNext ? `/sessions/${session.nextSessionId}` : `/programs/${session.program.id}`;
+  const onwards = playlist.next ?? playlist.back;
 
   return (
     <div className="sp">
       <div className="subnav">
         <div className="wrap subin">
-          <Link className="crumb" href={`/programs/${session.program.id}`}>
+          <Link className="crumb" href={playlist.back.href}>
             <span aria-hidden="true">←</span>
-            <span>{T(session.program.title)}</span>
+            <span>{T(playlist.back.label)}</span>
           </Link>
           <div className="where">
-            <span className="lv">
-              {c.sessionOf} {two(session.position)}
-              {levels && ` · ${levels}`}
-            </span>
-            <h1>{T(session.title)}</h1>
+            <span className="lv">{T(playlist.kicker)}</span>
+            <h1>{T(playlist.title)}</h1>
             <span className="len">
-              {mmss(session.videos.reduce((n, v) => n + (v.durationMs ?? 0), 0))} {c.total}
+              {mmss(playlistLengthMs(entries))} {c.total}
             </span>
           </div>
-          <nav className="hop" aria-label="Sessions">
-            <Link
-              className={hasPrev ? '' : 'off'}
-              href={hasPrev ? `/sessions/${session.prevSessionId}` : '#'}
-              aria-disabled={!hasPrev}
-            >
-              {c.prevS}
-            </Link>
-            <Link
-              className={hasNext ? '' : 'off'}
-              href={hasNext ? `/sessions/${session.nextSessionId}` : '#'}
-              aria-disabled={!hasNext}
-            >
-              {hasNext ? c.nextS : c.lastSession}
-            </Link>
+          <nav className="hop">
+            {playlist.prev && <Link href={playlist.prev.href}>{T(playlist.prev.label)}</Link>}
+            {playlist.next && <Link href={playlist.next.href}>{T(playlist.next.label)}</Link>}
           </nav>
         </div>
       </div>
@@ -638,7 +662,10 @@ export default function SessionPlayer({
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </button>
-                  <small>{T(step.name)}</small>
+                  <small>
+                    {T(step.name)}
+                    {entry.repeats > 1 && ` · ${lap}/${entry.repeats}`}
+                  </small>
                   <h2>{T(current.title)}</h2>
                   {T(current.description) && <p>{T(current.description)}</p>}
                 </div>
@@ -774,21 +801,25 @@ export default function SessionPlayer({
 
           <div className="notes">
             <div className="steps">
-              {session.videos.map((v, i) => {
+              {entries.map((e, i) => {
+                const v = e.video;
                 const s = stepOf(v.step);
-                const now = v.id === current.id;
+                const now = i === index;
                 return (
                   <button
-                    key={v.id}
+                    key={i}
                     className="step"
                     type="button"
                     aria-current={now}
                     disabled={v.status !== 'ready'}
-                    onClick={() => pick(v.id)}
+                    onClick={() => pick(i)}
                   >
-                    <span className="sn">{v.position}</span>
-                    <span className="st">{T(s.name)}</span>
-                    <span className="slen">{mmss(v.durationMs)}</span>
+                    <span className="sn">{i + 1}</span>
+                    <span className="st">
+                      {T(s.name)}
+                      {e.repeats > 1 && ` ×${e.repeats}`}
+                    </span>
+                    <span className="slen">{mmss((v.durationMs ?? 0) * e.repeats || null)}</span>
                     <span className="sat">
                       {spans[i].known ? `${clock(spans[i].from)}–${clock(spans[i].to)}` : '—'}
                     </span>
@@ -801,7 +832,7 @@ export default function SessionPlayer({
             <div className="about">
               <h3>{c.focus}</h3>
               <ul className="cues">
-                {[T(session.focus), T(current.description), T(session.outcome)]
+                {[...playlist.notes.map(T), T(current.description)]
                   .filter((text, i, all) => text && all.indexOf(text) === i)
                   .map(text => (
                     <li key={text}>{text}</li>
@@ -814,24 +845,25 @@ export default function SessionPlayer({
 
         <aside className="side">
           <div className="shead">
-            <b>{c.listT}</b>
+            <b>{listTitle}</b>
             <span>
-              {index + 1} / {session.videos.length}
+              {index + 1} / {entries.length}
             </span>
           </div>
           <div>
-            {session.videos.map(v => {
+            {entries.map((e, i) => {
+              const v = e.video;
               const s = stepOf(v.step);
               const ready = v.status === 'ready';
-              const now = v.id === current.id;
+              const now = i === index;
               return (
                 <button
-                  key={v.id}
+                  key={i}
                   className="vid"
                   type="button"
                   aria-current={now}
                   disabled={!ready}
-                  onClick={() => pick(v.id)}
+                  onClick={() => pick(i)}
                 >
                   <span className="vthumb">
                     {posters[v.id] && <img src={posters[v.id]} alt="" loading="lazy" />}
@@ -843,7 +875,10 @@ export default function SessionPlayer({
                     <span className="d">{ready ? mmss(v.durationMs) : c.notReady}</span>
                   </span>
                   <span className="vmeta">
-                    <span className="t">{T(s.name)}</span>
+                    <span className="t">
+                      {T(s.name)}
+                      {e.repeats > 1 && ` · ×${e.repeats}`}
+                    </span>
                     <span className="n">{T(v.title)}</span>
                   </span>
                 </button>
@@ -851,8 +886,8 @@ export default function SessionPlayer({
             })}
           </div>
           <div className="sfoot">
-            <Link className="pill primary sm" href={nextHref}>
-              {hasNext ? c.nextS : c.finish}
+            <Link className="pill primary sm" href={onwards.href}>
+              {T(onwards.label)}
             </Link>
           </div>
         </aside>

@@ -312,6 +312,51 @@ export interface SessionDetail {
   nextSessionId: string | null;
 }
 
+/** The columns a player needs from `videos`, and the row they come back as.
+    Shared with the drills, which play the same videos in a different order. */
+export const VIDEO_COLUMNS = `id, step, position, title_t, description_t, duration_ms, angle,
+  mirror_default, is_drillable, status, width, height,
+  bpm, first_beat_ms, beats_per_phrase, default_loop_start_ms, default_loop_end_ms`;
+
+export interface VideoSummaryRow {
+  id: string;
+  step: MethodStep;
+  position: number;
+  title_t: LocalizedRow;
+  description_t: LocalizedRow;
+  duration_ms: number | null;
+  angle: CameraAngle;
+  mirror_default: boolean;
+  is_drillable: boolean;
+  status: VideoStatus;
+  width: number | null;
+  height: number | null;
+  bpm: number | null;
+  first_beat_ms: number | null;
+  beats_per_phrase: number;
+  default_loop_start_ms: number | null;
+  default_loop_end_ms: number | null;
+}
+
+export const toVideoSummary = (v: VideoSummaryRow): SessionVideoSummary => ({
+  id: v.id,
+  step: v.step,
+  position: v.position,
+  title: localized(v.title_t),
+  description: localized(v.description_t),
+  durationMs: v.duration_ms,
+  angle: v.angle,
+  mirrorDefault: v.mirror_default,
+  isDrillable: v.is_drillable,
+  status: v.status,
+  aspect: v.width && v.height ? v.width / v.height : null,
+  bpm: v.bpm,
+  firstBeatMs: v.first_beat_ms,
+  beatsPerPhrase: v.beats_per_phrase,
+  loopStartMs: v.default_loop_start_ms,
+  loopEndMs: v.default_loop_end_ms,
+});
+
 interface SessionDetailRow {
   id: string;
   program_id: string;
@@ -321,27 +366,7 @@ interface SessionDetailRow {
   focus_t: LocalizedRow;
   levels: LevelKey[];
   program: { slug: string; title_t: LocalizedRow } | null;
-  videos:
-    | {
-        id: string;
-        step: MethodStep;
-        position: number;
-        title_t: LocalizedRow;
-        description_t: LocalizedRow;
-        duration_ms: number | null;
-        angle: CameraAngle;
-        mirror_default: boolean;
-        is_drillable: boolean;
-        status: VideoStatus;
-        width: number | null;
-        height: number | null;
-        bpm: number | null;
-        first_beat_ms: number | null;
-        beats_per_phrase: number;
-        default_loop_start_ms: number | null;
-        default_loop_end_ms: number | null;
-      }[]
-    | null;
+  videos: VideoSummaryRow[] | null;
 }
 
 /** One session's page: its videos in order, each still gated by
@@ -362,10 +387,7 @@ export async function getSession(id: string): Promise<SessionDetail | null> {
     .select(
       `id, program_id, position, title_t, outcome_t, focus_t, levels,
        program:programs ( slug, title_t ),
-       videos ( id, step, position, title_t, description_t, duration_ms, angle,
-                mirror_default, is_drillable, status, width, height,
-                bpm, first_beat_ms, beats_per_phrase,
-                default_loop_start_ms, default_loop_end_ms )`,
+       videos ( ${VIDEO_COLUMNS} )`,
     )
     .eq('id', id)
     .maybeSingle();
@@ -394,24 +416,7 @@ export async function getSession(id: string): Promise<SessionDetail | null> {
     focus: localized(row.focus_t),
     levels: row.levels,
     program: { id: row.program?.slug ?? '', title: localized(row.program?.title_t) },
-    videos: byPosition(row.videos).map(v => ({
-      id: v.id,
-      step: v.step,
-      position: v.position,
-      title: localized(v.title_t),
-      description: localized(v.description_t),
-      durationMs: v.duration_ms,
-      angle: v.angle,
-      mirrorDefault: v.mirror_default,
-      isDrillable: v.is_drillable,
-      status: v.status,
-      aspect: v.width && v.height ? v.width / v.height : null,
-      bpm: v.bpm,
-      firstBeatMs: v.first_beat_ms,
-      beatsPerPhrase: v.beats_per_phrase,
-      loopStartMs: v.default_loop_start_ms,
-      loopEndMs: v.default_loop_end_ms,
-    })),
+    videos: byPosition(row.videos).map(toVideoSummary),
     prevSessionId: at > 0 ? siblings[at - 1].id : null,
     nextSessionId: at >= 0 && at < siblings.length - 1 ? siblings[at + 1].id : null,
   };

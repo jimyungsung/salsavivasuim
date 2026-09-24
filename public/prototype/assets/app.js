@@ -29,7 +29,7 @@ export const NAV = {
 /* Only screens that exist. A nav item pointing at "#" is a dead end.
    "Masterplan" stays current for everything below it — a module, a session, a
    module explainer — because drilling in never leaves that section. */
-const NAV_ITEMS = [['masterplan', '/masterplan'], ['training', 'training.html'], ['drills', 'drills.html']];
+const NAV_ITEMS = [['masterplan', '/masterplan'], ['training', 'training.html'], ['drills', '/drills']];
 
 export function renderNav(lang, current){
   const host = document.getElementById('appnav');
