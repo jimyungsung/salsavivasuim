@@ -17,16 +17,18 @@ import { signInHref } from '@/lib/safe-next';
 import type { Localized } from '@/lib/content';
 import type { Member } from '@/lib/member';
 
-type NavSection = 'masterplan' | 'training' | 'drills';
+type NavSection = 'masterplan' | 'training' | 'drills' | 'admin';
 
 const sectionOf = (path: string): NavSection | undefined =>
   /^\/(masterplan|programs|sessions)(\/|$)/.test(path)
     ? 'masterplan'
     : /^\/drills(\/|$)/.test(path)
       ? 'drills'
-      : undefined;
+      : /^\/admin(\/|$)/.test(path)
+        ? 'admin'
+        : undefined;
 
-const ITEMS: { key: NavSection | 'admin'; href: string; label: Localized }[] = [
+const ITEMS: { key: NavSection; href: string; label: Localized }[] = [
   { key: 'masterplan', href: '/masterplan', label: { en: 'Masterplan', ko: '마스터플랜' } },
   { key: 'training', href: '/prototype/training.html', label: { en: 'My training', ko: '나의 트레이닝' } },
   { key: 'drills', href: '/drills', label: { en: 'My drills', ko: '나의 드릴' } },
@@ -38,6 +40,10 @@ export default function AppNavBar({ member }: { member: Member | null }) {
   const { lang, setLang, T } = useLang();
   const pathname = usePathname();
   const current = sectionOf(pathname);
+  /* The back office is English only (see app/admin/layout.tsx): its nav does
+     not switch language, and offers no switch. */
+  const inAdmin = current === 'admin';
+  const label = (value: Localized) => (inAdmin ? value.en : T(value));
   const items = member?.isAdmin ? [...ITEMS, ADMIN] : ITEMS;
 
   return (
@@ -54,21 +60,23 @@ export default function AppNavBar({ member }: { member: Member | null }) {
               href={item.href}
               aria-current={item.key === current ? 'page' : undefined}
             >
-              {T(item.label)}
+              {label(item.label)}
             </Link>
           ))}
         </nav>
 
         <div className="tools">
-          <div className="lang">
-            <span className="sr">{T({ en: 'Language', ko: '언어' })}</span>
-            <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
-              EN
-            </button>
-            <button type="button" aria-pressed={lang === 'ko'} onClick={() => setLang('ko')}>
-              KO
-            </button>
-          </div>
+          {!inAdmin && (
+            <div className="lang">
+              <span className="sr">{T({ en: 'Language', ko: '언어' })}</span>
+              <button type="button" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
+                EN
+              </button>
+              <button type="button" aria-pressed={lang === 'ko'} onClick={() => setLang('ko')}>
+                KO
+              </button>
+            </div>
+          )}
           {member ? (
             <div className="me">
               <span className="av" aria-hidden="true">
@@ -78,7 +86,7 @@ export default function AppNavBar({ member }: { member: Member | null }) {
             </div>
           ) : (
             <Link className="pill primary sm" href={signInHref(pathname)}>
-              {T({ en: 'Sign in', ko: '로그인' })}
+              {label({ en: 'Sign in', ko: '로그인' })}
             </Link>
           )}
         </div>

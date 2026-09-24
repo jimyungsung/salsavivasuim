@@ -21,7 +21,9 @@
   --bo-line: #d9dcd3;
   --bo-soft: #eceee6;
   --bo-dim: #6b716c;
-  --bar-h: 60px;
+  /* the site nav's height (app/globals.css .nav), which sits fixed above */
+  --bar-h: 78px;
+  padding-top: var(--bar-h);
   --side-w: 300px;
 }
 
@@ -32,25 +34,6 @@
 .bo [data-step="drill"]      { --step: #c6ff00; --step-ink: #0b0f0e; --step-soft: #f6fdd9; }
 .bo [data-step="transform"]  { --step: #f0a12e; --step-ink: #0b0f0e; --step-soft: #fef4e4; }
 .bo [data-step="improvise"]  { --step: #ee6352; --step-ink: #fff; --step-soft: #fdecea; }
-
-/* ---- bar ---- */
-.bo .bobar {
-  position: sticky; top: 0; z-index: 30; height: var(--bar-h);
-  background: var(--ink); color: #fff; border-bottom: 2px solid var(--lime);
-}
-.bo .barin { display: flex; align-items: center; gap: 18px; height: 100%; padding: 0 24px; }
-.bo .bobar .logo { font-size: 21px; font-weight: 900; letter-spacing: -.05em; }
-.bo .bobar .what {
-  font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--lime); border-left: 1px solid #ffffff33; padding-left: 18px;
-}
-.bo .bobar .spacer { flex: 1; }
-.bo .bobar .who { font-size: 13px; color: #ffffffa8; }
-.bo .bobar a.out {
-  font-size: 13px; font-weight: 700; color: #fff; padding: 8px 14px;
-  border: 1px solid #ffffff38; border-radius: 20px;
-}
-.bo .bobar a.out:hover { border-color: var(--lime); color: var(--lime); }
 
 /* ---- shell: sidebar + work area ---- */
 .bo .shell { flex: 1; display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); }

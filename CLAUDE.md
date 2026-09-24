@@ -186,7 +186,8 @@ session can sit in two at once and session 05 can be gentler than session 04.
 
 ## The back office
 
-`/admin` is a sidebar and a work area. The sidebar (`app/admin/Sidebar.tsx`,
+`/admin` is a sidebar and a work area, under the site's own nav (Admin current,
+English only, no language switch) so the rest of the site is one click away. The sidebar (`app/admin/Sidebar.tsx`,
 fed by the layout) is the whole catalogue — areas, programs, sessions — with the
 current branch open and a search box; every screen has breadcrumbs. A session
 opens on its **running order**: `StepStrip` draws its videos in order, coloured

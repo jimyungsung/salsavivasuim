@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import AppNav from '@/components/AppNav';
 import { adminGate } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import type { LocalizedRow, PublishStatus } from '@/lib/db';
@@ -77,19 +78,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="bo">
-      <header className="bobar">
-        <div className="barin">
-          <Link className="logo" href="/admin">
-            SUIM<span className="dot" style={{ color: 'var(--lime)' }}>.</span>
-          </Link>
-          <span className="what">Back office</span>
-          <span className="spacer" />
-          {gate.ok && <span className="who">{gate.email}</span>}
-          <Link className="out" href="/masterplan">
-            View the site ↗
-          </Link>
-        </div>
-      </header>
+      {/* The site's own nav, so the rest of the site is one click away and
+          "Admin" reads as a section of it rather than a separate app. */}
+      <AppNav />
 
       {gate.ok ? (
         <div className="shell">
