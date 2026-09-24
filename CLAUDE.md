@@ -8,7 +8,8 @@ schema, and the player specification.
 [salsadrill.com](https://www.salsadrill.com) on Vercel (project
 `veriveri/salsavivasuim`), `www` canonical with the apex redirecting to it. The
 Supabase project is **Salsaviva Suim** (`incumqqgmueyovtzvenl`, ap-northeast-2 /
-Seoul); ten migrations are applied.
+Seoul); ten migrations are applied. Functions are pinned to Seoul too (`icn1`
+in `vercel.json`) — in the default `iad1` every query crossed the Pacific.
 
 What works end to end: sign-in by magic link, an admin promoted by hand, upload
 straight to Cloudflare Stream from the browser, a signature-verified webhook
@@ -118,17 +119,22 @@ session can sit in two at once and session 05 can be gentler than session 04.
       layout.tsx          reads the language cookie, loads the design system
       page.tsx            / → redirects to the un-ported landing page
       globals.css         the design system — canonical copy
-      masterplan/         the catalogue, the first screen ported
-      programs/[slug]/    a module: its sessions, filtered by level
-      sessions/[id]/      a session, as a playlist for the player
-      sessions/actions.ts getPlayback(), the player's way to ask for a URL
-      drills/             My drills: the page, its actions, and the play routes
+      (app)/              the member screens. Its layout holds the nav, so the
+                          bar stays put across navigation and loading.tsx
+                          shows at once; the URLs do not include "(app)"
+        masterplan/       the catalogue, the first screen ported
+        programs/[slug]/  a module: its sessions, filtered by level
+        sessions/[id]/    a session, as a playlist for the player
+        sessions/actions.ts getPlayback(), the player's way to ask for a URL
+        drills/           My drills: the page, its actions, and the play routes
+      api/me/             who is signed in, for the prototype's nav
     components/Player.tsx the player, and player.css beside it
     lib/playlist.ts       the Playlist shape, and sessionPlaylist()
     lib/drills.ts         a member's drills, the library, drill/day playlists
     lib/playback.ts       every signed URL and thumbnail is minted here
-    components/AppNav.tsx the nav every app screen renders. Server half: asks
-                          who is signed in (lib/member.ts); AppNavBar draws it
+    components/AppNav.tsx the nav, rendered once by app/(app)/layout.tsx. Server
+                          half: asks who is signed in (lib/member.ts); AppNavBar
+                          draws it and reads the current section off the path
     lib/member.ts         getMember() — name, initials, isAdmin, cached per
                           request. For chrome only; never an access check
     lib/safe-next.ts      the one check on a `next` return path, and

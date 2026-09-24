@@ -34,7 +34,7 @@ import { mmss } from '@/lib/db';
 import { signInHref } from '@/lib/safe-next';
 import type { SessionVideoSummary } from '@/lib/catalogue';
 import { playlistLengthMs, type Playlist } from '@/lib/playlist';
-import { getPlayback, type PlaybackResult } from '@/app/sessions/actions';
+import { getPlayback, type PlaybackResult } from '@/app/(app)/sessions/actions';
 
 type Key =
   | 'total' | 'listSession' | 'listDrill' | 'listDay' | 'notReady' | 'nothing'
@@ -73,7 +73,16 @@ const C: Copy<Key> = {
 };
 
 const two = (n: number) => String(n).padStart(2, '0');
+/* The number keys' presets; the slider covers everything in between. */
 const SPEEDS = [0.5, 0.75, 1, 1.25];
+const SPEED_MIN = 0.25;
+const SPEED_MAX = 1.5;
+const SPEED_MARKS = [0.25, 0.5, 0.75, 1, 1.25, 1.5];
+const speedLabel = (s: number) => `${Number(s.toFixed(2))}×`;
+/** Where a speed sits along the slider, matching the browser's own thumb
+    travel: the thumb's centre never reaches the track's ends. */
+const speedAt = (s: number) =>
+  `calc(8px + (100% - 16px) * ${(s - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)})`;
 const FRAME = 1 / 30;
 const SPEED_STORE = 'suim-speed';
 
@@ -166,6 +175,8 @@ export default function Player({
      404 on it falls back to HLS rather than leaving a black frame. */
   const [mp4Failed, setMp4Failed] = useState<string | null>(null);
   const [speed, setSpeed] = useState(1);
+  const [speedOpen, setSpeedOpen] = useState(false);
+  const speedRef = useRef<HTMLDivElement>(null);
   const [mirrored, setMirrored] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);
@@ -245,6 +256,23 @@ export default function Player({
     },
     [current],
   );
+
+  /* The speed panel closes on a click anywhere else, or Escape. */
+  useEffect(() => {
+    if (!speedOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!speedRef.current?.contains(e.target as Node)) setSpeedOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSpeedOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [speedOpen]);
 
   /* ---- signed source ------------------------------------------------------ */
 
@@ -591,7 +619,7 @@ export default function Player({
       <main className="wrap lay">
         <div className="stage">
           <div
-            className={`player${playing ? ' playing' : ''}${idle && playing ? ' idle' : ''}`}
+            className={`player${playing ? ' playing' : ''}${idle && playing && !speedOpen ? ' idle' : ''}`}
             ref={playerRef}
             onPointerMove={wake}
             onPointerDown={wake}
@@ -727,15 +755,50 @@ export default function Player({
                     0:00 / {clock(durationMs / 1000)}
                   </span>
                   <span className="sp-flex" />
-                  <button
-                    className="speed"
-                    type="button"
-                    data-on={speed !== 1}
-                    onClick={() => chooseSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length])}
-                    aria-label={c.aSpeed}
-                  >
-                    {speed}×
-                  </button>
+                  <div className="spwrap" ref={speedRef}>
+                    <button
+                      className="speed"
+                      type="button"
+                      data-on={speed !== 1}
+                      aria-expanded={speedOpen}
+                      onClick={() => setSpeedOpen(o => !o)}
+                      aria-label={c.aSpeed}
+                    >
+                      {speedLabel(speed)}
+                    </button>
+                    {speedOpen && (
+                      <div className="spop">
+                        <div className="spop-head">
+                          <span>{c.aSpeed}</span>
+                          <b>{speedLabel(speed)}</b>
+                        </div>
+                        <input
+                          type="range"
+                          min={SPEED_MIN}
+                          max={SPEED_MAX}
+                          step={0.05}
+                          value={speed}
+                          onChange={e => chooseSpeed(Math.round(Number(e.target.value) * 100) / 100)}
+                          aria-label={c.aSpeed}
+                          aria-valuetext={speedLabel(speed)}
+                          autoFocus
+                        />
+                        <div className="spop-marks">
+                          {SPEED_MARKS.map(m => (
+                            <button
+                              key={m}
+                              type="button"
+                              style={{ left: speedAt(m) }}
+                              aria-pressed={Math.abs(speed - m) < 0.001}
+                              onClick={() => chooseSpeed(m)}
+                            >
+                              {Number(m.toFixed(2))}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <button
                     className="ic"
                     type="button"

@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { createClient } from './supabase/server';
 import { isConfigured } from './supabase/config';
 import { tr, type LocalizedRow } from './db';
@@ -159,7 +160,7 @@ export async function getDrills(): Promise<Drill[]> {
   return (data as unknown as DrillRow[]).map(toDrill);
 }
 
-export async function getDrill(id: string): Promise<Drill | null> {
+async function loadDrill(id: string): Promise<Drill | null> {
   if (!isConfigured) return null;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
   const supabase = await createClient();
@@ -225,3 +226,7 @@ export function dayPlaylist(weekday: number, drills: Drill[]): Playlist {
     entries: runs.flatMap(r => drillPlaylist(r.drill).entries),
   };
 }
+
+/* Cached per request, for the same reason as getProgram(): the play page's
+   metadata and body both ask. */
+export const getDrill = cache(loadDrill);

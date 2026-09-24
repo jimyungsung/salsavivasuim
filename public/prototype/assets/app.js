@@ -22,9 +22,19 @@ export const signOut = e => {
    keys, or omitted on screens that sit below a section (they show a back link
    instead). */
 export const NAV = {
-  en: { masterplan:'Masterplan', training:'My training', drills:'My drills', member:'Jimyung', initials:'JS', language:'Language' },
-  ko: { masterplan:'마스터플랜', training:'나의 트레이닝', drills:'나의 드릴', member:'지명', initials:'JS', language:'언어' }
+  en: { masterplan:'Masterplan', training:'My training', drills:'My drills', admin:'Admin', signin:'Sign in', language:'Language' },
+  ko: { masterplan:'마스터플랜', training:'나의 트레이닝', drills:'나의 드릴', admin:'관리', signin:'로그인', language:'언어' }
 };
+
+/* Who is signed in comes from the app (/api/me), the same answer the ported
+   screens' nav gets — so the name and the Admin link match across the whole
+   site. Asked once per page; the bar redraws when it lands. */
+let member;
+let navArgs;
+fetch('/api/me', { credentials: 'same-origin' })
+  .then(r => (r.ok ? r.json() : null))
+  .catch(() => null)
+  .then(m => { member = m; if (navArgs) renderNav(...navArgs); });
 
 /* Only screens that exist. A nav item pointing at "#" is a dead end.
    "Masterplan" stays current for everything below it — a module, a session, a
@@ -34,11 +44,16 @@ const NAV_ITEMS = [['masterplan', '/masterplan'], ['training', 'training.html'],
 export function renderNav(lang, current){
   const host = document.getElementById('appnav');
   if (!host) return;
+  navArgs = [lang, current];
   const n = NAV[lang] || NAV.en;
+  const items = member && member.isAdmin ? [...NAV_ITEMS, ['admin', '/admin']] : NAV_ITEMS;
+  const me = member === undefined ? ''
+    : member ? `<div class="me"><span class="av" aria-hidden="true">${esc(member.initials)}</span><span>${esc(member.name)}</span></div>`
+    : `<a class="pill primary sm" href="/signin?next=${encodeURIComponent(location.pathname)}">${esc(n.signin)}</a>`;
   host.innerHTML = `<div class="wrap">
     <a class="logo" href="/masterplan">SUIM<span class="dot">.</span></a>
     <nav class="navlinks" aria-label="Main">
-      ${NAV_ITEMS.map(([k, href]) =>
+      ${items.map(([k, href]) =>
         `<a href="${href}"${k === current ? ' aria-current="page"' : ''}>${esc(n[k])}</a>`).join('')}
     </nav>
     <div class="tools">
@@ -46,7 +61,7 @@ export function renderNav(lang, current){
         <button type="button" data-lang="en" aria-pressed="${lang === 'en'}">EN</button>
         <button type="button" data-lang="ko" aria-pressed="${lang === 'ko'}">KO</button>
       </div>
-      <div class="me"><span class="av" aria-hidden="true">${esc(n.initials)}</span><span>${esc(n.member)}</span></div>
+      ${me}
     </div>
   </div>`;
 }
