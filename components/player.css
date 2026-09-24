@@ -30,10 +30,10 @@
    whole screen in full screen — and the picture letterboxes inside it. */
 .sp-video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:transparent;cursor:pointer}
 /* The frame is always landscape. A picture of any other shape sits in the
-   middle at its own proportions, over its poster — cropped to cover, blurred
-   and darkened — so a phone video has soft colour at its sides, not black
-   bars. Oversized, so the blur's faded edge falls outside the frame. */
-.sp .ambient{position:absolute;inset:-12%;background:center/cover no-repeat;filter:blur(32px) saturate(1.25) brightness(.5);pointer-events:none}
+   middle at its own proportions, over its poster — cropped to cover, blurred,
+   dimmed only slightly so the sides read as the picture's own light rather
+   than a shadow. Oversized, so the blur's faded edge falls outside the frame. */
+.sp .ambient{position:absolute;inset:-12%;background:center/cover no-repeat;filter:blur(28px) saturate(1.15) brightness(.85);pointer-events:none}
 /* Only the picture flips. Controls, counts and captions sit outside it, so
    nothing a dancer reads is ever backwards. */
 .sp .frame.mirrored .sp-video,.sp .frame.mirrored .ambient{transform:scaleX(-1)}
