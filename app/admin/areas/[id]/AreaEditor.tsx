@@ -3,9 +3,9 @@
 /* One area: the top of the tree. Not much to it — a name, a blurb and a slug —
    but it is the only place those can be changed. */
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
 import { deleteArea, setAreaSlug, type Result } from '../../actions';
 import type { EditorArea } from './page';
@@ -29,9 +29,7 @@ export default function AreaEditor({ area }: { area: EditorArea }) {
 
   return (
     <>
-      <div className="crumb-row">
-        <Link href="/admin">← Catalogue</Link>
-      </div>
+      <Crumbs items={[{ label: area.name_t.en || 'Untitled area' }]} />
 
       <div className="head">
         <div>
@@ -46,7 +44,7 @@ export default function AreaEditor({ area }: { area: EditorArea }) {
       </div>
 
       {error && (
-        <p className="chip warn" style={{ display: 'block', marginBottom: 14, padding: '10px 12px' }}>
+        <p className="banner">
           {error}
         </p>
       )}
