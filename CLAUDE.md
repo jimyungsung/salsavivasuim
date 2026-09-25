@@ -8,7 +8,7 @@ schema, and the player specification.
 [salsadrill.com](https://www.salsadrill.com) on Vercel (project
 `veriveri/salsavivasuim`), `www` canonical with the apex redirecting to it. The
 Supabase project is **Salsaviva Suim** (`incumqqgmueyovtzvenl`, ap-northeast-2 /
-Seoul); ten migrations are applied. Functions are pinned to Seoul too (`icn1`
+Seoul); eleven migrations are applied. Functions are pinned to Seoul too (`icn1`
 in `vercel.json`) — in the default `iad1` every query crossed the Pacific.
 
 What works end to end: sign-in by magic link, an admin promoted by hand, upload
@@ -153,10 +153,15 @@ session can sit in two at once and session 05 can be gentler than session 04.
                           register.html, drills.html and 404.html are deleted;
                           the landing page's sign-up buttons go to /register
     docs/BUILD-PLAN.md    the plan
-    supabase/migrations/  the schema, RLS and the entitlement function
+    supabase/migrations/  the schema, RLS and the entitlement function. Applied
+                          by hand (Supabase MCP / CLI), not by CI
+    .github/workflows/    CI: typecheck + build
     supabase/seed.sql     the catalogue, generated from lib/content.ts
     lib/supabase/         browser, server and session-refresh clients
     proxy.ts              Next 16's middleware: keeps the session fresh
+    next.config.mjs       serves the prototype landing page at / (a rewrite, so
+                          the front door has the site's address; the old
+                          /prototype/index.html redirects to /)
     app/(auth)/           register and sign in
 
 ## Conventions
@@ -264,7 +269,10 @@ npm run dev
 ```
 
 <http://localhost:4478> — `/` lands on the prototype flow, `/masterplan` is the
-ported screen. `npm run typecheck` before committing.
+ported screen. `npm run typecheck` before committing; CI (`.github/workflows/ci.yml`)
+runs typecheck and build on every pull request and push to main, with no
+secrets — the app has to keep building without an environment. Vercel builds a
+preview for every branch, so review there and merge; do not push to main.
 
 ## Still to decide
 
