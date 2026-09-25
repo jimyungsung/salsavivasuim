@@ -52,7 +52,7 @@ export function renderNav(lang, current){
     : `<a class="pill primary sm" href="/signin?next=${encodeURIComponent(location.pathname)}">${esc(n.signin)}</a>`;
   host.innerHTML = `<div class="wrap">
     <a class="logo" href="/masterplan">SUIM<span class="dot">.</span></a>
-    <nav class="navlinks" aria-label="Main">
+    <nav class="navlinks" id="navlinks" aria-label="Main">
       ${items.map(([k, href]) =>
         `<a href="${href}"${k === current ? ' aria-current="page"' : ''}>${esc(n[k])}</a>`).join('')}
     </nav>
@@ -62,6 +62,9 @@ export function renderNav(lang, current){
         <button type="button" data-lang="ko" aria-pressed="${lang === 'ko'}">KO</button>
       </div>
       ${me}
+      <button type="button" class="menu" aria-expanded="false" aria-controls="navlinks" aria-label="Menu" data-menu>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
     </div>
   </div>`;
 }
@@ -85,6 +88,8 @@ export function initLang(C, render, navCurrent){
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-lang]');
     if (b) apply(b.dataset.lang);
+    const m = e.target.closest('[data-menu]');
+    if (m) m.setAttribute('aria-expanded', String(document.getElementById('appnav').classList.toggle('open')));
   });
   let l = new URLSearchParams(location.search).get('lang');
   if (!l) { try { l = localStorage.getItem('suim-lang'); } catch (e) {} }

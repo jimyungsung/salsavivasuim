@@ -41,6 +41,10 @@ img{max-width:100%}
 @keyframes pageload-in{to{opacity:1}}
 @keyframes pageload-run{from{transform:translateX(-100%)}to{transform:translateX(340%)}}
 
+/* the menu button, for phones; the links fold under the bar when it is open */
+.nav .menu{display:none;flex:none;width:40px;height:40px;border:1px solid #ffffff44;border-radius:50%;background:none;color:#fff;place-items:center;cursor:pointer}
+.nav .menu svg{width:20px;height:20px}
+
 /* back link — one level up, labelled with the parent screen */
 .crumb{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:700;padding:8px 15px;border:1px solid var(--line);border-radius:26px;color:var(--muted);transition:.2s}
 .crumb:hover{color:var(--ink);border-color:var(--ink);background:#e6e8df}
@@ -103,6 +107,10 @@ footer{background:var(--ink);color:#ffffff8f;border-top:1px solid #ffffff20;padd
 
 @media(max-width:900px){
   .navlinks{display:none}
+  .nav .menu{display:grid}
+  .nav.open .navlinks{display:flex;flex-direction:column;gap:0;position:fixed;top:78px;left:0;right:0;padding:6px 20px 14px;background:#0b0f0ef5;backdrop-filter:blur(12px);border-bottom:1px solid #ffffff1f;font-size:16px}
+  .nav.open .navlinks a{padding:15px 0;border-bottom:1px solid #ffffff14}
+  .nav.open .navlinks a:hover,.nav.open .navlinks a[aria-current]{border-bottom-color:#ffffff14;color:var(--lime)}
   .strip .wrap{grid-template-columns:repeat(2,1fr)}
   .cell{padding-left:0;border-right:0;border-bottom:1px solid #0b0f0e33}
 }

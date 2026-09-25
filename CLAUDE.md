@@ -8,7 +8,7 @@ schema, and the player specification.
 [salsadrill.com](https://www.salsadrill.com) on Vercel (project
 `veriveri/salsavivasuim`), `www` canonical with the apex redirecting to it. The
 Supabase project is **Salsaviva Suim** (`incumqqgmueyovtzvenl`, ap-northeast-2 /
-Seoul); ten migrations are applied. Functions are pinned to Seoul too (`icn1`
+Seoul); eleven migrations are applied. Functions are pinned to Seoul too (`icn1`
 in `vercel.json`) — in the default `iad1` every query crossed the Pacific.
 
 What works end to end: sign-in by magic link, an admin promoted by hand, upload
@@ -21,7 +21,8 @@ is what the public shelf shows.
 Ported so far: `/masterplan`, `/programs/[slug]` (a module), `/sessions/[id]`
 (a session and its player), `/drills` (My drills, with `/drills/[id]/play` and
 `/drills/day/[weekday]`), `/signin`, `/register`. Everything else still serves
-from `public/prototype/`.
+from `public/prototype/` — the landing page at `/` by rewrite, the rest by their
+own URLs.
 
 **The player takes a playlist** (`lib/playlist.ts`): a session, a drill, or a
 day of drills are all the same shape — entries of `{ video, repeats, speed }`
@@ -119,7 +120,6 @@ session can sit in two at once and session 05 can be gentler than session 04.
 
     app/                  the Next.js app (App Router)
       layout.tsx          reads the language cookie, loads the design system
-      page.tsx            / → redirects to the un-ported landing page
       globals.css         the design system — canonical copy
       (app)/              the member screens. Its layout holds the nav, so the
                           bar stays put across navigation and loading.tsx
@@ -153,10 +153,15 @@ session can sit in two at once and session 05 can be gentler than session 04.
                           register.html, drills.html and 404.html are deleted;
                           the landing page's sign-up buttons go to /register
     docs/BUILD-PLAN.md    the plan
-    supabase/migrations/  the schema, RLS and the entitlement function
+    supabase/migrations/  the schema, RLS and the entitlement function. Applied
+                          by hand (Supabase MCP / CLI), not by CI
+    .github/workflows/    CI: typecheck + build
     supabase/seed.sql     the catalogue, generated from lib/content.ts
     lib/supabase/         browser, server and session-refresh clients
     proxy.ts              Next 16's middleware: keeps the session fresh
+    next.config.mjs       serves the prototype landing page at / (a rewrite, so
+                          the front door has the site's address; the old
+                          /prototype/index.html redirects to /)
     app/(auth)/           register and sign in
 
 ## Conventions
@@ -172,7 +177,9 @@ session can sit in two at once and session 05 can be gentler than session 04.
 - **Nav items are sections, not pages.** "Masterplan" stays current for the
   catalogue, a module and a session, because drilling in never leaves that
   section. Screens below the top level show one `.crumb` back link naming the
-  screen above them. Never add a nav item pointing at `#`. **Admin** appears
+  screen above them. On a phone (under 900px) the links fold behind a menu
+  button; the prototype's `app.js`/`app.css` carry a copy of it for
+  `training.html` until that is ported. Never add a nav item pointing at `#`. **Admin** appears
   only for admins; signed out, the member chip becomes a Sign in button.
 - **Every way into sign-in carries where you were.** Link with
   `signInHref(path)`, never a bare `/signin`: it becomes `?next=`, which
@@ -191,7 +198,8 @@ session can sit in two at once and session 05 can be gentler than session 04.
 `/admin` is a sidebar and a work area, under the site's own nav (Admin current,
 English only, no language switch) so the rest of the site is one click away. The sidebar (`app/admin/Sidebar.tsx`,
 fed by the layout) is the whole catalogue — areas, programs, sessions — with the
-current branch open and a search box; every screen has breadcrumbs. A session
+current branch open and a search box; every screen has breadcrumbs. A session's
+levels (the set the program page files it under) are chips on its editor. A session
 opens on its **running order**: `StepStrip` draws its videos in order, coloured
 by method step and sized by length (hatched until footage lands), and
 `StepLegend` shows how often each of the six steps is used. The same strip, small,
@@ -261,7 +269,10 @@ npm run dev
 ```
 
 <http://localhost:4478> — `/` lands on the prototype flow, `/masterplan` is the
-ported screen. `npm run typecheck` before committing.
+ported screen. `npm run typecheck` before committing; CI (`.github/workflows/ci.yml`)
+runs typecheck and build on every pull request and push to main, with no
+secrets — the app has to keep building without an environment. Vercel builds a
+preview for every branch, so review there and merge; do not push to main.
 
 ## Still to decide
 

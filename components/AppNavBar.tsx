@@ -12,6 +12,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useLang } from '@/lib/lang';
 import { signInHref } from '@/lib/safe-next';
 import type { Localized } from '@/lib/content';
@@ -44,16 +45,29 @@ export default function AppNavBar({ member }: { member: Member | null }) {
      not switch language, and offers no switch. */
   const inAdmin = current === 'admin';
   const label = (value: Localized) => (inAdmin ? value.en : T(value));
+
+  /* On a phone the links fold into a menu button. It closes on navigation
+     (the path changes) and on Escape. */
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
   const items = member?.isAdmin ? [...ITEMS, ADMIN] : ITEMS;
 
   return (
-    <header className="nav">
+    <header className={`nav${open ? ' open' : ''}`}>
       <div className="wrap">
         <Link className="logo" href="/masterplan">
           SUIM<span className="dot">.</span>
         </Link>
 
-        <nav className="navlinks" aria-label="Main">
+        <nav className="navlinks" id="navlinks" aria-label="Main">
           {items.map(item => (
             <Link
               key={item.key}
@@ -89,6 +103,18 @@ export default function AppNavBar({ member }: { member: Member | null }) {
               {label({ en: 'Sign in', ko: '로그인' })}
             </Link>
           )}
+          <button
+            type="button"
+            className="menu"
+            aria-expanded={open}
+            aria-controls="navlinks"
+            aria-label={label({ en: 'Menu', ko: '메뉴' })}
+            onClick={() => setOpen(o => !o)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            </svg>
+          </button>
         </div>
       </div>
     </header>

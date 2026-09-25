@@ -1,0 +1,24 @@
+# What has to pass before a change reaches main. Vercel builds every push
+# anyway, but only after the fact; this runs on the pull request, so a broken
+# type or build shows up before the merge, not on the live site.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # No secrets: lib/supabase/config.ts guards every call, so the app builds
+      # without an environment. Keep it that way, or this job needs them.
+      - run: npm run build
