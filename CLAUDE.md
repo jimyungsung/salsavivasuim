@@ -21,7 +21,8 @@ is what the public shelf shows.
 Ported so far: `/masterplan`, `/programs/[slug]` (a module), `/sessions/[id]`
 (a session and its player), `/drills` (My drills, with `/drills/[id]/play` and
 `/drills/day/[weekday]`), `/signin`, `/register`. Everything else still serves
-from `public/prototype/`.
+from `public/prototype/` — the landing page at `/` by rewrite, the rest by their
+own URLs.
 
 **The player takes a playlist** (`lib/playlist.ts`): a session, a drill, or a
 day of drills are all the same shape — entries of `{ video, repeats, speed }`
@@ -119,7 +120,6 @@ session can sit in two at once and session 05 can be gentler than session 04.
 
     app/                  the Next.js app (App Router)
       layout.tsx          reads the language cookie, loads the design system
-      page.tsx            / → redirects to the un-ported landing page
       globals.css         the design system — canonical copy
       (app)/              the member screens. Its layout holds the nav, so the
                           bar stays put across navigation and loading.tsx
@@ -172,7 +172,9 @@ session can sit in two at once and session 05 can be gentler than session 04.
 - **Nav items are sections, not pages.** "Masterplan" stays current for the
   catalogue, a module and a session, because drilling in never leaves that
   section. Screens below the top level show one `.crumb` back link naming the
-  screen above them. Never add a nav item pointing at `#`. **Admin** appears
+  screen above them. On a phone (under 900px) the links fold behind a menu
+  button; the prototype's `app.js`/`app.css` carry a copy of it for
+  `training.html` until that is ported. Never add a nav item pointing at `#`. **Admin** appears
   only for admins; signed out, the member chip becomes a Sign in button.
 - **Every way into sign-in carries where you were.** Link with
   `signInHref(path)`, never a bare `/signin`: it becomes `?next=`, which
@@ -191,7 +193,8 @@ session can sit in two at once and session 05 can be gentler than session 04.
 `/admin` is a sidebar and a work area, under the site's own nav (Admin current,
 English only, no language switch) so the rest of the site is one click away. The sidebar (`app/admin/Sidebar.tsx`,
 fed by the layout) is the whole catalogue — areas, programs, sessions — with the
-current branch open and a search box; every screen has breadcrumbs. A session
+current branch open and a search box; every screen has breadcrumbs. A session's
+levels (the set the program page files it under) are chips on its editor. A session
 opens on its **running order**: `StepStrip` draws its videos in order, coloured
 by method step and sized by length (hatched until footage lands), and
 `StepLegend` shows how often each of the six steps is used. The same strip, small,

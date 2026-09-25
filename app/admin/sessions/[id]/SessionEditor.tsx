@@ -24,9 +24,10 @@ import {
   setStatus,
   setVideoFields,
   type Result,
+  setSessionLevels,
 } from '../../actions';
-import { stepOf } from '@/lib/content';
-import { METHOD_STEPS, mmss, sessionLength, untranslated, type MethodStep, type VideoRow } from '@/lib/db';
+import { LEVEL_LABELS, stepOf } from '@/lib/content';
+import { LEVEL_KEYS, METHOD_STEPS, mmss, sessionLength, untranslated, type MethodStep, type VideoRow } from '@/lib/db';
 import type { EditorSession } from './page';
 
 const two = (n: number) => String(n).padStart(2, '0');
@@ -156,6 +157,27 @@ export default function SessionEditor({
             <LocalizedField stacked table="sessions" id={session.id} column="title_t" label="Title" value={session.title_t} onError={setError} />
             <LocalizedField stacked table="sessions" id={session.id} column="outcome_t" label="Outcome" value={session.outcome_t} multiline onError={setError} />
             <LocalizedField stacked table="sessions" id={session.id} column="focus_t" label="Focus" value={session.focus_t} onError={setError} />
+
+            <div className="fieldset" style={{ maxWidth: 'none', marginTop: 18 }}>
+              <span className="lf-label">Levels</span>
+              <div className="levels">
+                {LEVEL_KEYS.map(key => {
+                  const on = session.levels.includes(key);
+                  const next = on ? session.levels.filter(k => k !== key) : [...session.levels, key];
+                  return (
+                    <button key={key} type="button" className={`chip${on ? ' open' : ''}`} aria-pressed={on} disabled={pending}
+                      onClick={() => run(() => setSessionLevels(session.id, next))}>
+                      {LEVEL_LABELS[key].en}
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="hint">
+                {session.levels.length
+                  ? 'The level describes the material, not the dancer, so a session can sit in two at once.'
+                  : 'No level yet — the program page files sessions by level, so this one only shows under "All".'}
+              </span>
+            </div>
           </section>
         </div>
       </div>

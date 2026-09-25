@@ -96,6 +96,23 @@ export async function movePosition(
 
 /** Appends a session to a program. Starts empty: how many videos, and of which
     steps, is the session's own business. */
+/** Which levels a session sits in. The scale is not a ladder — a session can
+    sit in two at once (CLAUDE.md) — so this is a set, kept in the scale's
+    order. The program page filters and tags sessions by it. */
+export async function setSessionLevels(id: string, levels: string[]): Promise<Result> {
+  await requireAdmin();
+  if (levels.some(l => !LEVEL_KEYS.includes(l as LevelKey))) return fail('Unknown level.');
+  const ordered = LEVEL_KEYS.filter(k => levels.includes(k));
+
+  const supabase = await createClient();
+  const { error } = await supabase.from('sessions').update({ levels: ordered }).eq('id', id);
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  revalidatePath(`/admin/sessions/${id}`);
+  return ok;
+}
+
 export async function createSession(programId: string): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();

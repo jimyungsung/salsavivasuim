@@ -211,6 +211,10 @@
   padding: 5px 9px; border-radius: 20px; border: 1px solid var(--bo-line); color: var(--bo-dim);
   background: #fff; white-space: nowrap;
 }
+.bo .levels { display: flex; flex-wrap: wrap; gap: 6px; }
+.bo .levels .chip { cursor: pointer; font-size: 12.5px; padding: 7px 12px; }
+.bo .levels .chip:hover { border-color: var(--ink); color: var(--ink); }
+.bo .levels .chip:disabled { cursor: default; opacity: .6; }
 .bo .chip.open { background: var(--lime); border-color: var(--lime); color: var(--ink); }
 .bo .chip.soon { background: #fff6dd; border-color: #e6cf92; color: #7d5f13; }
 .bo .chip.draft { background: #f1f2ec; }

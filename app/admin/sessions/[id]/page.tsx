@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
 import { signedPosters } from '@/lib/playback';
-import type { LocalizedRow, PublishStatus, VideoRow } from '@/lib/db';
+import type { LevelKey, LocalizedRow, PublishStatus, VideoRow } from '@/lib/db';
 import SessionEditor from './SessionEditor';
 
 export interface EditorSession {
@@ -11,6 +11,7 @@ export interface EditorSession {
   title_t: LocalizedRow;
   outcome_t: LocalizedRow;
   focus_t: LocalizedRow;
+  levels: LevelKey[];
   status: PublishStatus;
   program: {
     id: string;
@@ -32,7 +33,7 @@ export default async function SessionPage({ params }: { params: Promise<{ id: st
     supabase
       .from('sessions')
       .select(
-        `id, position, title_t, outcome_t, focus_t, status,
+        `id, position, title_t, outcome_t, focus_t, levels, status,
          program:programs ( id, title_t, subtitle_t, status, area:areas ( id, name_t ) )`,
       )
       .eq('id', id)
