@@ -66,29 +66,47 @@ h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
 .day.today i{border-color:var(--text);position:relative}
 .day.today i::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--lime)}
 
-/* today's routine */
-.routine{background:var(--ink);color:var(--ink-text);border-radius:24px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 36%}
-.routine .body{padding:36px;display:grid;gap:28px;align-content:start}
-.routine .eyebrow{color:var(--lime)}
-.routine h2{font-size:clamp(28px,3.6vw,42px);line-height:1.05;font-weight:800;margin-top:8px}
-.routine .facts{margin-top:12px;font-size:16px;color:var(--ink-muted)}
-.routine .facts b{color:var(--ink-text);font-weight:600}
-.routine .photo{position:relative;min-height:100%}
-.routine .photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%;filter:grayscale(1) contrast(1.05)}
-.routine .photo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--ink) 0%,transparent 40%)}
 
-.parts{list-style:none;margin:0;padding:0;display:grid;border-top:1px solid var(--ink-line)}
-.parts li{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:18px;padding:16px 0;border-bottom:1px solid var(--ink-line)}
-.parts h3{font-size:17px;font-weight:600;letter-spacing:-.01em}
-.parts p{font-size:14px;color:var(--ink-muted);margin-top:2px}
-.parts .label{background:var(--ink-soft);color:var(--ink-muted)}
-.parts .min{font-size:15px;font-weight:600;min-width:52px;text-align:right}
 
-.cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px}
-.btn{display:inline-flex;align-items:center;gap:10px;min-height:56px;padding:0 28px;border-radius:30px;border:0;background:var(--lime);color:var(--lime-ink);font-weight:700;font-size:17px}
-.btn svg{width:16px;height:16px}
-.cta .alt{font-size:15px;color:var(--ink-muted)}
-.cta .alt u{color:var(--ink-text);text-underline-offset:3px}
+
+/* today's routine: the prototype's session player, with the routine's parts under it */
+.rhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 24px;margin-bottom:16px}
+.rhead h2{font-size:clamp(24px,2.6vw,30px);font-weight:800}
+.rhead h2 span{color:var(--muted);font-weight:500;margin-left:10px}
+.rhead p{color:var(--muted)}
+.player{border-radius:20px;overflow:hidden;background:var(--ink)}
+.frame{position:relative;aspect-ratio:16/9;max-width:100%;overflow:hidden;background:repeating-linear-gradient(135deg,#161d19 0 10px,#1b231e 10px 20px)}
+.ph{position:absolute;left:18px;top:18px;z-index:3;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:#ffffff70;border:1px solid #ffffff2e;border-radius:20px;padding:6px 11px}
+.stack{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;text-align:center;padding:0 24px 60px}
+.stack .big{width:76px;height:76px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--lime);color:var(--lime-ink)}
+.stack .big svg{width:28px;height:28px}
+.stack small{font-size:10.5px;letter-spacing:.2em;font-weight:800;color:var(--lime);text-transform:uppercase}
+.stack h3{font-size:30px;letter-spacing:-.04em;font-weight:800;color:#fff}
+.stack p{max-width:42ch;font-size:14.5px;line-height:1.55;color:#ffffffb5}
+.pc{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:34px 14px 12px;background:linear-gradient(180deg,transparent,#0b0f0ee6 62%)}
+.ptrack{position:relative;height:4px;border-radius:4px;background:#ffffff2e}
+.ptrack .played{position:absolute;left:0;top:0;height:100%;border-radius:4px;background:var(--lime)}
+.ptrack .loopz{position:absolute;top:-3px;height:10px;border-radius:2px;background:#c6ff003d;border-left:2px solid var(--lime);border-right:2px solid var(--lime)}
+.ptrack .tick{position:absolute;top:-2px;width:2px;height:8px;border-radius:2px;background:#ffffff6b}
+.prow{display:flex;align-items:center;gap:6px;margin-top:11px}
+.prow .sp{flex:1}
+.ic{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:none;color:#ffffffc4}
+.ic[aria-pressed="true"]{background:var(--lime);color:var(--lime-ink)}
+.ic svg{width:19px;height:19px;display:block}
+.ic.play{background:var(--lime);color:var(--lime-ink)}
+.speed{border:0;background:var(--lime);color:var(--lime-ink);font-size:12px;font-weight:800;letter-spacing:.03em;padding:8px 11px;border-radius:20px;min-width:52px}
+.time{font-size:11.5px;font-weight:700;color:#ffffffa3;font-variant-numeric:tabular-nums;padding-left:4px;white-space:nowrap}
+
+.parts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.part{display:grid;justify-items:center;gap:2px;padding:12px 8px 11px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--muted);min-width:0;text-align:center}
+.part .st{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.part .pt{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.part .slen{margin-top:4px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.part .sat{font-size:11px;font-weight:600;opacity:.6;font-variant-numeric:tabular-nums}
+.part.done .st{color:var(--accent-text)}
+.part[aria-current="true"]{background:var(--ink);border-color:var(--ink);color:#ffffffb0}
+.part[aria-current="true"] .st,.part[aria-current="true"] .slen{color:var(--lime)}
+.part[aria-current="true"] .pt{color:#fff}
 
 /* sections */
 .sec{padding-block:56px 0}
@@ -143,15 +161,17 @@ h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
   .hello .sub{font-size:16px}
   .week{justify-content:space-between;gap:4px}
   .day i{width:36px;height:36px}
-  .routine{grid-template-columns:minmax(0,1fr)}
-  .routine .photo{order:-1;min-height:180px}
-  .routine .photo::after{background:linear-gradient(0deg,var(--ink) 0%,transparent 60%)}
-  .routine .body{padding:24px 20px 26px;gap:24px}
-  .parts li{grid-template-columns:minmax(0,1fr) auto;gap:12px}
-  .parts .min{grid-column:2;grid-row:1}
-  .parts .label{grid-column:1;grid-row:2;justify-self:start}
-  .parts li>div:first-child{grid-column:1;grid-row:1}
-  .btn{width:100%;justify-content:center}
+  .stack{padding-bottom:70px;gap:8px}
+  .stack .big{width:56px;height:56px}
+  .stack .big svg{width:22px;height:22px}
+  .stack h3{font-size:20px}
+  .stack p{display:none}
+  .ph{display:none}
+  .pc{padding:24px 10px 10px}
+  .prow{gap:2px}
+  .ic{width:32px;height:32px}
+  .parts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .part .sat{display:none}
   .row{grid-template-columns:52px minmax(0,1fr) auto;gap:14px;padding:16px 18px}
   .row .min{display:none}
   .row .state{min-width:0}
@@ -207,44 +227,52 @@ h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
     </div>
   </section>
 
-  <article class="routine">
-    <div class="body">
-      <div>
-        <p class="eyebrow">Today's routine</p>
-        <h2>Footwork &amp; timing</h2>
-        <p class="facts"><b>14 min</b> · Beginner · Four short parts</p>
-      </div>
+  <section class="sec" style="padding-top:0" aria-labelledby="rt">
+    <div class="rhead">
+      <h2 id="rt">Footwork &amp; timing <span class="num">14 min</span></h2>
+      <p>Today's routine · Beginner · Four short parts</p>
+    </div>
 
-      <ol class="parts">
-        <li>
-          <div><h3>Watch it once</h3><p>The basic, slow and then at tempo</p></div>
-          <span class="label">Watch</span>
-          <span class="min num">2 min</span>
-        </li>
-        <li>
-          <div><h3>Forward and back basic</h3><p>3 × 8 counts, at 0.75× speed</p></div>
-          <span class="label">Train</span>
-          <span class="min num">4 min</span>
-        </li>
-        <li>
-          <div><h3>Side basic on the clock</h3><p>Loops at 170, then 180 bpm</p></div>
-          <span class="label">Drill</span>
-          <span class="min num">5 min</span>
-        </li>
-        <li>
-          <div><h3>Dance one song</h3><p>Only basics, your own way</p></div>
-          <span class="label">Improvise</span>
-          <span class="min num">3 min</span>
-        </li>
-      </ol>
+    <div class="player">
+      <div class="frame">
+        <span class="ph">Video placeholder</span>
+        <div class="stack">
+          <span class="big" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+          <small>Train</small>
+          <h3>Forward and back basic</h3>
+          <p>3 × 8 counts, at 0.75× speed. Weight fully over the foot before the next step.</p>
+        </div>
 
-      <div class="cta">
-        <button class="btn" type="button"><svg><use href="#i-play"/></svg>Start</button>
-        <span class="alt">Short on time? <u>Do the 5-minute version</u></span>
+        <div class="pc">
+          <div class="ptrack" aria-hidden="true">
+            <span class="tick" style="left:14.3%"></span>
+            <span class="tick" style="left:42.9%"></span>
+            <span class="tick" style="left:78.6%"></span>
+            <span class="loopz" style="left:22%;width:12%"></span>
+            <span class="played" style="width:14.3%"></span>
+          </div>
+          <div class="prow">
+            <span class="ic play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+            <span class="time">0:00 / 4:00</span>
+            <span class="sp"></span>
+            <span class="speed">0.75×</span>
+            <span class="ic" aria-pressed="true" title="Loop eight counts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 12V10a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 12v2a4 4 0 0 1-4 4H3"/></svg></span>
+            <span class="ic" title="Mirror"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18" stroke-dasharray="3 3"/><path d="M8.5 8.5L4 12l4.5 3.5"/><path d="M15.5 8.5L20 12l-4.5 3.5"/></svg></span>
+            <span class="ic" aria-pressed="true" title="Counts"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="10" width="3" height="9" rx="1.5"/><rect x="8.5" y="6" width="3" height="13" rx="1.5"/><rect x="14" y="12" width="3" height="7" rx="1.5"/><rect x="19.5" y="8" width="3" height="11" rx="1.5"/></svg></span>
+            <span class="ic" aria-pressed="true" title="Captions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M9.5 10.5a2.5 2.5 0 1 0 0 3M17 10.5a2.5 2.5 0 1 0 0 3" stroke-linecap="round"/></svg></span>
+            <span class="ic" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></span>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="photo"><img src="/prototype/assets/coach.jpg" alt=""></div>
-  </article>
+
+    <div class="parts" aria-label="The parts of today's routine">
+      <div class="part done"><span class="st">Watch</span><span class="pt">Watch it once</span><span class="slen num">2:00</span><span class="sat num">0:00–2:00</span></div>
+      <div class="part" aria-current="true"><span class="st">Train</span><span class="pt">Forward and back basic</span><span class="slen num">4:00</span><span class="sat num">2:00–6:00</span></div>
+      <div class="part"><span class="st">Drill</span><span class="pt">Side basic on the clock</span><span class="slen num">5:00</span><span class="sat num">6:00–11:00</span></div>
+      <div class="part"><span class="st">Improvise</span><span class="pt">Dance one song</span><span class="slen num">3:00</span><span class="sat num">11:00–14:00</span></div>
+    </div>
+  </section>
 
   <section class="sec" aria-labelledby="wk">
     <div class="sechead">
