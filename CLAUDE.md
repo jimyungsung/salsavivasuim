@@ -4,6 +4,13 @@ Solo salsa training platform. **The plan lives in [docs/BUILD-PLAN.md](docs/BUIL
 read it before starting anything structural; it carries the phase order, the
 schema, and the player specification.
 
+**A change of concept is planned, not started:** a routine a day instead of a
+course catalogue. [docs/DAILY-PLAN.md](docs/DAILY-PLAN.md) has the new data
+model (stage → menu → routine → exercise, tags instead of the six steps, a
+library exercises are borrowed from), what stays, what goes, and the order of
+work. The look is in the static mockups under `public/mockups/`. Until step 1
+of that plan lands, everything below still describes the live site.
+
 **Phase 3 is done and live.** The site is at
 [salsadrill.com](https://www.salsadrill.com) on Vercel (project
 `veriveri/salsavivasuim`), `www` canonical with the apex redirecting to it. The
