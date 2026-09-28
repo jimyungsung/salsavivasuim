@@ -14,7 +14,7 @@ settled in three static mockups under `public/mockups/`:
 
 This document is the plan for making them real without rebuilding what already
 works. **Status:** steps 1–8 are built on the branch `claude/optimistic-johnson-cct0k4`;
-the migration is written and not yet applied (see §7). It follows the same rules as [BUILD-PLAN.md](BUILD-PLAN.md): decide once,
+the migration was applied on 28 September 2026 and the seed run after it (§7). It follows the same rules as [BUILD-PLAN.md](BUILD-PLAN.md): decide once,
 keep `main` building at every step, and let the database decide access.
 
 ---

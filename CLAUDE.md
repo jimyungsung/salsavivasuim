@@ -6,12 +6,13 @@ right about the stack, the player and the delivery chain, is
 [docs/BUILD-PLAN.md](docs/BUILD-PLAN.md). Read them before anything structural.
 
 **Where the move stands.** The code on this branch is the daily concept end to
-end: schema migration, back office, member screens, landing page. **The
-migration `20260928120000_daily.sql` has not been applied to the live
-database**; until it is, the live site (main) is the old catalogue and this
-branch's preview will log query errors and render empty. It deletes the
-placeholder catalogue and keeps real uploads: take a backup first, apply by
-hand (Supabase MCP / CLI), then run `supabase/seed.sql` for a starting menu.
+end, and the migration `20260928120000_daily.sql` **is applied to the live
+database** (28 September 2026), with `supabase/seed.sql` run after it: one
+stage, two draft menus of six routines, the quick-drills menu, and the three
+Pachanga clips kept as draft exercises to tag. **Until this branch is merged,
+the live site (main) reads tables that no longer exist**; merge it next. A JSON
+copy of the old catalogue was taken before the migration; the placeholder
+programs are also in git history (`supabase/seed.sql` before this branch).
 
 The site is at [salsadrill.com](https://www.salsadrill.com) on Vercel (project
 `veriveri/salsavivasuim`), `www` canonical. The Supabase project is **Salsaviva

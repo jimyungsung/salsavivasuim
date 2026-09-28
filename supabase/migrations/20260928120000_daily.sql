@@ -82,6 +82,9 @@ comment on column public.routines.weekday is
 -- videos: the step goes, tags and difficulty arrive, and an exercise carries
 -- its own publish status now that no session lends it one. `position` ordered
 -- a session; routine_items.position orders a routine.
+-- The "own drill items" policy reads is_drillable, so it goes first; it comes
+-- back in step 7 without that clause.
+drop policy "own drill items" on public.drill_items;
 alter table public.videos drop column is_drillable;   -- generated from step
 alter table public.videos drop column step;
 alter table public.videos drop column position;
@@ -238,8 +241,8 @@ create policy "admins insert routine items" on public.routine_items for insert w
 create policy "admins update routine items" on public.routine_items for update using (private.is_admin()) with check (private.is_admin());
 create policy "admins delete routine items" on public.routine_items for delete using (private.is_admin());
 
--- Every exercise is drillable now; the clause that said otherwise goes.
-drop policy "own drill items" on public.drill_items;
+-- Every exercise is drillable now; the clause that said otherwise went in
+-- step 3, with the column it read.
 create policy "own drill items"
   on public.drill_items for all
   using (exists (select 1 from public.drills d where d.id = drill_id and d.user_id = (select auth.uid())))
