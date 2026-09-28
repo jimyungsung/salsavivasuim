@@ -5,7 +5,7 @@
    under one wrapper class.
 */
 
-:root{--ink:#0b0f0e;--lime:#c6ff00;--red:#d9432f;--red-soft:#fdeee9;--paper:#ffffff;--soft:#f3f4ef;--muted:#5b615c;--line:#e2e4dd;--card:#fbfbf8;--panel:#141a17}
+:root{--ink:#0b0f0e;--lime:#c6ff00;--red:#d9432f;--red-soft:#fdeee9;--paper:#ffffff;--soft:#f3f4ef;--muted:#50564f;--line:#d8dbd2;--card:#ffffff;--panel:#141a17}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font-family:"Archivo","Noto Sans KR","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}

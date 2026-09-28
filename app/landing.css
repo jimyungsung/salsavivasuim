@@ -2,7 +2,7 @@
    Its own light nav rather than the app's dark one: the front door is not the
    app. Tokens come from app/globals.css. */
 
-.ld{--soft:#f3f4ef;--soft2:#e9eae3;--line2:#e2e4dd;background:#fff;color:var(--ink);font-size:16px;line-height:1.5}
+.ld{--soft:#f3f4ef;--soft2:#e9eae3;--line2:#d8dbd2;background:#fff;color:var(--ink);font-size:16px;line-height:1.5}
 .ld .wrap{max-width:1120px}
 .ld h1,.ld h2,.ld h3,.ld p{margin:0}
 .ld h1,.ld h2,.ld h3{text-wrap:balance;letter-spacing:-.025em}
