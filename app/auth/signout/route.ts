@@ -11,5 +11,5 @@ export async function POST(request: NextRequest) {
        account — signing out on a phone would sign the laptop out too. */
     await supabase.auth.signOut({ scope: 'local' });
   }
-  return NextResponse.redirect(`${request.nextUrl.origin}/prototype/index.html`, { status: 303 });
+  return NextResponse.redirect(`${request.nextUrl.origin}/`, { status: 303 });
 }

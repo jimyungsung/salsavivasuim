@@ -2,50 +2,49 @@
 
 /* The back office's navigation: the whole catalogue, always on screen.
 
-   Areas → programs → sessions, with the branch you are standing in opened and
-   highlighted — on a video's screen, that is its session. A search box filters
-   every program and session by title, which beats scrolling through seven areas
-   and thirty-odd programs to reach one session. */
+   The library of exercises first — it is where footage arrives — then stages
+   → menus → routines, with the branch you are standing in opened and
+   highlighted. A search box filters every menu and routine by title. */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import type { PublishStatus } from '@/lib/db';
 
-export interface NavSession {
+export interface NavRoutine {
   id: string;
-  position: number;
+  weekday: number | null;
   title: string;
   status: PublishStatus;
-  videoIds: string[];
 }
-export interface NavProgram {
+export interface NavMenu {
   id: string;
   title: string;
   status: PublishStatus;
-  sessions: NavSession[];
+  routines: NavRoutine[];
 }
-export interface NavArea {
+export interface NavStage {
+  /** '' for the menus that belong to no stage. */
   id: string;
   name: string;
-  programs: NavProgram[];
+  menus: NavMenu[];
 }
 
-const two = (n: number) => String(n).padStart(2, '0');
+const DAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export default function Sidebar({ tree }: { tree: NavArea[] }) {
+export default function Sidebar({ tree, exerciseCount }: { tree: NavStage[]; exerciseCount: number }) {
   const pathname = usePathname();
   const [, kind, id] = pathname.split('/').slice(1);
 
-  /* Where are we? A video is found through its session. */
+  /* Where are we? */
   const here = useMemo(() => {
-    for (const area of tree) {
-      if (kind === 'areas' && area.id === id) return { area: area.id };
-      for (const program of area.programs) {
-        if (kind === 'programs' && program.id === id) return { area: area.id, program: program.id };
-        for (const session of program.sessions) {
-          if ((kind === 'sessions' && session.id === id) || (kind === 'videos' && session.videoIds.includes(id))) {
-            return { area: area.id, program: program.id, session: session.id };
+    for (const stage of tree) {
+      if (kind === 'stages' && stage.id === id) return { stage: stage.id };
+      for (const menu of stage.menus) {
+        if (kind === 'menus' && menu.id === id) return { stage: stage.id, menu: menu.id };
+        for (const routine of menu.routines) {
+          if (kind === 'routines' && routine.id === id) {
+            return { stage: stage.id, menu: menu.id, routine: routine.id };
           }
         }
       }
@@ -53,15 +52,15 @@ export default function Sidebar({ tree }: { tree: NavArea[] }) {
     return {};
   }, [tree, kind, id]);
 
-  const [openAreas, setOpenAreas] = useState<Set<string>>(() => new Set(here.area ? [here.area] : []));
-  const [openPrograms, setOpenPrograms] = useState<Set<string>>(() => new Set(here.program ? [here.program] : []));
+  const [openStages, setOpenStages] = useState<Set<string>>(() => new Set(here.stage != null ? [here.stage] : []));
+  const [openMenus, setOpenMenus] = useState<Set<string>>(() => new Set(here.menu ? [here.menu] : []));
   const [query, setQuery] = useState('');
 
   /* Following a link in the page opens the branch it leads to. */
   useEffect(() => {
-    if (here.area) setOpenAreas(s => (s.has(here.area!) ? s : new Set(s).add(here.area!)));
-    if (here.program) setOpenPrograms(s => (s.has(here.program!) ? s : new Set(s).add(here.program!)));
-  }, [here.area, here.program]);
+    if (here.stage != null) setOpenStages(s => (s.has(here.stage!) ? s : new Set(s).add(here.stage!)));
+    if (here.menu) setOpenMenus(s => (s.has(here.menu!) ? s : new Set(s).add(here.menu!)));
+  }, [here.stage, here.menu]);
 
   const toggle = (set: Set<string>, key: string) => {
     const next = new Set(set);
@@ -77,67 +76,74 @@ export default function Sidebar({ tree }: { tree: NavArea[] }) {
       <div className="find">
         <input
           type="search"
-          placeholder="Find a program or session"
+          placeholder="Find a menu or routine"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          aria-label="Find a program or session"
+          aria-label="Find a menu or routine"
         />
       </div>
 
       <nav className="bonav" aria-label="Catalogue">
         <Link className={`home${kind ? '' : ' on'}`} href="/admin">
-          Catalogue overview
+          Overview
+        </Link>
+        <Link className={`home${kind === 'exercises' ? ' on' : ''}`} href="/admin/exercises">
+          Exercises
+          <span className="ct">{exerciseCount}</span>
         </Link>
 
-        {tree.map(area => {
-          const programs = q
-            ? area.programs
-                .map(p => ({ ...p, sessions: matches(p.title) ? p.sessions : p.sessions.filter(s => matches(s.title)) }))
-                .filter(p => matches(p.title) || p.sessions.length > 0)
-            : area.programs;
-          if (q && programs.length === 0) return null;
-          const areaOpen = q ? true : openAreas.has(area.id);
+        {tree.map(stage => {
+          const menus = q
+            ? stage.menus
+                .map(m => ({ ...m, routines: matches(m.title) ? m.routines : m.routines.filter(r => matches(r.title)) }))
+                .filter(m => matches(m.title) || m.routines.length > 0)
+            : stage.menus;
+          if (q && menus.length === 0) return null;
+          if (!q && stage.id === '' && menus.length === 0) return null;
+          const stageOpen = q ? true : openStages.has(stage.id);
 
           return (
-            <div className="n-area" key={area.id}>
-              <div className={`n-arow${here.area === area.id ? ' in' : ''}`}>
-                <button type="button" className="n-toggle" aria-expanded={areaOpen} onClick={() => setOpenAreas(s => toggle(s, area.id))}>
-                  <span className="caret" aria-hidden="true">{areaOpen ? '▾' : '▸'}</span>
-                  {area.name}
-                  <span className="ct">{area.programs.length}</span>
+            <div className="n-area" key={stage.id || 'none'}>
+              <div className={`n-arow${here.stage === stage.id ? ' in' : ''}`}>
+                <button type="button" className="n-toggle" aria-expanded={stageOpen} onClick={() => setOpenStages(s => toggle(s, stage.id))}>
+                  <span className="caret" aria-hidden="true">{stageOpen ? '▾' : '▸'}</span>
+                  {stage.name}
+                  <span className="ct">{stage.menus.length}</span>
                 </button>
-                <Link className={`n-edit${kind === 'areas' && id === area.id ? ' on' : ''}`} href={`/admin/areas/${area.id}`} title="Edit area">
-                  Edit
-                </Link>
+                {stage.id && (
+                  <Link className={`n-edit${kind === 'stages' && id === stage.id ? ' on' : ''}`} href={`/admin/stages/${stage.id}`} title="Edit stage">
+                    Edit
+                  </Link>
+                )}
               </div>
 
-              {areaOpen &&
-                programs.map(program => {
-                  const programOpen = q ? program.sessions.length > 0 : openPrograms.has(program.id);
+              {stageOpen &&
+                menus.map(menu => {
+                  const menuOpen = q ? menu.routines.length > 0 : openMenus.has(menu.id);
                   return (
-                    <div className="n-program" key={program.id}>
-                      <div className={`n-prow${here.program === program.id ? ' in' : ''}${kind === 'programs' && id === program.id ? ' on' : ''}`}>
-                        <button type="button" className="n-caret" aria-label={programOpen ? 'Hide sessions' : 'Show sessions'} aria-expanded={programOpen} onClick={() => setOpenPrograms(s => toggle(s, program.id))}>
-                          {programOpen ? '▾' : '▸'}
+                    <div className="n-program" key={menu.id}>
+                      <div className={`n-prow${here.menu === menu.id ? ' in' : ''}${kind === 'menus' && id === menu.id ? ' on' : ''}`}>
+                        <button type="button" className="n-caret" aria-label={menuOpen ? 'Hide routines' : 'Show routines'} aria-expanded={menuOpen} onClick={() => setOpenMenus(s => toggle(s, menu.id))}>
+                          {menuOpen ? '▾' : '▸'}
                         </button>
-                        <Link href={`/admin/programs/${program.id}`}>
-                          <i className={`dot ${program.status}`} title={program.status} />
-                          {program.title}
+                        <Link href={`/admin/menus/${menu.id}`}>
+                          <i className={`dot ${menu.status}`} title={menu.status} />
+                          {menu.title}
                         </Link>
                       </div>
 
-                      {programOpen && (
+                      {menuOpen && (
                         <div className="n-sessions">
-                          {program.sessions.length === 0 && <span className="n-empty">No sessions</span>}
-                          {program.sessions.map(session => (
+                          {menu.routines.length === 0 && <span className="n-empty">No routines</span>}
+                          {menu.routines.map(routine => (
                             <Link
-                              key={session.id}
-                              className={`n-srow${here.session === session.id ? ' on' : ''}`}
-                              href={`/admin/sessions/${session.id}`}
+                              key={routine.id}
+                              className={`n-srow${here.routine === routine.id ? ' on' : ''}`}
+                              href={`/admin/routines/${routine.id}`}
                             >
-                              <span className="sn">{two(session.position)}</span>
-                              <span className="st">{session.title}</span>
-                              <i className={`dot ${session.status}`} title={session.status} />
+                              <span className="sn">{routine.weekday == null ? '—' : DAY[routine.weekday]}</span>
+                              <span className="st">{routine.title}</span>
+                              <i className={`dot ${routine.status}`} title={routine.status} />
                             </Link>
                           ))}
                         </div>

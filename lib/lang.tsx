@@ -9,8 +9,8 @@
    at sign-in, and this provider stops being the source of truth. */
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import type { Lang, Localized } from './content';
-import { LANG_COOKIE, isLang, t } from './content';
+import type { Lang, Localized } from './i18n';
+import { LANG_COOKIE, isLang, t } from './i18n';
 
 const LANG_STORAGE = LANG_COOKIE;
 const ONE_YEAR = 60 * 60 * 24 * 365;

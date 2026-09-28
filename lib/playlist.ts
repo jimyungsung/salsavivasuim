@@ -1,23 +1,22 @@
 /* What the player plays: a playlist, never a bare video.
 
-   A session is its videos in order. A drill is a member's own run of videos
-   — possibly the same one twice — with a loop, a speed and a repeat count of
-   its own on each. A day is the drills scheduled on it, one after another.
-   All three are this one shape, which is what lets one player serve them all
+   A routine is its exercises in order. A member's day is the same shape with
+   the member's own entries — possibly the same exercise twice — each with a
+   loop, a speed and a repeat count of its own. One shape, one player
    (BUILD-PLAN §5, "built now so it doesn't need rebuilding later").
 
    No 'server-only' here: the player is a client component and needs the type,
-   and sessionPlaylist() is pure. The builders that read the database live in
-   lib/catalogue.ts and lib/drills.ts. */
+   and routinePlaylist() is pure. The builders that read the database live in
+   lib/menus.ts and lib/week.ts. */
 
-import { LEVEL_LABELS, type Localized } from './content';
-import type { SessionDetail, SessionVideoSummary } from './catalogue';
+import { LEVEL_LABELS, type Localized } from './i18n';
+import type { Exercise, Routine } from './menus';
 
 export interface PlaylistEntry {
-  video: SessionVideoSummary;
+  video: Exercise;
   /** Play the whole video this many times before moving on. */
   repeats: number;
-  /** A speed of this entry's own; otherwise the step's remembered speed. */
+  /** A speed of this entry's own; otherwise the remembered speed. */
   speed: number | null;
 }
 
@@ -27,11 +26,11 @@ export interface PlaylistLink {
 }
 
 export interface Playlist {
-  kind: 'session' | 'drill' | 'day';
+  kind: 'routine' | 'day';
   /** The page this playlist is on, for coming back after sign-in. */
   href: string;
   title: Localized;
-  /** The small line above the title — "Session 01 · Beginner", "3 drills". */
+  /** The small line above the title — "Tuesday · 14 min", "Beginner". */
   kicker: Localized;
   /** One level up, as the back link. */
   back: PlaylistLink;
@@ -44,32 +43,34 @@ export interface Playlist {
   entries: PlaylistEntry[];
 }
 
-const two = (n: number) => String(n).padStart(2, '0');
-
-/** A session as the player plays it. Pure, so the session page stays a thin
-    server component around the query. */
-export function sessionPlaylist(session: SessionDetail): Playlist {
-  const levels = (lang: 'en' | 'ko') => session.levels.map(k => LEVEL_LABELS[k][lang]).join(' · ');
-  const program = `/programs/${session.program.id}`;
+/** A curated routine as the player plays it: the quick drills, or a preview
+    from the back office. Exercises this viewer may not see are left out. */
+export function routinePlaylist(
+  routine: Routine,
+  back: PlaylistLink,
+  href: string,
+): Playlist {
+  const levels = (lang: 'en' | 'ko') => routine.levels.map(k => LEVEL_LABELS[k][lang]).join(' · ');
   return {
-    kind: 'session',
-    href: `/sessions/${session.id}`,
-    title: session.title,
-    kicker: {
-      en: `Session ${two(session.position)}${levels('en') ? ` · ${levels('en')}` : ''}`,
-      ko: `세션 ${two(session.position)}${levels('ko') ? ` · ${levels('ko')}` : ''}`,
-    },
-    back: { href: program, label: session.program.title },
-    prev: session.prevSessionId
-      ? { href: `/sessions/${session.prevSessionId}`, label: { en: '← Previous', ko: '← 이전' } }
-      : null,
-    next: session.nextSessionId
-      ? { href: `/sessions/${session.nextSessionId}`, label: { en: 'Next session →', ko: '다음 세션 →' } }
-      : { href: program, label: { en: 'Finish the module →', ko: '모듈 마치기 →' } },
-    notes: [session.focus, session.outcome],
-    entries: session.videos.map(video => ({ video, repeats: 1, speed: null })),
+    kind: 'routine',
+    href,
+    title: routine.title,
+    kicker: { en: levels('en') || 'Routine', ko: levels('ko') || '루틴' },
+    back,
+    prev: null,
+    next: back,
+    notes: [routine.blurb],
+    entries: routine.items
+      .filter(i => i.video)
+      .map(i => ({ video: i.video!, repeats: i.repeats, speed: i.speed })),
   };
 }
+
+/** Running time of a routine or a day: its exercises' lengths, repeats
+    included. Pure, so the planner (a client component) can sum too. */
+export const routineLengthMs = (routine: {
+  items: { video: { durationMs: number | null } | null; repeats: number }[];
+}): number => routine.items.reduce((n, i) => n + (i.video?.durationMs ?? 0) * i.repeats, 0);
 
 /** Running time of the whole list, repeats included. */
 export const playlistLengthMs = (entries: PlaylistEntry[]): number =>

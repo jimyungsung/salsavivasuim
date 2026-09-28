@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SUIM Daily Week Planner</title>
+<!-- Mockup only: planning the week in the daily-routine variant of SUIM.
+     A recommended weekly menu on top; below it, a library of mini exercises
+     and the week they go into. Frozen mid-drag to show the look. Static:
+     nothing here is clickable. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#ffffff; --card:#ffffff; --soft:#f3f4ef; --soft-2:#e9eae3; --text:#0b0f0e; --muted:#676d68; --line:#e2e4dd;
+  --lime:#c6ff00; --lime-ink:#0b0f0e; --lime-soft:#f4fdd6; --accent-text:#4a6000;
+  --ink:#0f1412; --ink-text:#f4f5ef; --ink-muted:#ffffff99;
+  --shadow:0 18px 40px -24px #0b0f0e59;
+  --font:"Archivo","Noto Sans KR","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0d110f; --card:#151a17; --soft:#1b211d; --soft-2:#242b26; --text:#eef0e8; --muted:#9aa19b; --line:#2a312c;
+    --lime-soft:#c6ff0014; --accent-text:#c6ff00; --ink:#1a201c; --shadow:0 18px 40px -24px #000c;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0d110f; --card:#151a17; --soft:#1b211d; --soft-2:#242b26; --text:#eef0e8; --muted:#9aa19b; --line:#2a312c;
+  --lime-soft:#c6ff0014; --accent-text:#c6ff00; --ink:#1a201c; --shadow:0 18px 40px -24px #000c;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+button,input{font:inherit;color:inherit}
+button{cursor:default}
+:focus-visible{outline:3px solid var(--lime);outline-offset:3px;border-radius:6px}
+.wrap{width:100%;max-width:1180px;margin:0 auto;padding-inline:20px}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{text-wrap:balance;letter-spacing:-.02em}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:26px;border:1px solid transparent;font-weight:700;font-size:15px;white-space:nowrap}
+.btn.primary{background:var(--lime);color:var(--lime-ink)}
+.btn.ghost{border-color:var(--line);background:var(--card)}
+.btn.dark{background:var(--text);color:var(--bg)}
+.btn svg{width:15px;height:15px}
+.step{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* nav — same as the Today mockup */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav .wrap{height:64px;display:flex;align-items:center;gap:32px}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.04em}
+.logo em{font-style:normal;color:var(--muted);font-weight:500;margin-left:6px}
+.links{display:flex;gap:26px;font-size:15px;font-weight:600;color:var(--muted)}
+.links span{padding:6px 0;border-bottom:2px solid transparent}
+.links span[aria-current]{color:var(--text);border-color:var(--text)}
+.av{margin-left:auto;width:36px;height:36px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;font-weight:700;font-size:13px}
+
+/* page head */
+.head{padding-block:40px 28px;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px 32px}
+.head h1{font-size:clamp(32px,4.4vw,48px);line-height:1.05;font-weight:800;margin-top:8px}
+.head .sub{margin-top:10px;font-size:17px;color:var(--muted);max-width:54ch}
+
+/* 1. this week's menu */
+.sechead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 24px;margin-bottom:16px}
+.sechead h2{font-size:clamp(22px,2.4vw,26px);font-weight:800}
+.sechead p{color:var(--muted);font-size:15px}
+.menus{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.menu{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
+.menu .pic{position:relative;aspect-ratio:16/9;max-width:100%;background:var(--soft);overflow:hidden;display:grid;place-items:center}
+.menu .pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.menu .pic b{font-size:34px;font-weight:800;letter-spacing:-.04em;color:var(--muted);opacity:.55}
+.menu .flag{position:absolute;left:12px;top:12px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:12px;background:var(--card);color:var(--text)}
+.menu .flag.rec{background:var(--lime);color:var(--lime-ink)}
+.menu .body{padding:16px 18px 18px;display:grid;gap:10px;align-content:start}
+.menu h3{font-size:18px;font-weight:700;line-height:1.2}
+.menu .desc{font-size:14px;color:var(--muted)}
+.menu .meta{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+.menu .meta b{color:var(--text);font-weight:600}
+.focus{display:flex;flex-wrap:wrap;gap:6px}
+.focus span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:12px;background:var(--soft);color:var(--muted)}
+.menu .btn{margin-top:4px;width:100%;min-height:40px;font-size:14px}
+.menu.on{border:2px solid var(--text);box-shadow:var(--shadow)}
+.menu.on .btn{background:var(--text);color:var(--bg)}
+
+/* 2. build your week */
+.build{padding-block:52px 0}
+.buildhead{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px 28px;margin-bottom:18px}
+.buildhead h2{font-size:clamp(22px,2.4vw,26px);font-weight:800}
+.buildhead p{color:var(--muted);font-size:15px;margin-top:4px;max-width:56ch}
+.buildhead .acts{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.total{font-size:14px;color:var(--muted);margin-right:6px}
+.total b{color:var(--text);font-size:16px}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:28px;align-items:start}
+
+/* library */
+.lib{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.lib .top{padding:18px 18px 14px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
+.lib .top .t{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.lib .top h3{font-size:17px;font-weight:700}
+.lib .top .t span{font-size:13px;color:var(--muted)}
+.grab{display:none}
+.search{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border:1px solid var(--line);border-radius:14px;background:var(--soft);color:var(--muted);font-size:15px}
+.search svg{width:17px;height:17px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:13px;font-weight:600;padding:6px 11px;border-radius:16px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
+.chips span.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.chips .div{width:1px;padding:0;border:0;background:var(--line);margin:4px 4px}
+.ex{display:grid;grid-template-columns:18px 76px minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 16px 12px 12px;border-bottom:1px solid var(--line)}
+.ex:last-child{border-bottom:0}
+.handle{width:18px;height:28px;display:grid;place-items:center;color:var(--muted);opacity:.6}
+.handle svg{width:12px;height:18px}
+.thumb{position:relative;width:76px;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--soft-2);display:grid;place-items:center}
+.thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.thumb i{font-style:normal;font-size:12px;font-weight:800;color:var(--muted);opacity:.7;letter-spacing:-.02em}
+.thumb .d{position:absolute;right:5px;bottom:5px;font-size:10px;font-weight:700;padding:1px 5px;border-radius:5px;background:#0b0f0ecc;color:#fff}
+.ex h4{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em;line-height:1.3}
+.ex .m{font-size:13px;color:var(--muted);margin-top:2px}
+.add{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:18px;border:1px solid var(--line);background:var(--card);font-size:13px;font-weight:700;white-space:nowrap}
+.add svg{width:13px;height:13px}
+.ex .m .on{color:var(--accent-text);font-weight:600}
+.ex.lifted{background:repeating-linear-gradient(135deg,var(--soft) 0 8px,var(--card) 8px 16px)}
+.ex.lifted > *{opacity:.35}
+
+/* the week */
+.week{display:grid;gap:12px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px 12px}
+.day .dh{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px}
+.day .dn{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.day .meter{height:6px;border-radius:4px;background:var(--soft-2);overflow:hidden}
+.day .meter i{display:block;height:100%;border-radius:4px;background:var(--text)}
+.day .dm{font-size:13px;color:var(--muted);min-width:110px;text-align:right}
+.day .dm b{color:var(--text)}
+.day ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px}
+.day li{display:grid;grid-template-columns:14px minmax(0,1fr) auto auto 22px;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--soft);font-size:14px}
+.day li .handle{width:14px;height:20px}
+.day li .handle svg{width:10px;height:14px}
+.day li .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.day li .min{font-size:13px;color:var(--muted);min-width:38px;text-align:right}
+.day li .x{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:var(--muted)}
+.day li .x svg{width:12px;height:12px}
+.day .more{margin-top:8px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--muted);padding:4px 2px}
+.day .more svg{width:13px;height:13px}
+.day.done{background:var(--soft);border-color:var(--soft)}
+.day.done li{background:var(--card)}
+.day.done .dm{color:var(--accent-text);font-weight:700}
+.day.today{border:2px solid var(--text)}
+.day.today .dn::after{content:"Today";margin-left:8px;font-size:11px;letter-spacing:.04em;padding:2px 7px;border-radius:10px;background:var(--lime);color:var(--lime-ink);text-transform:none}
+.day.rest{border-style:dashed;background:none}
+.day.rest p{margin-top:6px;font-size:14px;color:var(--muted)}
+
+/* the frozen drag: a slot opening on Wednesday, and the card over it */
+.day.target{border-color:var(--text)}
+.day li.drop{display:flex;justify-content:flex-end;position:relative;height:46px;border-radius:12px;border:2px dashed var(--text);background:var(--lime-soft);display:flex;align-items:center;padding:0 14px;font-size:13px;font-weight:700;color:var(--accent-text)}
+.dragcard{position:absolute;left:-58px;top:-8px;width:min(340px,86vw);display:grid;grid-template-columns:18px 56px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 14px 10px 10px;border-radius:14px;background:var(--card);border:1px solid var(--line);box-shadow:0 26px 50px -18px #0b0f0e73,0 0 0 1px #0b0f0e0d;transform:rotate(-2.5deg);color:var(--text);font-weight:400}
+.dragcard .thumb{width:56px}
+.dragcard h4{margin:0;font-size:14px;font-weight:600}
+.dragcard .m{font-size:12px;color:var(--muted)}
+.dragcard .min{font-size:13px;font-weight:700}
+.cursor{position:absolute;right:30px;bottom:-14px;width:22px;height:22px;color:var(--text)}
+
+.foot{padding-block:56px 40px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.tabbar{display:none}
+
+@media (max-width:1060px){
+  .menus{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .cols{grid-template-columns:minmax(0,1fr)}
+  .week{order:-1}
+  .dragcard,.cursor{display:none}
+  /* on a phone the library is a bottom sheet, opened by a day's "Add exercise" */
+  .lib{border-radius:24px 24px 0 0;box-shadow:0 -20px 40px -30px #0b0f0e66}
+  .grab{display:block;width:40px;height:5px;border-radius:3px;background:var(--soft-2);margin:0 auto 4px}
+}
+@media (max-width:640px){
+  .links,.av{display:none}
+  .nav .wrap{height:56px}
+  .head{padding-block:26px 22px}
+  .menus{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+  .menu{scroll-snap-align:start}
+  .buildhead .acts{width:100%}
+  .buildhead .acts .btn{flex:1}
+  .total{width:100%}
+  .day .dh{grid-template-columns:auto minmax(0,1fr)}
+  .day .meter{display:none}
+  .day .dm{min-width:0}
+  .day li{grid-template-columns:14px minmax(0,1fr) auto 22px}
+  .day li .step{display:none}
+  .ex{grid-template-columns:64px minmax(0,1fr) auto;padding:12px 14px}
+  .ex .handle{display:none}
+  .thumb{width:64px}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+  .tabbar span{display:grid;justify-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);padding:4px}
+  .tabbar span svg{width:22px;height:22px}
+  .tabbar span[aria-current]{color:var(--text)}
+  .foot{padding-bottom:110px}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-grip" viewBox="0 0 8 14"><g fill="currentColor"><circle cx="2" cy="2" r="1.3"/><circle cx="6" cy="2" r="1.3"/><circle cx="2" cy="7" r="1.3"/><circle cx="6" cy="7" r="1.3"/><circle cx="2" cy="12" r="1.3"/><circle cx="6" cy="12" r="1.3"/></g></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></g></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-week" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></g></symbol>
+  <symbol id="i-lib" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="3"/><path d="M10 8.5v4l3.5-2z"/><path d="M7 21h10"/></g></symbol>
+  <symbol id="i-prog" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V13M12 20V8M19 20V4"/></g></symbol>
+</svg>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="logo">suim.<em>daily</em></div>
+    <nav class="links" aria-label="Main">
+      <span>Today</span>
+      <span aria-current="page">Week</span>
+      <span>Library</span>
+      <span>Progress</span>
+    </nav>
+    <div class="av" aria-label="Mina Kim">MK</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="head">
+    <div>
+      <p class="eyebrow">Week 3 · Sep 28 – Oct 4</p>
+      <h1>Plan your week</h1>
+      <p class="sub">Pick this week's menu, then make it yours. Add, move or drop exercises until each day feels right.</p>
+    </div>
+  </section>
+
+  <!-- 1. the recommended menus -->
+  <section aria-labelledby="mn">
+    <div class="sechead">
+      <h2 id="mn">This week's menu</h2>
+      <p>Each menu is a theme for the whole week. Choose one to fill your days.</p>
+    </div>
+    <div class="menus">
+      <article class="menu on">
+        <div class="pic"><span class="flag rec">Recommended for week 3</span><b>Body</b></div>
+        <div class="body">
+          <h3>Shoulders &amp; body movement</h3>
+          <p class="desc">Loosen the top half. Shoulder rolls, rib cage and body waves, always on the count.</p>
+          <div class="meta"><span><b>6 days</b></span><span><b class="num">~10 min</b> a day</span></div>
+          <div class="focus"><span>Shoulders</span><span>Body</span><span>Styling</span></div>
+          <span class="btn"><svg><use href="#i-check"/></svg>In your week</span>
+        </div>
+      </article>
+      <article class="menu">
+        <div class="pic"><b class="num">1·2·3</b></div>
+        <div class="body">
+          <h3>Timing &amp; footwork</h3>
+          <p class="desc">Find the one every time. The basic, the pause and clean feet at two tempos.</p>
+          <div class="meta"><span><b>5 days</b></span><span><b class="num">~14 min</b> a day</span></div>
+          <div class="focus"><span>Timing</span><span>Footwork</span></div>
+          <span class="btn ghost">Use this menu</span>
+        </div>
+      </article>
+      <article class="menu">
+        <div class="pic"><b>Turns</b></div>
+        <div class="body">
+          <h3>Your first turns</h3>
+          <p class="desc">Spotting, balance and a clean right turn. Slow first, then on the music.</p>
+          <div class="meta"><span><b>4 days</b></span><span><b class="num">~15 min</b> a day</span></div>
+          <div class="focus"><span>Turns</span><span>Balance</span></div>
+          <span class="btn ghost">Use this menu</span>
+        </div>
+      </article>
+      <article class="menu">
+        <div class="pic"><img src="suim-shine.jpg" alt="Suim teaching shines"><span class="flag">New · with Suim</span></div>
+        <div class="body">
+          <h3>Shines for socials</h3>
+          <p class="desc">Three shines you can drop into a social dance, taught by Suim.</p>
+          <div class="meta"><span><b>5 days</b></span><span><b class="num">~12 min</b> a day</span></div>
+          <div class="focus"><span>Shines</span><span>Styling</span></div>
+          <span class="btn ghost">Use this menu</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- 2. the library and the week -->
+  <section class="build" aria-labelledby="bw">
+    <div class="buildhead">
+      <div>
+        <h2 id="bw">Build your week</h2>
+        <p>Started from <b>Shoulders &amp; body movement</b>. Drag exercises onto a day, or tap Add. Aim for 10–15 minutes a day.</p>
+      </div>
+      <div class="acts">
+        <span class="total"><b class="num">66 min</b> this week · 6 practice days</span>
+        <span class="btn ghost">Reset to menu</span>
+        <span class="btn primary">Save week</span>
+      </div>
+    </div>
+
+    <div class="cols">
+
+      <!-- the library -->
+      <div class="lib" aria-label="Exercise library">
+        <div class="top">
+          <span class="grab" aria-hidden="true"></span>
+          <div class="t"><h3>Mini exercises</h3><span class="num">48 in the library</span></div>
+          <div class="search"><svg><use href="#i-search"/></svg>Search exercises</div>
+          <div class="chips">
+            <span class="on">All</span><span>Shoulders</span><span>Body</span><span>Footwork</span><span>Timing</span><span>Turns</span><span>Styling</span>
+            <span class="div"></span>
+            <span>3 min</span><span>5 min</span>
+          </div>
+        </div>
+
+        <div class="ex">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><i>Train</i><span class="d num">3:00</span></div>
+          <div><h4>Shoulder rolls on the count</h4><p class="m">Train · Shoulders<br><span class="on">On Mon, Tue, Thu</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+        <div class="ex">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><i>Drill</i><span class="d num">4:00</span></div>
+          <div><h4>Shoulder isolations, 8 counts</h4><p class="m">Drill · Shoulders<br><span class="on">On Mon, Thu, Sat</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+        <div class="ex lifted" aria-label="Rib cage slides, being dragged">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><i>Train</i><span class="d num">4:00</span></div>
+          <div><h4>Rib cage slides</h4><p class="m">Train · Body<br><span class="on">Not in your week yet</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+        <div class="ex">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><img src="suim-shine.jpg" alt=""><span class="d num">5:00</span></div>
+          <div><h4>Body wave, slow then on tempo</h4><p class="m">Train · Body · with Suim<br><span class="on">On Tue, Wed, Fri</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+        <div class="ex">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><i>Transform</i><span class="d num">3:00</span></div>
+          <div><h4>Arm frames for shines</h4><p class="m">Transform · Styling<br><span class="on">On Tue, Thu, Fri</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+        <div class="ex">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><i>Drill</i><span class="d num">4:00</span></div>
+          <div><h4>Weight transfer through the hips</h4><p class="m">Drill · Body<br><span class="on">On Wed, Fri</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+        <div class="ex">
+          <span class="handle"><svg><use href="#i-grip"/></svg></span>
+          <div class="thumb"><i>♪</i><span class="d num">3:00</span></div>
+          <div><h4>Freestyle, shoulders only</h4><p class="m">Improvise · Styling<br><span class="on">On Mon, Thu, Sat</span></p></div>
+          <span class="add"><svg><use href="#i-plus"/></svg>Add</span>
+        </div>
+      </div>
+
+      <!-- the week -->
+      <div class="week" aria-label="Your week">
+        <div class="day done">
+          <div class="dh"><span class="dn">Mon</span><div class="meter"><i style="width:67%"></i></div><span class="dm num">Done · 10 min</span></div>
+          <ul>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Shoulder isolations, 8 counts</span><span class="step">Drill</span><span class="min num">4 min</span><span class="x"></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Shoulder rolls on the count</span><span class="step">Train</span><span class="min num">3 min</span><span class="x"></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Freestyle, shoulders only</span><span class="step">Improvise</span><span class="min num">3 min</span><span class="x"></span></li>
+          </ul>
+        </div>
+
+        <div class="day today">
+          <div class="dh"><span class="dn">Tue</span><div class="meter"><i style="width:73%"></i></div><span class="dm"><b class="num">11 min</b></span></div>
+          <ul>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Shoulder rolls on the count</span><span class="step">Train</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Body wave, slow then on tempo</span><span class="step">Train</span><span class="min num">5 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Arm frames for shines</span><span class="step">Transform</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+          </ul>
+          <span class="more"><svg><use href="#i-plus"/></svg>Add exercise</span>
+        </div>
+
+        <div class="day target">
+          <div class="dh"><span class="dn">Wed</span><div class="meter"><i style="width:60%"></i></div><span class="dm"><b class="num">9 min</b> → 13 min</span></div>
+          <ul>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Body wave, slow then on tempo</span><span class="step">Train</span><span class="min num">5 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li class="drop">Drop here
+              <div class="dragcard" aria-hidden="true">
+                <span class="handle"><svg><use href="#i-grip"/></svg></span>
+                <div class="thumb"><i>Train</i></div>
+                <div><h4>Rib cage slides</h4><p class="m">Train · Body</p></div>
+                <span class="min num">4 min</span>
+                <svg class="cursor" viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V10m0-.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1.2a5 5 0 0 1-3.8-1.8l-2.6-3.1a1.5 1.5 0 0 1 2.2-2L9 14.5V11" fill="#fff" stroke="#0b0f0e" stroke-width="1.6" stroke-linejoin="round"/></svg>
+              </div>
+            </li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Weight transfer through the hips</span><span class="step">Drill</span><span class="min num">4 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+          </ul>
+          <span class="more"><svg><use href="#i-plus"/></svg>Add exercise</span>
+        </div>
+
+        <div class="day">
+          <div class="dh"><span class="dn">Thu</span><div class="meter"><i style="width:87%"></i></div><span class="dm"><b class="num">13 min</b></span></div>
+          <ul>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Shoulder rolls on the count</span><span class="step">Train</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Shoulder isolations, 8 counts</span><span class="step">Drill</span><span class="min num">4 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Arm frames for shines</span><span class="step">Transform</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Freestyle, shoulders only</span><span class="step">Improvise</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+          </ul>
+          <span class="more"><svg><use href="#i-plus"/></svg>Add exercise</span>
+        </div>
+
+        <div class="day">
+          <div class="dh"><span class="dn">Fri</span><div class="meter"><i style="width:80%"></i></div><span class="dm"><b class="num">12 min</b></span></div>
+          <ul>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Weight transfer through the hips</span><span class="step">Drill</span><span class="min num">4 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Body wave, slow then on tempo</span><span class="step">Train</span><span class="min num">5 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Arm frames for shines</span><span class="step">Transform</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+          </ul>
+          <span class="more"><svg><use href="#i-plus"/></svg>Add exercise</span>
+        </div>
+
+        <div class="day">
+          <div class="dh"><span class="dn">Sat</span><div class="meter"><i style="width:73%"></i></div><span class="dm"><b class="num">11 min</b></span></div>
+          <ul>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Shoulder isolations, 8 counts</span><span class="step">Drill</span><span class="min num">4 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Freestyle, shoulders only</span><span class="step">Improvise</span><span class="min num">3 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+            <li><span class="handle"><svg><use href="#i-grip"/></svg></span><span class="nm">Dance one song, no rules</span><span class="step">Improvise</span><span class="min num">4 min</span><span class="x"><svg><use href="#i-x"/></svg></span></li>
+          </ul>
+          <span class="more"><svg><use href="#i-plus"/></svg>Add exercise</span>
+        </div>
+
+        <div class="day rest">
+          <div class="dh"><span class="dn">Sun</span><span></span><span class="dm">Rest day</span></div>
+          <p>Nothing planned. Rest is part of the week.</p>
+          <span class="more"><svg><use href="#i-plus"/></svg>Add exercise</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>suim. daily</span>
+    <span>Mockup for look and feel. Nothing here is clickable.</span>
+  </footer>
+</main>
+
+<nav class="tabbar" aria-label="Main">
+  <span><svg><use href="#i-today"/></svg>Today</span>
+  <span aria-current="page"><svg><use href="#i-week"/></svg>Week</span>
+  <span><svg><use href="#i-lib"/></svg>Library</span>
+  <span><svg><use href="#i-prog"/></svg>Progress</span>
+</nav>
+
+</body>
+</html>

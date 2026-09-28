@@ -5,7 +5,7 @@
    on this site passes — not "//evil.com", and not "/\evil.com", which browsers
    read as the same thing in a Location header. */
 
-export const DEFAULT_NEXT = '/masterplan';
+export const DEFAULT_NEXT = '/today';
 
 export const safeNext = (value: string | null | undefined): string =>
   value && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')

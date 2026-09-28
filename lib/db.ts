@@ -10,28 +10,17 @@
    Only the columns the app actually touches are here. Adding one is a one-line
    change; leaving out a column you do not read is the point. */
 
-import type { Lang } from './content';
+import type { Lang } from './i18n';
+export { EXERCISE_TAGS, LEVEL_ORDER as LEVEL_KEYS, isTag, type ExerciseTag, type LevelKey } from './i18n';
 
 /* ---------------------------------------------------------------- enums ---- */
 
 export type PublishStatus = 'draft' | 'soon' | 'open';
-export type LevelKey = 'all' | 'beginner' | 'intermediate' | 'advanced' | 'pro';
-export type MethodStep = 'watch' | 'understand' | 'train' | 'drill' | 'transform' | 'improvise';
 export type VideoStatus = 'uploading' | 'processing' | 'ready' | 'failed';
 export type CameraAngle = 'front' | 'back' | 'detail';
 export type MemberRole = 'member' | 'admin';
 
 export const PUBLISH_STATUSES: PublishStatus[] = ['draft', 'soon', 'open'];
-export const LEVEL_KEYS: LevelKey[] = ['all', 'beginner', 'intermediate', 'advanced', 'pro'];
-
-/* The method's order. A session draws from this vocabulary and is under no
-   obligation to use all of it, or to use any of it only once — but when the
-   back office suggests where a new video goes, this is the order it suggests. */
-export const METHOD_STEPS: MethodStep[] = [
-  'watch', 'understand', 'train', 'drill', 'transform', 'improvise',
-];
-
-export const DRILLABLE_STEPS: MethodStep[] = ['train', 'drill'];
 
 /* ------------------------------------------------------------ localized ---- */
 
@@ -53,7 +42,7 @@ export const untranslated = (...values: (LocalizedRow | null | undefined)[]): bo
 
 /* ----------------------------------------------------------------- rows ---- */
 
-export interface AreaRow {
+export interface StageRow {
   id: string;
   slug: string;
   position: number;
@@ -61,39 +50,55 @@ export interface AreaRow {
   blurb_t: LocalizedRow;
 }
 
-export interface ProgramRow {
+export interface MenuRow {
   id: string;
-  area_id: string;
+  /** Null for a menu that is not a week of any stage, such as the quick drills. */
+  stage_id: string | null;
   slug: string;
   position: number;
   title_t: LocalizedRow;
   subtitle_t: LocalizedRow;
   promise_t: LocalizedRow;
-  level: LevelKey;
-  weeks: number | null;
+  level: import('./i18n').LevelKey;
   status: PublishStatus;
   is_free: boolean;
   published_at: string | null;
 }
 
-export interface SessionRow {
+export interface RoutineRow {
   id: string;
-  program_id: string;
+  menu_id: string;
   position: number;
+  /** 0 = Monday. Null for a routine that is not a day of anything. */
+  weekday: number | null;
   title_t: LocalizedRow;
-  outcome_t: LocalizedRow;
-  focus_t: LocalizedRow;
-  levels: LevelKey[];
+  blurb_t: LocalizedRow;
+  levels: import('./i18n').LevelKey[];
   status: PublishStatus;
 }
 
+/** An exercise's place in a routine, and how to play it there. Null playback
+    fields mean: the exercise's own default. Same shape as a drill item. */
+export interface RoutineItemRow {
+  id: string;
+  routine_id: string;
+  video_id: string;
+  position: number;
+  loop_start_ms: number | null;
+  loop_end_ms: number | null;
+  speed: number | null;
+  repeats: number;
+}
+
+/** An exercise. The table is still `videos`: the delivery chain keys on it. */
 export interface VideoRow {
   id: string;
-  session_id: string;
-  step: MethodStep;
-  position: number;
   title_t: LocalizedRow;
   description_t: LocalizedRow;
+  tags: string[];
+  difficulty: import('./i18n').LevelKey;
+  /** Whether members may play it. `status` below is the encoding state. */
+  publish: PublishStatus;
   angle: CameraAngle;
   duration_ms: number | null;
   provider: string;
@@ -113,8 +118,6 @@ export interface VideoRow {
   default_loop_start_ms: number | null;
   default_loop_end_ms: number | null;
   mirror_default: boolean;
-  /** Generated in Postgres from `step`, so it always follows the method. */
-  is_drillable: boolean;
 }
 
 /* ----------------------------------------------------------- formatting ---- */
@@ -125,8 +128,8 @@ export const mmss = (ms: number | null | undefined): string => {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 };
 
-/** A session's running time is the sum of its videos — never a stored number. */
-export const sessionLength = (videos: Pick<VideoRow, 'duration_ms'>[]): number =>
+/** A routine's running time is the sum of its exercises — never a stored number. */
+export const runningTime = (videos: Pick<VideoRow, 'duration_ms'>[]): number =>
   videos.reduce((n, v) => n + (v.duration_ms ?? 0), 0);
 
 /* A video is only playable once the host has finished with it. `ready` is

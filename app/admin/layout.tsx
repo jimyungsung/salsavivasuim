@@ -5,7 +5,7 @@ import { adminGate } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import type { LocalizedRow, PublishStatus } from '@/lib/db';
 import SignInLink from './SignInLink';
-import Sidebar, { type NavArea } from './Sidebar';
+import Sidebar, { type NavStage } from './Sidebar';
 import './admin.css';
 
 /* The back office is one language — English — deliberately, against the rule
@@ -19,62 +19,59 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-interface TreeRow {
+interface MenuRow {
+  id: string;
+  position: number;
+  stage_id: string | null;
+  title_t: LocalizedRow;
+  status: PublishStatus;
+  routines: { id: string; position: number; weekday: number | null; title_t: LocalizedRow; status: PublishStatus }[] | null;
+}
+interface StageRow {
   id: string;
   position: number;
   name_t: LocalizedRow;
-  programs: {
-    id: string;
-    position: number;
-    title_t: LocalizedRow;
-    status: PublishStatus;
-    sessions: {
-      id: string;
-      position: number;
-      title_t: LocalizedRow;
-      status: PublishStatus;
-      videos: { id: string }[] | null;
-    }[] | null;
-  }[] | null;
 }
 
 const byPosition = <T extends { position: number }>(rows: T[] | null | undefined): T[] =>
   [...(rows ?? [])].sort((a, b) => a.position - b.position);
 
 /* The sidebar's tree, read once per request. Every back office write already
-   revalidates this layout, so a rename or a new session shows up in it at once. */
-async function navTree(): Promise<NavArea[]> {
+   revalidates this layout, so a rename or a new routine shows up in it at once.
+   Menus with no stage are grouped under "Other menus" at the end. */
+async function navTree(): Promise<{ tree: NavStage[]; exerciseCount: number }> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('areas')
-    .select(
-      `id, position, name_t,
-       programs ( id, position, title_t, status,
-         sessions ( id, position, title_t, status, videos ( id ) ) )`,
-    )
-    .order('position');
+  const [{ data: stages }, { data: menus }, { count }] = await Promise.all([
+    supabase.from('stages').select('id, position, name_t').order('position'),
+    supabase
+      .from('menus')
+      .select('id, position, stage_id, title_t, status, routines ( id, position, weekday, title_t, status )'),
+    supabase.from('videos').select('id', { count: 'exact', head: true }),
+  ]);
 
-  return byPosition(data as unknown as TreeRow[]).map(area => ({
-    id: area.id,
-    name: area.name_t.en,
-    programs: byPosition(area.programs).map(p => ({
-      id: p.id,
-      title: p.title_t.en || 'Untitled program',
-      status: p.status,
-      sessions: byPosition(p.sessions).map(s => ({
-        id: s.id,
-        position: s.position,
-        title: s.title_t.en || 'Untitled session',
-        status: s.status,
-        videoIds: (s.videos ?? []).map(v => v.id),
-      })),
-    })),
+  const toMenu = (m: MenuRow) => ({
+    id: m.id,
+    title: m.title_t.en || 'Untitled menu',
+    status: m.status,
+    routines: byPosition(m.routines)
+      .sort((a, b) => (a.weekday ?? 99) - (b.weekday ?? 99) || a.position - b.position)
+      .map(r => ({ id: r.id, weekday: r.weekday, title: r.title_t.en || 'Untitled routine', status: r.status })),
+  });
+  const all = (menus ?? []) as unknown as MenuRow[];
+
+  const tree: NavStage[] = byPosition((stages ?? []) as StageRow[]).map(stage => ({
+    id: stage.id,
+    name: stage.name_t.en,
+    menus: byPosition(all.filter(m => m.stage_id === stage.id)).map(toMenu),
   }));
+  tree.push({ id: '', name: 'Other menus', menus: byPosition(all.filter(m => !m.stage_id)).map(toMenu) });
+
+  return { tree, exerciseCount: count ?? 0 };
 }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const gate = await adminGate();
-  const tree = gate.ok ? await navTree() : [];
+  const { tree, exerciseCount } = gate.ok ? await navTree() : { tree: [], exerciseCount: 0 };
 
   return (
     <div className="bo">
@@ -84,7 +81,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
       {gate.ok ? (
         <div className="shell">
-          <Sidebar tree={tree} />
+          <Sidebar tree={tree} exerciseCount={exerciseCount} />
           <main className="work">{children}</main>
         </div>
       ) : (
@@ -133,11 +130,11 @@ function Gate({ reason }: { reason: 'unconfigured' | 'signed-out' | 'not-admin' 
     <div className="gate">
       <h1>The back office is not open to this account</h1>
       <p>
-        It is where the catalogue is edited and published, and only the people who do that
-        can use it. Everything you can watch is on the site.
+        It is where the menus are written and published, and only the people who do that
+        can use it. Everything you can practise is on the site.
       </p>
-      <Link className="pill primary" href="/masterplan">
-        Go to the masterplan ↗
+      <Link className="pill primary" href="/today">
+        Go to today ↗
       </Link>
     </div>
   );

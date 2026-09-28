@@ -10,6 +10,13 @@ Drafted 6 September 2026, against the prototype at `main`
 (7 screens, static, no accounts, nothing plays).
 Also published as a page: <https://claude.ai/code/artifact/a9235f74-bfd5-40f1-a48e-bf3a95f23d7e>
 
+> **September 2026: the concept changed.** The catalogue (area → program →
+> session) became a routine a day (stage → menu → routine → exercise), and the
+> six method steps left the data for tags and a difficulty. Everything below
+> about the stack, delivery, the player and practice events still holds; §3's
+> schema and §4's back office are superseded by
+> [DAILY-PLAN.md](DAILY-PLAN.md).
+
 ---
 
 ## 1. The stack, decided

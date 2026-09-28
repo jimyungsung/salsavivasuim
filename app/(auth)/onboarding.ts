@@ -6,7 +6,7 @@
 
    All three are optional. The screen offers "Skip the questions" and means it. */
 
-import type { Localized } from '@/lib/content';
+import type { Localized } from '@/lib/i18n';
 
 export interface Choice {
   value: string;

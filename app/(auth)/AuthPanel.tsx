@@ -82,7 +82,7 @@ type Status = { kind: 'idle' | 'sending' } | { kind: 'sent'; email: string } | {
 
 export default function AuthPanel({
   mode,
-  next = '/masterplan',
+  next = '/today',
   linkError,
 }: {
   mode: 'register' | 'signin';
@@ -152,8 +152,8 @@ export default function AuthPanel({
     <div className="auth">
       <main className="split">
         <aside className="side">
-          <Link className="logo" href="/prototype/index.html">
-            SUIM<span className="dot">.</span>
+          <Link className="logo" href="/">
+            Everyday Salsa<span className="dot">.</span>
           </Link>
           <div>
             <h2>
@@ -170,7 +170,7 @@ export default function AuthPanel({
 
         <section className="form">
           <div className="formin">
-            <Link className="crumb" href="/prototype/index.html">
+            <Link className="crumb" href="/">
               <span aria-hidden="true">←</span>
               <span>{c.back}</span>
             </Link>
