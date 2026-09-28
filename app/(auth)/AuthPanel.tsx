@@ -153,7 +153,7 @@ export default function AuthPanel({
       <main className="split">
         <aside className="side">
           <Link className="logo" href="/">
-            SUIM<span className="dot">.</span>
+            Everyday Salsa<span className="dot">.</span>
           </Link>
           <div>
             <h2>

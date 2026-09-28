@@ -5,9 +5,9 @@ import { LANG_COOKIE, isLang, type Lang } from '@/lib/i18n';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: { default: 'SUIM', template: 'SUIM — %s' },
-  description: 'Solo salsa training, built around practice.',
-  openGraph: { type: 'website', siteName: 'SUIM' },
+  title: { default: 'Everyday Salsa', template: 'Everyday Salsa — %s' },
+  description: 'Solo salsa, a routine a day.',
+  openGraph: { type: 'website', siteName: 'Everyday Salsa' },
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1 };

@@ -1,6 +1,7 @@
-# SUIM — working notes
+# Everyday Salsa — working notes
 
-Solo salsa training, a routine a day. **The plan for this concept lives in
+Solo salsa training, a routine a day. The product is **Everyday Salsa**; the
+code, the repo and the Supabase project still say SUIM, and that is fine. **The plan for this concept lives in
 [docs/DAILY-PLAN.md](docs/DAILY-PLAN.md)**; the original build plan, still
 right about the stack, the player and the delivery chain, is
 [docs/BUILD-PLAN.md](docs/BUILD-PLAN.md). Read them before anything structural.
@@ -93,8 +94,10 @@ item's own speed overrides it.
 - **The design system is plain CSS.** Shared rules in `app/globals.css`; a
   screen's own rules beside it, scoped under one wrapper class (`.wk` for the
   planner, `.td`/`.tq` for Today, `.ld` for the landing page, `.bo` for the
-  back office). The member screens are white-grounded; the nav is still the
-  design system's dark bar.
+  back office). The ground is white; the nav is a light bar (64px) with the
+  current section as an ink pill, and on a phone (under 900px) the links move
+  to a tab bar at the bottom. `.wrap` carries `margin:auto`, so inside a flex
+  column give a page's main `margin:0 auto` or it centres vertically.
 - **Nav items are sections, not pages.** Today stays current for any day and a
   routine played from it; My week for the planner. Never add an item pointing
   at `#`. **Admin** appears only for admins; signed out, the chip is Sign in.
@@ -151,8 +154,8 @@ shortened. `drill_items` cascades, as members' own rows always did.
 - **Pointer-event drag** in the planner; tap-to-add is the launch.
 - **Progress** and **Library** as nav sections; the bar has Today and My week.
 - Onboarding still asks the three old questions; the plan trims it to one.
-- The name: the code says SUIM, the domain is salsadrill.com, the landing
-  wordmark says "suim. daily".
+- The name in the code and the infrastructure is still SUIM; the domain is
+  salsadrill.com. Only what a member reads says Everyday Salsa.
 
 ## Running it
 

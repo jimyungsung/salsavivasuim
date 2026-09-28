@@ -2,7 +2,7 @@
    under it. From public/mockups/daily.html. Scoped under .td and .tq; the
    player between them is components/player.css. */
 
-.td{background:#fff;padding:106px 0 8px}
+.td{background:#fff;padding:92px 0 8px}
 .td .in{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:22px 32px}
 .td .kicker{color:#708000}
 .td h1{margin:8px 0 0;font-size:clamp(32px,4.6vw,50px);line-height:1.05;letter-spacing:-.035em;font-weight:800}
@@ -40,7 +40,7 @@
 .tq .blurb{font-size:13px;color:var(--muted);line-height:1.45}
 
 @media (max-width:640px){
-  .td{padding-top:96px}
+  .td{padding-top:84px}
   .td .week{width:100%;justify-content:space-between;gap:4px}
   .td .day i{width:34px;height:34px}
 }

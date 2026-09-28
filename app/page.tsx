@@ -4,9 +4,9 @@ import LandingView from './LandingView';
 import './landing.css';
 
 export const metadata: Metadata = {
-  title: 'SUIM — a routine a day',
+  title: 'Everyday Salsa — a routine a day',
   description: 'Fifteen minutes of solo salsa a day, taught by Suim on video. Timing, footwork, turns, styling, in an order that adds up.',
-  openGraph: { title: 'SUIM — a routine a day', description: 'Fifteen minutes a day. Salsa that sticks.' },
+  openGraph: { title: 'Everyday Salsa', description: 'Fifteen minutes a day. Salsa that sticks.' },
 };
 
 /* The front door. Static apart from one question: is someone signed in, in

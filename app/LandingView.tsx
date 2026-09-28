@@ -124,7 +124,7 @@ export default function LandingView({ signedIn }: { signedIn: boolean }) {
       <header className="lnav">
         <div className="wrap">
           <Link className="lg" href="/">
-            suim.<em>daily</em>
+            Everyday Salsa<span className="dot">.</span>
           </Link>
           <nav className="links" aria-label="Main">
             <a href="#how">{c.navHow}</a>
@@ -339,7 +339,7 @@ export default function LandingView({ signedIn }: { signedIn: boolean }) {
 
         <footer className="wrap lfoot">
           <span>
-            SUIM<span className="dot">.</span> {c.footPrograms}
+            Everyday Salsa<span className="dot">.</span> {c.footPrograms}
           </span>
           <div className="fl">
             <span>{c.footHelp}</span>

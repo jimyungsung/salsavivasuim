@@ -3,7 +3,7 @@
    nav above stays the design system's. */
 
 .wk{display:flex;flex-direction:column;min-height:100vh;background:#fff}
-.wk .main{padding:106px 0 80px}
+.wk .main{padding:92px 0 80px;margin:0 auto}
 
 .wk .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-bottom:28px}
 .wk .head .kicker{color:#708000}
@@ -123,7 +123,7 @@
   .wk .libpanel{display:none}
 }
 @media (max-width:640px){
-  .wk .main{padding-top:96px}
+  .wk .main{padding-top:84px}
   .wk .mrow{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:80%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
   .wk .menu{scroll-snap-align:start}
   .wk .dh{grid-template-columns:auto minmax(0,1fr)}

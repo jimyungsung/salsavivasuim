@@ -10,7 +10,7 @@
   .auth .side:before{content:"";position:absolute;inset:0;background:url("/images/suim-shine.jpg") center 20%/cover;opacity:.5}
   .auth .side:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#0b0f0eee,#0b0f0e66 42%,#0b0f0ef2)}
   .auth .side>*{position:relative;z-index:2}
-  .auth .side .logo{display:inline-block}
+  .auth .side .logo{display:inline-block;color:#fff}
   .auth .side h2{font-size:clamp(34px,3.4vw,50px);line-height:.95;letter-spacing:-.05em;font-weight:900;margin:0 0 16px;max-width:12ch}
   .auth .side h2 em{font-style:normal;color:var(--lime)}
   .auth .side p{margin:0;color:#ffffffb8;max-width:36ch;line-height:1.6}

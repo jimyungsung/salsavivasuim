@@ -17,8 +17,8 @@
 /* nav */
 .ld .lnav{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line2)}
 .ld .lnav .wrap{height:64px;display:flex;align-items:center;gap:32px}
-.ld .lg{font-weight:800;font-size:22px;letter-spacing:-.04em}
-.ld .lg em{font-style:normal;color:var(--muted);font-weight:500;margin-left:6px}
+.ld .lg{font-weight:800;font-size:20px;letter-spacing:-.04em;white-space:nowrap}
+.ld .lg .dot,.ld .lfoot .dot{color:var(--lime)}
 .ld .links{display:flex;gap:26px;font-size:15px;font-weight:600;color:var(--muted)}
 .ld .links a:hover{color:var(--ink)}
 .ld .tools{margin-left:auto;display:flex;align-items:center;gap:16px}

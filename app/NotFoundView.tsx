@@ -29,7 +29,7 @@ export default function NotFoundView() {
     <div className="nf">
       <main className="wrap in">
         <Link className="brand" href="/">
-          SUIM<span className="dot">.</span>
+          Everyday Salsa<span className="dot">.</span>
         </Link>
         <div className="code">{c.code}</div>
         <h1>{c.title}</h1>

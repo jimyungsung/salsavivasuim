@@ -968,7 +968,7 @@ export default function Player({
       <footer>
         <div className="wrap foot">
           <b>
-            SUIM<span className="dot">.</span>
+            Everyday Salsa<span className="dot">.</span>
           </b>
           <span>{c.footer}</span>
           <form action="/auth/signout" method="post">
