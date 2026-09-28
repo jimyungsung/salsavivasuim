@@ -94,7 +94,7 @@ item's own speed overrides it.
 - **The design system is plain CSS.** Shared rules in `app/globals.css`; a
   screen's own rules beside it, scoped under one wrapper class (`.wk` for the
   planner, `.td`/`.tq` for Today, `.ld` for the landing page, `.bo` for the
-  back office). The ground is white; the nav is a light bar (64px) with the
+  back office). The ground is white with two accents: lime for actions and active states, a warm red (`--red`) for the wordmark's dot, kickers, "today" markers and small emphasis; the nav is a light bar (64px) with the
   current section as an ink pill, and on a phone (under 900px) the links move
   to a tab bar at the bottom. `.wrap` carries `margin:auto`, so inside a flex
   column give a page's main `margin:0 auto` or it centres vertically.

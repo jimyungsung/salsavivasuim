@@ -4,7 +4,7 @@
 
 .td{background:#fff;padding:92px 0 8px}
 .td .in{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:22px 32px}
-.td .kicker{color:#708000}
+.td .kicker{color:var(--red)}
 .td h1{margin:8px 0 0;font-size:clamp(32px,4.6vw,50px);line-height:1.05;letter-spacing:-.035em;font-weight:800}
 .td .sub{margin:10px 0 0;font-size:17px;color:var(--muted);max-width:52ch}
 .td .sub b{color:var(--ink);font-weight:600}
@@ -17,8 +17,8 @@
 .td .day.rest i{border-style:dashed}
 .td .day.done i{background:var(--ink);border-color:var(--ink);color:#fff}
 .td .day.now{color:var(--ink)}
-.td .day.now i{border-color:var(--ink);position:relative}
-.td .day.now:not(.done) i::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--lime)}
+.td .day.now i{border-color:var(--red);position:relative}
+.td .day.now:not(.done) i::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--red)}
 
 /* the player's own top bar sits right under; give it a little room */
 .sp .td + .subnav{margin-top:12px}
@@ -32,7 +32,7 @@
 .tq .qcard:hover{border-color:var(--ink)}
 .tq .thumb{position:relative;aspect-ratio:16/10;background:repeating-linear-gradient(135deg,#eceee6 0 8px,#f4f5f0 8px 16px);display:grid;place-items:center}
 .tq .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.tq .thumb .g{position:relative;width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--lime);display:grid;place-items:center}
+.tq .thumb .g{position:relative;width:38px;height:38px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center}
 .tq .thumb .g svg{width:14px;height:14px}
 .tq .info{padding:14px 16px 16px;display:grid;gap:5px}
 .tq .info .top{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
