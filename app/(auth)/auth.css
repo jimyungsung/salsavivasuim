@@ -12,7 +12,7 @@
   .auth .side>*{position:relative;z-index:2}
   .auth .side .logo{display:inline-block;color:#fff}
   .auth .side h2{font-size:clamp(34px,3.4vw,50px);line-height:.95;letter-spacing:-.05em;font-weight:900;margin:0 0 16px;max-width:12ch}
-  .auth .side h2 em{font-style:normal;color:var(--lime)}
+  .auth .side h2 em{font-style:normal;color:#ff8a72}
   .auth .side p{margin:0;color:#ffffffb8;max-width:36ch;line-height:1.6}
   .auth .side .steps{display:flex;gap:8px;margin-top:26px}
   .auth .side .steps span{height:3px;flex:1;background:#ffffff2e;border-radius:3px}
