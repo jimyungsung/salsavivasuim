@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { adminGate } from '@/lib/supabase/admin';
+import { isStreamConfigured } from '@/lib/cloudflare';
 import { signedPosters } from '@/lib/playback';
 import type { LevelKey, LocalizedRow, PublishStatus, VideoStatus } from '@/lib/db';
-import ExerciseList from './ExerciseList';
+import MediaLibrary from './MediaLibrary';
 
-/* The library: every exercise, with its footage state and where it is used.
-   This is where filming lands, so it is one screen: add, upload, tag, open. */
+/* The media library: every clip, with its footage state and where it is used.
+   This is where filming lands: drop files, rename, tag, open. */
 
 export interface ListVideo {
   id: string;
@@ -21,7 +22,7 @@ export interface ListVideo {
   uses: number;
 }
 
-export const metadata = { title: 'Exercises · Back office' };
+export const metadata = { title: 'Media library · Back office' };
 
 export default async function ExercisesPage() {
   const gate = await adminGate();
@@ -47,5 +48,5 @@ export default async function ExercisesPage() {
   );
   const posters = await signedPosters(videos.map(v => v.id));
 
-  return <ExerciseList videos={videos} posters={posters} />;
+  return <MediaLibrary videos={videos} posters={posters} streamConfigured={isStreamConfigured()} />;
 }

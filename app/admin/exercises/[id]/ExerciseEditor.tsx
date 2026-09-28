@@ -76,7 +76,7 @@ export default function ExerciseEditor({
 
   return (
     <>
-      <Crumbs items={[{ label: 'Exercises', href: '/admin/exercises' }, { label: title }]} />
+      <Crumbs items={[{ label: 'Media library', href: '/admin/exercises' }, { label: title }]} />
 
       <div className="head">
         <div>
@@ -87,7 +87,7 @@ export default function ExerciseEditor({
           </p>
         </div>
         <div className="acts">
-          <Link className="btn" href="/admin/exercises">← All exercises</Link>
+          <Link className="btn" href="/admin/exercises">← Media library</Link>
         </div>
       </div>
 

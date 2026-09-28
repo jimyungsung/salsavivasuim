@@ -115,7 +115,7 @@ export default async function AdminHome() {
             <b>{routines.length}</b>routines
           </span>
           <Link href="/admin/exercises">
-            <b>{videos.length}</b>exercises
+            <b>{videos.length}</b>clips
           </Link>
           <span>
             <b>{videos.filter(v => v.status === 'ready' && v.publish === 'open').length}</b>open with footage

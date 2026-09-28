@@ -3,17 +3,21 @@
 /* One routine: its exercises in order, and the library to pick more from.
 
    A routine borrows exercises; it does not own them. Adding one is a tap on
-   its card in the library panel — the same exercise can go in twice, each
-   appearance with its own speed and repeat count — and the arrows decide the
+   its card in the library — the same exercise can go in twice, each
+   appearance with its own speed and repeats — and the arrows decide the
    running order. Footage, tags and the beat grid are edited on the exercise
-   itself, one click away. */
+   itself, one click away.
+
+   Kept deliberately plain: a numbered list on the left, publish and the
+   library on the right. What only matters when something is wrong (no
+   footage, not open) shows only when it is wrong. */
 
 import Link from 'next/link';
 import { useMemo, useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
-import PublishSwitch from '../../PublishSwitch';
-import LengthStrip, { STATUS_WORDS } from '../../LengthStrip';
+import PublishSwitch, { publishMeaning } from '../../PublishSwitch';
+import { STATUS_WORDS } from '../../LengthStrip';
 import {
   addRoutineItem,
   movePosition,
@@ -24,12 +28,12 @@ import {
   setStatus,
   type Result,
 } from '../../actions';
-import { EXERCISE_TAGS, LEVEL_KEYS, mmss, untranslated, type ExerciseTag } from '@/lib/db';
+import { EXERCISE_TAGS, LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
 import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
 import type { EditorItem, EditorRoutine, PickVideo } from './page';
 
 const DAY = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const two = (n: number) => String(n).padStart(2, '0');
+const SPEEDS = [0.5, 0.75, 1, 1.25];
 
 export default function RoutineEditor({
   routine,
@@ -84,28 +88,16 @@ export default function RoutineEditor({
         <div>
           <section className="panel">
             <div className="ph">
-              <h2>Running order</h2>
-              <span className="aside-note">Members practise them top to bottom. Aim for 10–15 minutes.</span>
+              <h2>Exercises, in order</h2>
+              <span className="aside-note">Aim for 10–15 minutes. Add from the library on the right.</span>
             </div>
 
-            <LengthStrip
-              items={items.map(i => ({
-                id: i.id,
-                title: i.video?.title_t.en ?? 'Missing',
-                status: i.video?.status ?? 'failed',
-                duration_ms: i.video?.duration_ms ?? null,
-                repeats: i.repeats,
-              }))}
-              size="large"
-              hrefFor={id => `#i-${id}`}
-            />
-
             {items.length === 0 ? (
-              <p className="empty">No exercises yet. Add the first one from the library on the right.</p>
+              <p className="empty">No exercises yet. Tap one in the library to add it here.</p>
             ) : (
-              <div className="vlist" style={{ marginTop: 16 }}>
+              <ol className="ilist">
                 {items.map((item, i) => (
-                  <ItemCard
+                  <ItemRow
                     key={item.id}
                     item={item}
                     number={i + 1}
@@ -116,24 +108,18 @@ export default function RoutineEditor({
                     onRun={run}
                   />
                 ))}
-              </div>
+              </ol>
             )}
           </section>
 
           <section className="panel">
-            <h2>Publish</h2>
-            <PublishSwitch value={routine.status} disabled={pending} onChange={next => run(() => setStatus('routines', routine.id, next))} />
-            <Readiness routine={routine} />
-          </section>
-
-          <section className="panel">
-            <h2>The routine</h2>
+            <h2>Details</h2>
             <LocalizedField table="routines" id={routine.id} column="title_t" label="Title" value={routine.title_t} onError={setError} />
             <LocalizedField table="routines" id={routine.id} column="blurb_t" label="One line under the title" value={routine.blurb_t} onError={setError} />
 
-            <div className="fields" style={{ marginTop: 18 }}>
+            <div className="fields" style={{ marginTop: 18, alignItems: 'center' }}>
               <div className="fieldset">
-                <span className="lf-label">Weekday</span>
+                <span className="lf-label">Day of the week</span>
                 <select className="field" value={routine.weekday ?? ''} disabled={pending}
                   onChange={e => run(() => setRoutineWeekday(routine.id, e.target.value === '' ? null : Number(e.target.value)))}>
                   <option value="">None</option>
@@ -141,11 +127,10 @@ export default function RoutineEditor({
                     <option key={d} value={i}>{d}</option>
                   ))}
                 </select>
-                <span className="hint">Which day of the menu&rsquo;s week this is.</span>
               </div>
 
               <div className="fieldset" style={{ maxWidth: 'none' }}>
-                <span className="lf-label">Levels</span>
+                <span className="lf-label">Level</span>
                 <div className="levels">
                   {LEVEL_KEYS.map(key => {
                     const on = routine.levels.includes(key);
@@ -158,19 +143,26 @@ export default function RoutineEditor({
                     );
                   })}
                 </div>
-                <span className="hint">The level describes the material, not the dancer, so a routine can sit in two at once.</span>
               </div>
             </div>
           </section>
         </div>
 
-        <Picker library={library} posters={posters} pending={pending} onPick={id => run(() => addRoutineItem(routine.id, id))} />
+        <div>
+          <section className="panel">
+            <h2>Publish</h2>
+            <PublishSwitch value={routine.status} disabled={pending} onChange={next => run(() => setStatus('routines', routine.id, next))} />
+            <Readiness routine={routine} />
+          </section>
+
+          <Picker library={library} posters={posters} pending={pending} onPick={id => run(() => addRoutineItem(routine.id, id))} />
+        </div>
       </div>
     </>
   );
 }
 
-function ItemCard({
+function ItemRow({
   item,
   number,
   poster,
@@ -188,69 +180,61 @@ function ItemCard({
   onRun: (fn: () => Promise<Result>) => void;
 }) {
   const v = item.video;
-  const [speed, setSpeed] = useState(item.speed?.toString() ?? '');
-  const [repeats, setRepeats] = useState(String(item.repeats));
+  const trouble = !v ? 'Missing' : v.status !== 'ready' ? STATUS_WORDS[v.status] : v.publish !== 'open' ? `Not open (${v.publish})` : null;
 
   return (
-    <article className="vcard" id={`i-${item.id}`}>
-      <span className="vnum">{two(number)}</span>
-
-      <Link className="vthumb" href={v ? `/admin/exercises/${v.id}` : '#'} tabIndex={-1} aria-hidden="true">
-        {poster ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={poster} alt="" />
-        ) : (
-          <span>{v ? STATUS_WORDS[v.status] : 'Missing'}</span>
-        )}
-        {v?.duration_ms ? <span className="len">{mmss(v.duration_ms)}</span> : null}
-      </Link>
-
-      <div className="vbody">
-        <div className="vtop">
-          {v?.tags.map(t => (
-            <span className="tag" key={t}>{TAG_LABELS[t as ExerciseTag]?.en ?? t}</span>
-          ))}
-          {v && <span className="vstatus" data-status={v.status}>{STATUS_WORDS[v.status]}</span>}
-          {v && v.publish !== 'open' && <span className="chip warn">{v.publish}</span>}
-        </div>
-        <Link className={`vtitle ${v?.title_t.en ? '' : 'blank'}`} href={v ? `/admin/exercises/${v.id}` : '#'}>
-          {v?.title_t.en || (v ? 'Untitled exercise' : 'This exercise no longer exists')}
+    <li className="irow" id={`i-${item.id}`}>
+      <span className="inum">{number}</span>
+      {v ? (
+        <Link className="ithumb" href={`/admin/exercises/${v.id}`} tabIndex={-1} aria-hidden="true">
+          {poster ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={poster} alt="" />
+          ) : null}
         </Link>
-        <div className="vmeta">
-          {v && <span>{LEVEL_LABELS[v.difficulty].en}</span>}
-          {v && <span>{v.bpm ? `${v.bpm} bpm` : 'No beat grid'}</span>}
-          {v && untranslated(v.title_t) && <span className="chip ko">needs KO</span>}
-        </div>
-
-        <div className="vacts">
-          <label className="inl">
-            <span>Speed</span>
-            <input className="num" style={{ width: '6ch' }} value={speed} placeholder="—" disabled={pending} inputMode="decimal"
-              onChange={e => setSpeed(e.target.value)}
-              onBlur={() => {
-                const n = speed.trim() ? Number(speed) : null;
-                if (n !== item.speed && (n === null || Number.isFinite(n))) onRun(() => setRoutineItem(item.id, { speed: n }));
-              }} />
-            <span>×</span>
-          </label>
-          <label className="inl">
-            <span>Repeats</span>
-            <input className="num" style={{ width: '5ch' }} value={repeats} disabled={pending} inputMode="numeric"
-              onChange={e => setRepeats(e.target.value)}
-              onBlur={() => {
-                const n = Number(repeats);
-                if (n !== item.repeats && Number.isInteger(n)) onRun(() => setRoutineItem(item.id, { repeats: n }));
-              }} />
-          </label>
-          <button className="btn icon" type="button" disabled={pending || first} onClick={() => onRun(() => movePosition('routine_items', item.id, 'up'))} aria-label="Move earlier" title="Move earlier">↑</button>
-          <button className="btn icon" type="button" disabled={pending || last} onClick={() => onRun(() => movePosition('routine_items', item.id, 'down'))} aria-label="Move later" title="Move later">↓</button>
-          <button className="btn icon danger" type="button" disabled={pending} aria-label="Take out of the routine" title="Take out of the routine"
-            onClick={() => onRun(() => removeRoutineItem(item.id))}>
-            ✕
-          </button>
-        </div>
+      ) : (
+        <span className="ithumb" aria-hidden="true" />
+      )}
+      <div className="ibody">
+        {v ? (
+          <Link className="ititle" href={`/admin/exercises/${v.id}`}>{v.title_t.en || 'Untitled exercise'}</Link>
+        ) : (
+          <span className="ititle">This exercise no longer exists</span>
+        )}
+        <span className="imeta">
+          {v?.duration_ms ? mmss(v.duration_ms) : '—'}
+          {v && v.tags.length > 0 && ` · ${v.tags.slice(0, 2).map(t => TAG_LABELS[t as ExerciseTag]?.en ?? t).join(' · ')}`}
+          {trouble && <span className="chip warn">{trouble}</span>}
+        </span>
       </div>
-    </article>
+      <label className="ictl">
+        <span>Speed</span>
+        <select className="field sm" value={item.speed ?? ''} disabled={pending}
+          onChange={e => onRun(() => setRoutineItem(item.id, { speed: e.target.value === '' ? null : Number(e.target.value) }))}>
+          <option value="">Default</option>
+          {SPEEDS.map(s => (
+            <option key={s} value={s}>{s}×</option>
+          ))}
+        </select>
+      </label>
+      <label className="ictl">
+        <span>Repeat</span>
+        <select className="field sm" value={item.repeats} disabled={pending}
+          onChange={e => onRun(() => setRoutineItem(item.id, { repeats: Number(e.target.value) }))}>
+          {[1, 2, 3, 4, 5].map(n => (
+            <option key={n} value={n}>×{n}</option>
+          ))}
+        </select>
+      </label>
+      <span className="iops">
+        <button className="btn icon" type="button" disabled={pending || first} onClick={() => onRun(() => movePosition('routine_items', item.id, 'up'))} aria-label="Move earlier" title="Move earlier">↑</button>
+        <button className="btn icon" type="button" disabled={pending || last} onClick={() => onRun(() => movePosition('routine_items', item.id, 'down'))} aria-label="Move later" title="Move later">↓</button>
+        <button className="btn icon danger" type="button" disabled={pending} aria-label="Remove" title="Remove from the routine"
+          onClick={() => onRun(() => removeRoutineItem(item.id))}>
+          ✕
+        </button>
+      </span>
+    </li>
   );
 }
 
@@ -282,21 +266,21 @@ function Picker({
   const used = new Set(library.flatMap(v => v.tags));
 
   return (
-    <div>
-      <section className="panel picker">
-        <div className="ph">
-          <h2>Library</h2>
-          <span className="aside-note">Tap to add to the end. <Link href="/admin/exercises">All exercises →</Link></span>
-        </div>
-        <input
-          type="search"
-          className="num"
-          style={{ width: '100%', marginBottom: 10 }}
-          placeholder="Search exercises"
-          aria-label="Search exercises"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
+    <section className="panel picker">
+      <div className="ph">
+        <h2>Add from the library</h2>
+        <span className="aside-note"><Link href="/admin/exercises">Media library →</Link></span>
+      </div>
+      <input
+        type="search"
+        className="num"
+        style={{ width: '100%', marginBottom: 10 }}
+        placeholder="Search"
+        aria-label="Search the library"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+      />
+      {used.size > 0 && (
         <div className="levels" style={{ marginBottom: 14 }}>
           <button type="button" className={`chip${tag === 'all' ? ' open' : ''}`} aria-pressed={tag === 'all'} onClick={() => setTag('all')}>All</button>
           {EXERCISE_TAGS.filter(t => used.has(t)).map(t => (
@@ -305,85 +289,74 @@ function Picker({
             </button>
           ))}
         </div>
+      )}
 
-        {library.length === 0 ? (
-          <p className="empty">
-            The library is empty. <Link href="/admin/exercises">Add an exercise</Link> and upload its footage first.
-          </p>
-        ) : shown.length === 0 ? (
-          <p className="empty">Nothing matches.</p>
-        ) : (
-          <div className="pgrid">
-            {shown.map(v => (
-              <button key={v.id} type="button" className="pcard" disabled={pending} onClick={() => onPick(v.id)} title="Add to the routine">
-                <span className="pthumb">
-                  {posters[v.id] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={posters[v.id]} alt="" loading="lazy" />
-                  ) : (
-                    <span>{STATUS_WORDS[v.status]}</span>
-                  )}
-                  {v.duration_ms ? <span className="len">{mmss(v.duration_ms)}</span> : null}
-                </span>
-                <span className="pname">{v.title_t.en || 'Untitled'}</span>
-                <span className="pmeta">
-                  {v.tags.slice(0, 2).map(t => TAG_LABELS[t as ExerciseTag]?.en ?? t).join(' · ') || LEVEL_LABELS[v.difficulty].en}
-                  {v.publish !== 'open' && ` · ${v.publish}`}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
+      {library.length === 0 ? (
+        <p className="empty">
+          The library is empty. <Link href="/admin/exercises">Drop a video in the media library</Link> first.
+        </p>
+      ) : shown.length === 0 ? (
+        <p className="empty">Nothing matches.</p>
+      ) : (
+        <div className="pgrid">
+          {shown.map(v => (
+            <button key={v.id} type="button" className="pcard" disabled={pending} onClick={() => onPick(v.id)} title="Add to the routine">
+              <span className="pthumb">
+                {posters[v.id] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={posters[v.id]} alt="" loading="lazy" />
+                ) : (
+                  <span>{STATUS_WORDS[v.status]}</span>
+                )}
+                {v.duration_ms ? <span className="len">{mmss(v.duration_ms)}</span> : null}
+                <span className="padd" aria-hidden="true">+</span>
+              </span>
+              <span className="pname">{v.title_t.en || 'Untitled'}</span>
+              <span className="pmeta">
+                {v.tags.slice(0, 2).map(t => TAG_LABELS[t as ExerciseTag]?.en ?? t).join(' · ') || LEVEL_LABELS[v.difficulty].en}
+                {v.publish !== 'open' && ` · ${v.publish}`}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
-/* What stands between this routine and a member practising it, in plain words.
-   RLS decides the real answer; this only reads the same facts back. */
+/* Only what stands between this routine and a member: nothing, or a short
+   list. RLS decides the real answer; this reads the same facts back. */
 function Readiness({ routine }: { routine: EditorRoutine }) {
   const items = routine.routine_items;
-  const missing = items.filter(i => !i.video);
-  const noFootage = items.filter(i => i.video && i.video.status !== 'ready');
-  const unpublished = items.filter(i => i.video && i.video.publish !== 'open');
-  const needKo = [routine.title_t, routine.blurb_t].filter(t => untranslated(t)).length;
-  const gridded = items.filter(i => i.video?.bpm).length;
+  const notReady = items.filter(i => !i.video || i.video.status !== 'ready').length;
+  const notOpen = items.filter(i => i.video && i.video.status === 'ready' && i.video.publish !== 'open').length;
   const totalMin = items.reduce((n, i) => n + (i.video?.duration_ms ?? 0) * i.repeats, 0) / 60000;
   const menuOpen = routine.menu?.status === 'open';
-  const visible = routine.status === 'open' && menuOpen && items.length > 0 && noFootage.length === 0 && unpublished.length === 0 && missing.length === 0;
 
-  const rows: { ok: boolean; text: string; small?: string }[] = [
-    { ok: items.length > 0, text: items.length ? `${items.length} exercises in the running order` : 'No exercises yet' },
-    { ok: totalMin >= 5 && totalMin <= 20, text: `${Math.round(totalMin)} minutes`, small: 'A routine is 10–15 minutes; under 5 or over 20 reads as a mistake.' },
-    { ok: missing.length === 0 && noFootage.length === 0, text: noFootage.length || missing.length ? `${noFootage.length + missing.length} without footage` : 'Every exercise has footage' },
-    { ok: unpublished.length === 0, text: unpublished.length ? `${unpublished.length} exercise${unpublished.length === 1 ? '' : 's'} not open yet` : 'Every exercise is open', small: unpublished.length ? 'Members only see open exercises; the routine would play without these.' : undefined },
-    { ok: needKo === 0, text: needKo ? `${needKo} field${needKo === 1 ? '' : 's'} still need Korean` : 'English and Korean complete' },
-    { ok: items.length > 0 && gridded === items.length, text: `${gridded} of ${items.length} have a beat grid`, small: 'Counts, phrase marks and "loop eight counts" need one.' },
-    { ok: routine.weekday != null, text: routine.weekday == null ? 'No weekday' : `On ${DAY[routine.weekday]}`, small: routine.weekday == null ? 'A routine without a weekday is not part of the menu’s week.' : undefined },
-    { ok: menuOpen, text: menuOpen ? 'The menu is open' : `The menu is ${routine.menu?.status ?? 'missing'}`, small: menuOpen ? undefined : 'A routine only shows when its menu is open too.' },
-  ];
+  const issues: string[] = [];
+  if (items.length === 0) issues.push('No exercises yet.');
+  if (notReady) issues.push(`${notReady} exercise${notReady === 1 ? ' has' : 's have'} no footage.`);
+  if (notOpen) issues.push(`${notOpen} exercise${notOpen === 1 ? ' is' : 's are'} not open to members.`);
+  if (routine.weekday == null) issues.push('No day of the week, so it is not part of the menu’s week.');
+  if (!menuOpen) issues.push(`The menu is ${routine.menu?.status ?? 'missing'}; members see the routine only when its menu is open.`);
+  if (items.length > 0 && (totalMin < 5 || totalMin > 20)) issues.push(`${Math.round(totalMin)} minutes; a routine is 10–15.`);
+
+  const live = routine.status === 'open' && issues.length === 0;
 
   return (
     <>
-      <ul className="checklist" style={{ marginTop: 18 }}>
-        {rows.map(item => (
-          <li key={item.text} className={item.ok ? '' : 'no'}>
-            <span>
-              {item.text}
-              {item.small && <small>{item.small}</small>}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <p className={`visible-note ${visible ? 'yes' : 'no'}`}>
-        {visible
-          ? 'Members can practise this routine now.'
-          : routine.status !== 'open'
-            ? `Members cannot see this routine: it is ${routine.status}.`
-            : !menuOpen
-              ? 'Members cannot see this routine until its menu is open.'
-              : 'Members see the routine, but some of it will not play yet.'}
-      </p>
+      <p className="hint" style={{ margin: '12px 0 0' }}>{publishMeaning(routine.status)}.</p>
+      {issues.length > 0 ? (
+        <ul className="issues">
+          {issues.map(t => (
+            <li key={t}>{t}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className={`visible-note ${live ? 'yes' : 'no'}`}>
+          {live ? 'Members can practise this routine now.' : 'Ready to open: everything in it has footage and is open.'}
+        </p>
+      )}
     </>
   );
 }

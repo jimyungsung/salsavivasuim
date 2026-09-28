@@ -314,6 +314,74 @@
 .bo .uses span { color: var(--bo-dim); }
 .bo .tally a { color: inherit; }
 
+/* ---- the media library ---- */
+.bo .dropzone {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+  margin-bottom: 14px; padding: 22px 24px; border: 2px dashed var(--bo-line); border-radius: 16px; background: #fff;
+  transition: .16s;
+}
+.bo .dropzone.over { border-color: var(--ink); background: #f6fdd9; }
+.bo .dropzone b { display: block; font-size: 16px; font-weight: 800; }
+.bo .dropzone span { display: block; margin-top: 3px; font-size: 13.5px; color: var(--bo-dim); }
+.bo .uplist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.bo .uprow {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center;
+  padding: 10px 14px 13px; border: 1px solid var(--bo-line); border-radius: 10px; background: #fff; overflow: hidden; font-size: 13.5px;
+}
+.bo .uprow .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bo .uprow .st { color: var(--bo-dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bo .uprow i { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--lime); transition: width .3s; }
+.bo .uprow.done i { background: #6aa81c; }
+.bo .uprow.failed { border-color: #d9a08a; }
+.bo .uprow.failed .st { color: #a2482a; white-space: normal; }
+.bo .uprow.failed i { background: #d9432f; }
+.bo .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
+.bo .mcard { display: flex; flex-direction: column; border: 1px solid var(--bo-line); border-radius: 12px; background: #fff; overflow: hidden; }
+.bo .mthumb {
+  position: relative; aspect-ratio: 16/9; background: repeating-linear-gradient(135deg, #eceee6 0 8px, #f4f5f0 8px 16px);
+  display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #9ba19c;
+}
+.bo .mthumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.bo .mthumb .len { position: absolute; right: 6px; bottom: 6px; background: #0b0f0ed9; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+.bo .mthumb .flag { position: absolute; left: 6px; top: 6px; background: #fff; color: #a2482a; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 6px; border: 1px solid #d9a08a; }
+.bo .mbody { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; }
+.bo .mtitle {
+  display: inline-flex; align-items: center; gap: 6px; text-align: left; border: 0; background: none; padding: 0;
+  font: inherit; font-size: 14.5px; font-weight: 800; letter-spacing: -.01em; color: inherit; cursor: text; line-height: 1.3;
+}
+.bo .mtitle svg { width: 13px; height: 13px; flex: none; color: #b0b5af; }
+.bo .mtitle:hover svg { color: var(--ink); }
+.bo .rename { font: inherit; font-size: 14.5px; font-weight: 800; padding: 4px 8px; border: 1px solid var(--ink); border-radius: 7px; width: 100%; }
+.bo .mmeta { margin: 0; font-size: 12.5px; color: var(--bo-dim); line-height: 1.4; }
+.bo .macts { display: flex; gap: 6px; margin-top: 4px; }
+.bo .linkish { border: 0; background: none; padding: 0; font: inherit; font-size: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* ---- a routine's exercises, as a plain list ---- */
+.bo .ilist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.bo .irow {
+  display: grid; grid-template-columns: 26px 88px minmax(0, 1fr) auto auto auto; gap: 12px; align-items: center;
+  padding: 8px 10px 8px 8px; border: 1px solid var(--bo-line); border-radius: 10px; background: #fff; scroll-margin-top: calc(var(--bar-h) + 16px);
+}
+.bo .irow:target { box-shadow: 0 0 0 3px #c6ff0088; }
+.bo .inum { font-size: 15px; font-weight: 900; color: #b0b5af; text-align: center; font-variant-numeric: tabular-nums; }
+.bo .ithumb { position: relative; aspect-ratio: 16/9; border-radius: 6px; overflow: hidden; background: repeating-linear-gradient(135deg, #eceee6 0 6px, #f4f5f0 6px 12px); display: block; }
+.bo .ithumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.bo .ibody { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bo .ititle { font-size: 15px; font-weight: 700; letter-spacing: -.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bo .ititle:hover { text-decoration: underline; text-underline-offset: 3px; }
+.bo .imeta { font-size: 12.5px; color: var(--bo-dim); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bo .ictl { display: flex; flex-direction: column; gap: 2px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #a7ada8; }
+.bo .field.sm { font-size: 13px; padding: 6px 8px; min-height: 32px; }
+.bo .iops { display: flex; gap: 4px; }
+.bo .pthumb .padd { position: absolute; left: 6px; top: 6px; width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-size: 15px; font-weight: 900; }
+.bo .issues { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bo .issues li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; font-size: 14px; line-height: 1.45; }
+.bo .issues li::before { content: "!"; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; font-weight: 900; background: #fbe7df; color: #a2482a; }
+@media (max-width: 900px) {
+  .bo .irow { grid-template-columns: 22px 64px minmax(0, 1fr); }
+  .bo .ictl, .bo .iops { grid-column: 3; }
+}
+
 /* ready to publish? */
 .bo .checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .bo .checklist li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 14px; line-height: 1.45; }

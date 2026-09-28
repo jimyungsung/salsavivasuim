@@ -67,7 +67,7 @@ item's own speed overrides it.
         routines/[id]/    a curated routine played as is (quick drills, previews)
         actions.ts        getPlayback(), the player's way to ask for a URL
       admin/              the back office: stages → menus → routines, and
-                          exercises/ (the library, where footage arrives)
+                          exercises/ (the media library, where footage arrives)
       (auth)/             register and sign in
       api/stream/webhook  Cloudflare's callback
     components/Player.tsx the player, player.css beside it; `above`/`below`
@@ -113,12 +113,15 @@ item's own speed overrides it.
 ## The back office
 
 `/admin` is a sidebar and a work area under the site's own nav (English only).
-The sidebar is the whole catalogue: **Exercises** first (the library, with tag
-and footage filters and "+ New exercise"), then stages → menus → routines. A
-routine's editor is a **picker**: the library beside the running order, a tap
-appends, each item has its own speed and repeats. Footage, tags, difficulty,
-publish and the beat grid are edited on the exercise. `LengthStrip` draws a
-routine's exercises sized by length, one colour, hatched until footage lands.
+The sidebar is the whole catalogue: **Media library** first (drop several
+files and each becomes an exercise named after the file; rename in place;
+delete, blocked while a routine uses it; tag and footage filters), then
+stages → menus → routines. A routine's editor is a **picker**: the library
+beside a numbered running order, a tap appends, each row has its own speed
+and repeats. Footage, tags, difficulty, publish and the beat grid are edited
+on the exercise. The Publish panel lists only what stands in the way of
+members, or says the routine is live. `LengthStrip` draws a menu's routines
+sized by length, one colour, hatched until footage lands.
 
 Scope admin classes under `.bo` and check `app/globals.css` for the name first.
 
