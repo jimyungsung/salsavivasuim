@@ -2,7 +2,7 @@
 
 /* The back office's navigation: the whole catalogue, always on screen.
 
-   The library of exercises first — it is where footage arrives — then stages
+   The media library first — it is where footage arrives — then stages
    → menus → routines, with the branch you are standing in opened and
    highlighted. A search box filters every menu and routine by title. */
 
@@ -88,7 +88,7 @@ export default function Sidebar({ tree, exerciseCount }: { tree: NavStage[]; exe
           Overview
         </Link>
         <Link className={`home${kind === 'exercises' ? ' on' : ''}`} href="/admin/exercises">
-          Exercises
+          Media library
           <span className="ct">{exerciseCount}</span>
         </Link>
 
