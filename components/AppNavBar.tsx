@@ -4,35 +4,35 @@
    looking; this renders it, so the bar cannot drift between screens — the job
    renderNav() did in the prototype.
 
-   The items are sections, not pages. "Masterplan" stays current for everything
-   beneath it — the catalogue, a module, a session — because drilling in never
-   leaves that section — which is why it is read from the path rather than
-   passed in: the bar sits in a layout that outlives the page. Only screens that exist are listed; a nav item pointing
-   at "#" is a dead end. The back office is listed only for admins. */
+   The items are sections, not pages. "Today" stays current for any day and for
+   a routine played from it, because drilling in never leaves that section —
+   which is why it is read from the path rather than passed in: the bar sits
+   in a layout that outlives the page. Only screens that exist are listed; a
+   nav item pointing at "#" is a dead end. The back office is listed only for
+   admins. */
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useLang } from '@/lib/lang';
 import { signInHref } from '@/lib/safe-next';
-import type { Localized } from '@/lib/content';
+import type { Localized } from '@/lib/i18n';
 import type { Member } from '@/lib/member';
 
-type NavSection = 'masterplan' | 'training' | 'drills' | 'admin';
+type NavSection = 'today' | 'week' | 'admin';
 
 const sectionOf = (path: string): NavSection | undefined =>
-  /^\/(masterplan|programs|sessions)(\/|$)/.test(path)
-    ? 'masterplan'
-    : /^\/drills(\/|$)/.test(path)
-      ? 'drills'
+  /^\/(today|day|routines)(\/|$)/.test(path)
+    ? 'today'
+    : /^\/week(\/|$)/.test(path)
+      ? 'week'
       : /^\/admin(\/|$)/.test(path)
         ? 'admin'
         : undefined;
 
 const ITEMS: { key: NavSection; href: string; label: Localized }[] = [
-  { key: 'masterplan', href: '/masterplan', label: { en: 'Masterplan', ko: '마스터플랜' } },
-  { key: 'training', href: '/prototype/training.html', label: { en: 'My training', ko: '나의 트레이닝' } },
-  { key: 'drills', href: '/drills', label: { en: 'My drills', ko: '나의 드릴' } },
+  { key: 'today', href: '/today', label: { en: 'Today', ko: '오늘' } },
+  { key: 'week', href: '/week', label: { en: 'My week', ko: '나의 주간' } },
 ];
 
 const ADMIN = { key: 'admin' as const, href: '/admin', label: { en: 'Admin', ko: '관리' } };
@@ -63,7 +63,7 @@ export default function AppNavBar({ member }: { member: Member | null }) {
   return (
     <header className={`nav${open ? ' open' : ''}`}>
       <div className="wrap">
-        <Link className="logo" href="/masterplan">
+        <Link className="logo" href="/today">
           SUIM<span className="dot">.</span>
         </Link>
 

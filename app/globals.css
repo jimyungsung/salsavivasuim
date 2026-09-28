@@ -1,10 +1,8 @@
 /* SUIM design system — the canonical copy.
 
-   Moved here from the prototype's assets/app.css in P0. The copy still under
-   public/prototype/assets/ is frozen: it serves the un-ported screens and is
-   deleted a screen at a time as they move into app/. Change this file, not that
-   one. The two self-contained marketing pages (index, program) carry their own
-   inlined copy by design and are matched by hand.
+   Moved here from the prototype's assets/app.css in P0; the prototype itself
+   is gone. Shared rules only; a screen's own rules live beside it, scoped
+   under one wrapper class.
 */
 
 :root{--ink:#0b0f0e;--lime:#c6ff00;--paper:#f1f1eb;--muted:#5b615c;--line:#cdd0c7;--card:#f7f7f2;--panel:#141a17}

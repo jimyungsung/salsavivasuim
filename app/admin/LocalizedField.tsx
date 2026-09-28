@@ -10,7 +10,7 @@
    Saves on blur, not on every keystroke. */
 
 import { useState, useTransition } from 'react';
-import { setLocalized, type Result } from './actions';
+import { setLocalized, type CatalogueTable, type Result } from './actions';
 import type { LocalizedRow } from '@/lib/db';
 
 export default function LocalizedField({
@@ -23,7 +23,7 @@ export default function LocalizedField({
   stacked = false,
   onError,
 }: {
-  table: 'areas' | 'programs' | 'sessions' | 'videos';
+  table: CatalogueTable;
   id: string;
   column: string;
   label: string;

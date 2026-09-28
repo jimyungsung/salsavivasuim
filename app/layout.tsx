@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import { LangProvider } from '@/lib/lang';
-import { LANG_COOKIE, isLang, type Lang } from '@/lib/content';
+import { LANG_COOKIE, isLang, type Lang } from '@/lib/i18n';
 import './globals.css';
 
 export const metadata: Metadata = {

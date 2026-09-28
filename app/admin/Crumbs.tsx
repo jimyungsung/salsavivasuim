@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function Crumbs({ items }: { items: { label: string; href?: string }[] }) {
   return (
     <nav className="crumbs" aria-label="Breadcrumb">
-      <Link href="/admin">Catalogue</Link>
+      <Link href="/admin">Overview</Link>
       {items.map((item, i) => (
         <span key={i}>
           <span className="sep" aria-hidden="true">/</span>

@@ -2,8 +2,8 @@
 
 /* The practice player.
 
-   It plays a playlist — a session, a drill, or a day of drills — never a bare
-   video (lib/playlist.ts). An entry is a video plus how to play it: repeats,
+   It plays a playlist — a routine, or a member's day — never a bare video
+   (lib/playlist.ts). An entry is a video plus how to play it: repeats,
    and a speed of its own. The same video may appear twice, so the selection is
    an entry index, not a video id.
 
@@ -17,27 +17,27 @@
    - The loop is checked every presented frame, off requestVideoFrameCallback
      (requestAnimationFrame where there is none) — never off timeupdate, which
      fires four times a second and makes a loop breathe. BUILD-PLAN §5.
-   - Speed is remembered per step, not globally: a dancer wants DRILL slow and
-     WATCH at 1×, every time.
+   - Speed is remembered once, across every exercise: they are all short
+     things you repeat, and an item's own speed overrides it.
 
    HLS needs hls.js everywhere except Safari; the short MP4 rendition never
-   does. Which a video gets is BUILD-PLAN §3: under ~150s and drillable plays
-   from MP4, which seeks instantly; everything else is HLS. */
+   does. Which a video gets is BUILD-PLAN §3: under ~150s plays from MP4, which
+   seeks instantly; everything else is HLS. */
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { useCopy, useLang } from '@/lib/lang';
 import type { Copy } from '@/lib/lang';
-import { stepOf } from '@/lib/content';
+import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
 import { mmss } from '@/lib/db';
 import { signInHref } from '@/lib/safe-next';
-import type { SessionVideoSummary } from '@/lib/catalogue';
+import type { Exercise } from '@/lib/menus';
 import { playlistLengthMs, type Playlist } from '@/lib/playlist';
-import { getPlayback, type PlaybackResult } from '@/app/(app)/sessions/actions';
+import { getPlayback, type PlaybackResult } from '@/app/(app)/actions';
 
 type Key =
-  | 'total' | 'listSession' | 'listDrill' | 'listDay' | 'notReady' | 'nothing'
+  | 'total' | 'listRoutine' | 'listDay' | 'notReady' | 'nothing'
   | 'loading' | 'signInT' | 'signInGo' | 'focus' | 'keys'
   | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror' | 'aFull' | 'aExitFull' | 'aCounts'
   | 'aLoop8' | 'aLoopAB' | 'aRepeat' | 'aSeek'
@@ -46,7 +46,7 @@ type Key =
 const C: Copy<Key> = {
   en: {
     total: 'total',
-    listSession: 'Videos in this session', listDrill: 'In this drill', listDay: 'Drills for the day',
+    listRoutine: 'In this routine', listDay: 'Today\'s exercises',
     notReady: 'Being filmed', nothing: 'Nothing to play here yet.', loading: 'Loading…',
     signInT: 'Sign in to watch.', signInGo: 'Sign in ↗',
     focus: 'What to focus on',
@@ -59,7 +59,7 @@ const C: Copy<Key> = {
   },
   ko: {
     total: '분량',
-    listSession: '이 세션의 영상', listDrill: '이 드릴의 영상', listDay: '오늘의 드릴',
+    listRoutine: '이 루틴의 운동', listDay: '오늘의 운동',
     notReady: '촬영 중', nothing: '아직 재생할 것이 없습니다.', loading: '불러오는 중…',
     signInT: '로그인하면 볼 수 있습니다.', signInGo: '로그인 ↗',
     focus: '이것에 집중하세요',
@@ -84,7 +84,7 @@ const speedLabel = (s: number) => `${Number(s.toFixed(2))}×`;
 const speedAt = (s: number) =>
   `calc(8px + (100% - 16px) * ${(s - SPEED_MIN) / (SPEED_MAX - SPEED_MIN)})`;
 const FRAME = 1 / 30;
-const SPEED_STORE = 'suim-speed';
+const SPEED_STORE = 'suim-speed-v2';
 
 /** m:ss for a clock, where 0:00 is a real time — unlike mmss(), which reads
     a missing duration as "—". */
@@ -93,22 +93,24 @@ const clock = (seconds: number) => {
   return `${Math.floor(s / 60)}:${two(s % 60)}`;
 };
 
-/** BUILD-PLAN §3: a video under ~150s and marked drillable plays from the
-    progressive MP4, because it seeks instantly and a tight loop needs that. */
-const usesMp4 = (v: SessionVideoSummary) =>
-  v.isDrillable && v.durationMs != null && v.durationMs < 150_000;
+/** BUILD-PLAN §3: a video under ~150s plays from the progressive MP4, because
+    it seeks instantly and a tight loop needs that. */
+const usesMp4 = (v: Exercise) => v.durationMs != null && v.durationMs < 150_000;
+
+/** The word over the picture: the exercise's first tag, else its difficulty. */
+const kindOf = (v: Exercise) => (v.tags[0] ? TAG_LABELS[v.tags[0]] : LEVEL_LABELS[v.difficulty]);
 
 /* ---- the beat grid ------------------------------------------------------- */
 
-const beatMs = (v: SessionVideoSummary) => (v.bpm ? 60_000 / v.bpm : null);
-const phraseMs = (v: SessionVideoSummary) => {
+const beatMs = (v: Exercise) => (v.bpm ? 60_000 / v.bpm : null);
+const phraseMs = (v: Exercise) => {
   const b = beatMs(v);
   return b ? b * v.beatsPerPhrase : null;
 };
 
 /** Phrase boundaries for the scrub bar, thinned so a long video is marked every
     few phrases rather than striped solid. Always on a phrase, never between. */
-function phraseMarks(v: SessionVideoSummary, durationMs: number): number[] {
+function phraseMarks(v: Exercise, durationMs: number): number[] {
   const p = phraseMs(v);
   if (!p || !durationMs) return [];
   const first = v.firstBeatMs ?? 0;
@@ -126,7 +128,7 @@ interface Region {
 /** The loop a press of L gives: the back office's default if there is one,
     otherwise the eight counts under the playhead. No grid, no region — the
     whole video repeats instead. */
-function regionAt(v: SessionVideoSummary, atMs: number): Region | null {
+function regionAt(v: Exercise, atMs: number): Region | null {
   if (v.loopStartMs != null && v.loopEndMs != null && v.loopEndMs > v.loopStartMs) {
     return { a: v.loopStartMs, b: v.loopEndMs };
   }
@@ -149,6 +151,8 @@ export default function Player({
   initialPlayback,
   posters,
   signedIn,
+  above,
+  below,
 }: {
   playlist: Playlist;
   /** Which entry opens, or null when nothing in the list is playable. */
@@ -157,6 +161,10 @@ export default function Player({
   /** Signed thumbnails by video id, for the list beside the player. */
   posters: Record<string, string>;
   signedIn: boolean;
+  /** What the page puts over and under the player: Today's greeting, the
+      quick drills. The player owns the footer, so they slot in here. */
+  above?: React.ReactNode;
+  below?: React.ReactNode;
 }) {
   const { T } = useLang();
   const c = useCopy(C);
@@ -213,15 +221,15 @@ export default function Player({
     if (!entry) return;
     const video = entry.video;
     if (!overriddenMirror.current) setMirrored(video.mirrorDefault);
-    let stored: Record<string, number> = {};
+    let stored: number | null = null;
     try {
-      stored = JSON.parse(localStorage.getItem(SPEED_STORE) ?? '{}');
+      stored = Number(localStorage.getItem(SPEED_STORE)) || null;
     } catch {
-      /* private mode: every step starts at its default */
+      /* private mode: the default it is */
     }
-    /* An entry's own speed first; otherwise what the dancer last chose for
-       this step; otherwise slow for the two steps you repeat. */
-    setSpeed(entry.speed ?? stored[video.step] ?? (video.isDrillable ? 0.75 : 1));
+    /* An entry's own speed first; otherwise what the dancer last chose;
+       otherwise a little slow, which is how you meet a new exercise. */
+    setSpeed(entry.speed ?? stored ?? 0.75);
     setStarted(false);
     setRegion(null);
     setLoopOn(false);
@@ -246,15 +254,13 @@ export default function Player({
   const chooseSpeed = useCallback(
     (next: number) => {
       setSpeed(next);
-      if (!current) return;
       try {
-        const stored = JSON.parse(localStorage.getItem(SPEED_STORE) ?? '{}');
-        localStorage.setItem(SPEED_STORE, JSON.stringify({ ...stored, [current.step]: next }));
+        localStorage.setItem(SPEED_STORE, String(next));
       } catch {
         /* the choice still holds for this visit */
       }
     },
-    [current],
+    [],
   );
 
   /* The speed panel closes on a click anywhere else, or Escape. */
@@ -555,6 +561,7 @@ export default function Player({
   if (!current || !entry) {
     return (
       <div className="sp">
+        {above}
         <div className="sp-empty">
           <Link className="crumb" href={playlist.back.href}>
             <span aria-hidden="true">←</span>
@@ -572,17 +579,18 @@ export default function Player({
             </>
           )}
         </div>
+        {below}
       </div>
     );
   }
 
-  const step = stepOf(current.step);
+  const kind = kindOf(current);
   const durationMs = durationS * 1000 || current.durationMs || 0;
   const marks = phraseMarks(current, durationMs);
   const shownRegion = loopOn && region && durationMs ? region : null;
   const loopLabel =
     current.loopStartMs != null && current.loopEndMs != null ? c.aLoopAB : grid ? c.aLoop8 : c.aRepeat;
-  const listTitle = playlist.kind === 'session' ? c.listSession : playlist.kind === 'drill' ? c.listDrill : c.listDay;
+  const listTitle = playlist.kind === 'routine' ? c.listRoutine : c.listDay;
 
   /* Where each part sits in the whole, summed from the videos' own lengths. */
   let at = 0;
@@ -596,6 +604,7 @@ export default function Player({
 
   return (
     <div className="sp">
+      {above}
       <div className="subnav">
         <div className="wrap subin">
           <Link className="crumb" href={playlist.back.href}>
@@ -691,7 +700,7 @@ export default function Player({
                     </svg>
                   </button>
                   <small>
-                    {T(step.name)}
+                    {T(kind)}
                     {entry.repeats > 1 && ` · ${lap}/${entry.repeats}`}
                   </small>
                   <h2>{T(current.title)}</h2>
@@ -866,7 +875,6 @@ export default function Player({
             <div className="steps">
               {entries.map((e, i) => {
                 const v = e.video;
-                const s = stepOf(v.step);
                 const now = i === index;
                 return (
                   <button
@@ -879,7 +887,7 @@ export default function Player({
                   >
                     <span className="sn">{i + 1}</span>
                     <span className="st">
-                      {T(s.name)}
+                      {T(v.title)}
                       {e.repeats > 1 && ` ×${e.repeats}`}
                     </span>
                     <span className="slen">{mmss((v.durationMs ?? 0) * e.repeats || null)}</span>
@@ -916,7 +924,6 @@ export default function Player({
           <div>
             {entries.map((e, i) => {
               const v = e.video;
-              const s = stepOf(v.step);
               const ready = v.status === 'ready';
               const now = i === index;
               return (
@@ -939,7 +946,7 @@ export default function Player({
                   </span>
                   <span className="vmeta">
                     <span className="t">
-                      {T(s.name)}
+                      {T(kindOf(v))}
                       {e.repeats > 1 && ` · ×${e.repeats}`}
                     </span>
                     <span className="n">{T(v.title)}</span>
@@ -955,6 +962,8 @@ export default function Player({
           </div>
         </aside>
       </main>
+
+      {below}
 
       <footer>
         <div className="wrap foot">

@@ -15,35 +15,39 @@ import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/supabase/admin';
 import {
   LEVEL_KEYS,
-  METHOD_STEPS,
   PUBLISH_STATUSES,
+  isTag,
   type LevelKey,
-  type MethodStep,
   type PublishStatus,
 } from '@/lib/db';
 
 export type Result = { ok: true } | { ok: false; error: string };
 
-/* The back office and the public shelf read the same rows, so a write that
+export type CatalogueTable = 'stages' | 'menus' | 'routines' | 'videos';
+
+/* The back office and the member screens read the same rows, so a write that
    changes the catalogue has to clear both caches.
 
-   This is deliberately blunt: a video edit revalidates the masterplan too, even
-   though no video appears there. A wasted re-render costs one request; a missed
-   one leaves the public page showing yesterday's catalogue with nothing to
-   suggest anything is wrong. */
+   This is deliberately blunt: an exercise edit revalidates the week planner
+   too, even if the exercise is in no menu. A wasted re-render costs one
+   request; a missed one leaves a member's page showing yesterday's catalogue
+   with nothing to suggest anything is wrong. */
 const revalidateCatalogue = () => {
   revalidatePath('/admin', 'layout');
-  revalidatePath('/masterplan');
+  revalidatePath('/week');
+  revalidatePath('/today');
 };
 
 const ok: Result = { ok: true };
 const fail = (error: string): Result => ({ ok: false, error });
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /* ------------------------------------------------------------- publish ---- */
 
-/** Moves a program or session between draft / soon / open. */
+/** Moves a menu or a routine between draft / soon / open. */
 export async function setStatus(
-  table: 'programs' | 'sessions',
+  table: 'menus' | 'routines',
   id: string,
   status: string,
 ): Promise<Result> {
@@ -54,7 +58,7 @@ export async function setStatus(
   const patch: Record<string, unknown> = { status };
   /* published_at is set the first time something opens and left alone after —
      it is when the material went live, not when it was last touched. */
-  if (table === 'programs' && status === 'open') patch.published_at = new Date().toISOString();
+  if (table === 'menus' && status === 'open') patch.published_at = new Date().toISOString();
 
   const { error } = await supabase.from(table).update(patch).eq('id', id);
   if (error) return fail(error.message);
@@ -66,15 +70,12 @@ export async function setStatus(
 /* ---------------------------------------------------------------- order ---- */
 
 /* Reordering is a swap of two `position` values, not a rewrite of the whole
-   list. Every one of those unique constraints — areas(position), and
-   (parent, position) below them — is deferrable, so two rows can trade places
-   inside one transaction without the halfway duplicate tripping them. That is
-   exactly why they were written that way in P1.
-
-   Supabase's REST client cannot open a transaction, so the swap goes through a
-   database function instead. See the swap_position migration. */
+   list. Every one of those unique constraints is deferrable, so two rows can
+   trade places inside one transaction without the halfway duplicate tripping
+   them. Supabase's REST client cannot open a transaction, so the swap goes
+   through a database function instead. See the swap_position migration. */
 export async function movePosition(
-  table: 'areas' | 'programs' | 'sessions' | 'videos',
+  table: 'stages' | 'menus' | 'routines' | 'routine_items',
   id: string,
   direction: 'up' | 'down',
 ): Promise<Result> {
@@ -94,45 +95,95 @@ export async function movePosition(
 
 /* -------------------------------------------------------------- create ---- */
 
-/** Appends a session to a program. Starts empty: how many videos, and of which
-    steps, is the session's own business. */
-/** Which levels a session sits in. The scale is not a ladder — a session can
-    sit in two at once (CLAUDE.md) — so this is a set, kept in the scale's
-    order. The program page filters and tags sessions by it. */
-export async function setSessionLevels(id: string, levels: string[]): Promise<Result> {
+/* A slug is a stable identifier, so it is derived once from the English title
+   and then left alone unless someone changes it deliberately. Renaming a menu
+   should not silently change its address. */
+const slugify = (s: string): string =>
+  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+
+/** A slug nothing else is using. Suffixes -2, -3 … rather than failing. */
+async function freeSlug(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  table: 'stages' | 'menus',
+  base: string,
+): Promise<string> {
+  const root = slugify(base) || table.slice(0, -1);
+  const { data } = await supabase.from(table).select('slug').like('slug', `${root}%`);
+  const taken = new Set((data ?? []).map(r => (r as { slug: string }).slug));
+  if (!taken.has(root)) return root;
+  for (let n = 2; n < 500; n++) if (!taken.has(`${root}-${n}`)) return `${root}-${n}`;
+  return `${root}-${Date.now()}`;
+}
+
+export async function createStage(name: string): Promise<Result> {
   await requireAdmin();
-  if (levels.some(l => !LEVEL_KEYS.includes(l as LevelKey))) return fail('Unknown level.');
-  const ordered = LEVEL_KEYS.filter(k => levels.includes(k));
+  const en = name.trim();
+  if (!en) return fail('A stage needs a name.');
 
   const supabase = await createClient();
-  const { error } = await supabase.from('sessions').update({ levels: ordered }).eq('id', id);
+  const { data: last } = await supabase
+    .from('stages').select('position').order('position', { ascending: false }).limit(1).maybeSingle();
+
+  const { error } = await supabase.from('stages').insert({
+    slug: await freeSlug(supabase, 'stages', en),
+    position: (last?.position ?? 0) + 1,
+    name_t: { en },
+    blurb_t: { en: '' },
+  });
   if (error) return fail(error.message);
 
   revalidateCatalogue();
-  revalidatePath(`/admin/sessions/${id}`);
   return ok;
 }
 
-export async function createSession(programId: string): Promise<Result> {
+/** A menu is a week. It belongs to a stage, or to none: the quick drills are
+    a stageless menu. */
+export async function createMenu(stageId: string | null, title: string): Promise<Result> {
+  await requireAdmin();
+  const en = title.trim();
+  if (!en) return fail('A menu needs a title.');
+
+  const supabase = await createClient();
+  let query = supabase.from('menus').select('position');
+  query = stageId ? query.eq('stage_id', stageId) : query.is('stage_id', null);
+  const { data: last } = await query.order('position', { ascending: false }).limit(1).maybeSingle();
+
+  const { error } = await supabase.from('menus').insert({
+    stage_id: stageId,
+    slug: await freeSlug(supabase, 'menus', en),
+    position: (last?.position ?? 0) + 1,
+    title_t: { en },
+    subtitle_t: { en: '' },
+    promise_t: { en: '' },
+    level: 'all',
+    status: 'draft',
+  });
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/** Appends a routine to a menu, on the first weekday the menu has nothing on
+    yet. Starts empty: exercises are picked from the library. */
+export async function createRoutine(menuId: string): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { data: last } = await supabase
-    .from('sessions')
-    .select('position')
-    .eq('program_id', programId)
-    .order('position', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data: rows } = await supabase
+    .from('routines')
+    .select('position, weekday')
+    .eq('menu_id', menuId);
+  const taken = new Set((rows ?? []).map(r => (r as { weekday: number | null }).weekday));
+  const position = Math.max(0, ...(rows ?? []).map(r => (r as { position: number }).position)) + 1;
+  const weekday = [0, 1, 2, 3, 4, 5, 6].find(d => !taken.has(d)) ?? null;
 
-  const position = (last?.position ?? 0) + 1;
-
-  const { error } = await supabase.from('sessions').insert({
-    program_id: programId,
+  const { error } = await supabase.from('routines').insert({
+    menu_id: menuId,
     position,
-    title_t: { en: `Session ${String(position).padStart(2, '0')}` },
-    outcome_t: { en: '' },
-    focus_t: { en: '' },
+    weekday,
+    title_t: { en: `Routine ${String(position).padStart(2, '0')}` },
+    blurb_t: { en: '' },
     levels: [],
     status: 'draft',
   });
@@ -142,48 +193,33 @@ export async function createSession(programId: string): Promise<Result> {
   return ok;
 }
 
-/** Appends a video to a session, tagged with a step. The suggested position is
-    the end of the list — the method's order is a hint for where it probably
-    belongs, never a slot it must occupy. */
-export async function createVideo(sessionId: string, step: string): Promise<Result> {
+/** A new exercise, as a draft with no footage. Returns its id so the library
+    can open its editor at once. */
+export async function createExercise(
+  title: string,
+): Promise<Result & { id?: string }> {
   await requireAdmin();
-  if (!METHOD_STEPS.includes(step as MethodStep)) return fail('Unknown step.');
+  const en = title.trim();
+  if (!en) return fail('An exercise needs a title.');
 
   const supabase = await createClient();
-
-  const { data: last } = await supabase
+  const { data, error } = await supabase
     .from('videos')
-    .select('position')
-    .eq('session_id', sessionId)
-    .order('position', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .insert({
+      title_t: { en },
+      description_t: { en: '' },
+      tags: [],
+      difficulty: 'beginner',
+      publish: 'draft',
+      mirror_default: true,
+      status: 'uploading',
+    })
+    .select('id')
+    .single();
+  if (error || !data) return fail(error?.message ?? 'Could not create the exercise.');
 
-  const { error } = await supabase.from('videos').insert({
-    session_id: sessionId,
-    step,
-    position: (last?.position ?? 0) + 1,
-    title_t: { en: '' },
-    description_t: { en: '' },
-    /* Train is filmed facing you, so it opens mirrored; everything else does not. */
-    mirror_default: step === 'train',
-    status: 'uploading',
-  });
-  if (error) return fail(error.message);
-
-  revalidatePath(`/admin/sessions/${sessionId}`);
-  return ok;
-}
-
-export async function deleteVideo(videoId: string, sessionId: string): Promise<Result> {
-  await requireAdmin();
-  const supabase = await createClient();
-
-  const { error } = await supabase.from('videos').delete().eq('id', videoId);
-  if (error) return fail(error.message);
-
-  revalidatePath(`/admin/sessions/${sessionId}`);
-  return ok;
+  revalidateCatalogue();
+  return { ok: true, id: data.id as string };
 }
 
 /* ---------------------------------------------------------------- edit ---- */
@@ -191,7 +227,7 @@ export async function deleteVideo(videoId: string, sessionId: string): Promise<R
 /** Writes one localized field. Korean may be blank — that is what makes the
     "needs Korean" badge honest rather than a guess. */
 export async function setLocalized(
-  table: 'areas' | 'programs' | 'sessions' | 'videos',
+  table: CatalogueTable,
   id: string,
   column: string,
   value: { en: string; ko: string },
@@ -211,9 +247,98 @@ export async function setLocalized(
   return ok;
 }
 
-/* ----------------------------------------------------------- video edit ---- */
+/** Which levels a routine sits in. The scale is not a ladder — a routine can
+    sit in two at once — so this is a set, kept in the scale's order. */
+export async function setRoutineLevels(id: string, levels: string[]): Promise<Result> {
+  await requireAdmin();
+  if (levels.some(l => !LEVEL_KEYS.includes(l as LevelKey))) return fail('Unknown level.');
+  const ordered = LEVEL_KEYS.filter(k => levels.includes(k));
 
-/** The scalar half of a video: what it is, how it was filmed, and its beat grid.
+  const supabase = await createClient();
+  const { error } = await supabase.from('routines').update({ levels: ordered }).eq('id', id);
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/** Which day of its menu's week a routine is, or none. */
+export async function setRoutineWeekday(id: string, weekday: number | null): Promise<Result> {
+  await requireAdmin();
+  if (weekday !== null && (!Number.isInteger(weekday) || weekday < 0 || weekday > 6)) {
+    return fail('Not a day of the week.');
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from('routines').update({ weekday }).eq('id', id);
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/* --------------------------------------------------------- routine items ---- */
+
+/** Puts an exercise at the end of a routine. The same exercise may go in
+    twice; each appearance is its own item. */
+export async function addRoutineItem(routineId: string, videoId: string): Promise<Result> {
+  await requireAdmin();
+  if (!UUID.test(videoId)) return fail('Not an exercise.');
+  const supabase = await createClient();
+
+  const { data: last } = await supabase
+    .from('routine_items')
+    .select('position')
+    .eq('routine_id', routineId)
+    .order('position', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { error } = await supabase.from('routine_items').insert({
+    routine_id: routineId,
+    video_id: videoId,
+    position: (last?.position ?? 0) + 1,
+  });
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+export async function removeRoutineItem(itemId: string): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+  const { error } = await supabase.from('routine_items').delete().eq('id', itemId);
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/** How an exercise plays in this routine: its own speed and repeat count.
+    Null speed means the exercise's default. */
+export async function setRoutineItem(
+  itemId: string,
+  fields: { speed?: number | null; repeats?: number },
+): Promise<Result> {
+  await requireAdmin();
+  if (fields.speed != null && (fields.speed < 0.25 || fields.speed > 2)) {
+    return fail('Speed should be between 0.25× and 2×.');
+  }
+  if (fields.repeats != null && (!Number.isInteger(fields.repeats) || fields.repeats < 1 || fields.repeats > 20)) {
+    return fail('Repeats should be a whole number from 1 to 20.');
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.from('routine_items').update(fields).eq('id', itemId);
+  if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/* ------------------------------------------------------- exercise edit ---- */
+
+/** The scalar half of an exercise: what it works, how hard it is, whether
+    members may play it, how it was filmed, and its beat grid.
 
     Nothing here touches the delivery columns (provider_uid, hls_playback_id,
     mp4_url, poster_url, status) — those are written by the upload flow and the
@@ -222,7 +347,9 @@ export async function setLocalized(
 export async function setVideoFields(
   id: string,
   fields: {
-    step?: string;
+    tags?: string[];
+    difficulty?: string;
+    publish?: string;
     mirror_default?: boolean;
     bpm?: number | null;
     first_beat_ms?: number | null;
@@ -233,8 +360,12 @@ export async function setVideoFields(
 ): Promise<Result> {
   await requireAdmin();
 
-  if (fields.step && !METHOD_STEPS.includes(fields.step as MethodStep)) {
-    return fail('Unknown step.');
+  if (fields.tags && fields.tags.some(t => !isTag(t))) return fail('Unknown tag.');
+  if (fields.difficulty && !LEVEL_KEYS.includes(fields.difficulty as LevelKey)) {
+    return fail('Unknown difficulty.');
+  }
+  if (fields.publish && !PUBLISH_STATUSES.includes(fields.publish as PublishStatus)) {
+    return fail('Unknown status.');
   }
   if (fields.bpm != null && (fields.bpm <= 0 || fields.bpm > 400)) {
     return fail('BPM should be between 1 and 400.');
@@ -255,79 +386,12 @@ export async function setVideoFields(
   return ok;
 }
 
-/* ------------------------------------------------- areas and programs ---- */
+/* ------------------------------------------------------ stages and menus ---- */
 
-/* A slug is a stable identifier, so it is derived once from the English title
-   and then left alone unless someone changes it deliberately. Renaming a
-   program should not silently change its URL. */
-const slugify = (s: string): string =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
-
-/** A slug nothing else is using. Suffixes -2, -3 … rather than failing. */
-async function freeSlug(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  table: 'areas' | 'programs',
-  base: string,
-): Promise<string> {
-  const root = slugify(base) || table.slice(0, -1);
-  const { data } = await supabase.from(table).select('slug').like('slug', `${root}%`);
-  const taken = new Set((data ?? []).map(r => (r as { slug: string }).slug));
-  if (!taken.has(root)) return root;
-  for (let n = 2; n < 500; n++) if (!taken.has(`${root}-${n}`)) return `${root}-${n}`;
-  return `${root}-${Date.now()}`;
-}
-
-export async function createArea(name: string): Promise<Result> {
-  await requireAdmin();
-  const en = name.trim();
-  if (!en) return fail('An area needs a name.');
-
-  const supabase = await createClient();
-  const { data: last } = await supabase
-    .from('areas').select('position').order('position', { ascending: false }).limit(1).maybeSingle();
-
-  const { error } = await supabase.from('areas').insert({
-    slug: await freeSlug(supabase, 'areas', en),
-    position: (last?.position ?? 0) + 1,
-    name_t: { en },
-    blurb_t: { en: '' },
-  });
-  if (error) return fail(error.message);
-
-  revalidateCatalogue();
-  return ok;
-}
-
-export async function createProgram(areaId: string, title: string): Promise<Result> {
-  await requireAdmin();
-  const en = title.trim();
-  if (!en) return fail('A program needs a title.');
-
-  const supabase = await createClient();
-  const { data: last } = await supabase
-    .from('programs').select('position').eq('area_id', areaId)
-    .order('position', { ascending: false }).limit(1).maybeSingle();
-
-  const { error } = await supabase.from('programs').insert({
-    area_id: areaId,
-    slug: await freeSlug(supabase, 'programs', en),
-    position: (last?.position ?? 0) + 1,
-    title_t: { en },
-    subtitle_t: { en: '' },
-    promise_t: { en: '' },
-    level: 'all',
-    status: 'draft',
-  });
-  if (error) return fail(error.message);
-
-  revalidateCatalogue();
-  return ok;
-}
-
-/** The scalar half of a program. Copy goes through setLocalized. */
-export async function setProgramFields(
+/** The scalar half of a menu. Copy goes through setLocalized. */
+export async function setMenuFields(
   id: string,
-  fields: { slug?: string; level?: string; weeks?: number | null },
+  fields: { slug?: string; level?: string; stage_id?: string | null },
 ): Promise<Result> {
   await requireAdmin();
 
@@ -341,34 +405,30 @@ export async function setProgramFields(
     if (!LEVEL_KEYS.includes(fields.level as LevelKey)) return fail('Unknown level.');
     patch.level = fields.level;
   }
-  if (fields.weeks !== undefined) {
-    if (fields.weeks !== null && (!Number.isInteger(fields.weeks) || fields.weeks < 1)) {
-      return fail('Weeks must be a whole number of at least 1.');
-    }
-    patch.weeks = fields.weeks;
+  if (fields.stage_id !== undefined) {
+    if (fields.stage_id !== null && !UUID.test(fields.stage_id)) return fail('Not a stage.');
+    patch.stage_id = fields.stage_id;
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from('programs').update(patch).eq('id', id);
+  const { error } = await supabase.from('menus').update(patch).eq('id', id);
   if (error) {
-    return fail(
-      error.code === '23505' ? 'Another program already uses that slug.' : error.message,
-    );
+    return fail(error.code === '23505' ? 'Another menu already uses that slug or position.' : error.message);
   }
 
   revalidateCatalogue();
   return ok;
 }
 
-export async function setAreaSlug(id: string, slug: string): Promise<Result> {
+export async function setStageSlug(id: string, slug: string): Promise<Result> {
   await requireAdmin();
   const clean = slugify(slug);
   if (!clean) return fail('A slug cannot be empty.');
 
   const supabase = await createClient();
-  const { error } = await supabase.from('areas').update({ slug: clean }).eq('id', id);
+  const { error } = await supabase.from('stages').update({ slug: clean }).eq('id', id);
   if (error) {
-    return fail(error.code === '23505' ? 'Another area already uses that slug.' : error.message);
+    return fail(error.code === '23505' ? 'Another stage already uses that slug.' : error.message);
   }
 
   revalidateCatalogue();
@@ -377,18 +437,18 @@ export async function setAreaSlug(id: string, slug: string): Promise<Result> {
 
 /* -------------------------------------------------------------- delete ---- */
 
-/* An area refuses to go while it still holds programs — programs.area_id is
-   ON DELETE RESTRICT, precisely so a whole branch of the catalogue cannot
-   disappear behind one click. Move or delete the programs first. */
-export async function deleteArea(id: string): Promise<Result> {
+/* A stage refuses to go while it still holds menus — menus.stage_id is
+   ON DELETE RESTRICT, precisely so a whole branch cannot disappear behind one
+   click. Move or delete the menus first. */
+export async function deleteStage(id: string): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { error } = await supabase.from('areas').delete().eq('id', id);
+  const { error } = await supabase.from('stages').delete().eq('id', id);
   if (error) {
     return fail(
       error.code === '23503'
-        ? 'This area still has programs in it. Move or delete those first.'
+        ? 'This stage still has menus in it. Move or delete those first.'
         : error.message,
     );
   }
@@ -397,25 +457,61 @@ export async function deleteArea(id: string): Promise<Result> {
   return ok;
 }
 
-/* A program takes its sessions and their videos with it — sessions.program_id
-   and videos.session_id both cascade. The caller shows what is about to go. */
-export async function deleteProgram(id: string): Promise<Result> {
+/* A menu takes its routines with it; the exercises they borrowed stay in the
+   library. The caller shows what is about to go. */
+export async function deleteMenu(id: string): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { error } = await supabase.from('programs').delete().eq('id', id);
+  const { error } = await supabase.from('menus').delete().eq('id', id);
   if (error) return fail(error.message);
 
   revalidateCatalogue();
   return ok;
 }
 
-export async function deleteSession(id: string): Promise<Result> {
+export async function deleteRoutine(id: string): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { error } = await supabase.from('sessions').delete().eq('id', id);
+  const { error } = await supabase.from('routines').delete().eq('id', id);
   if (error) return fail(error.message);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/* An exercise a routine still uses cannot go: routine_items.video_id is
+   ON DELETE RESTRICT, so a routine members are on is never quietly shortened.
+   Members' own days cascade, as they always did. */
+export async function deleteExercise(id: string): Promise<Result> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { data: row } = await supabase
+    .from('videos').select('provider_uid').eq('id', id).maybeSingle();
+  const uid = (row as { provider_uid: string | null } | null)?.provider_uid;
+
+  const { error } = await supabase.from('videos').delete().eq('id', id);
+  if (error) {
+    return fail(
+      error.code === '23503'
+        ? 'A routine still uses this exercise. Take it out of the routine first.'
+        : error.message,
+    );
+  }
+
+  if (uid) {
+    const { streamConfig, deleteVideo } = await import('@/lib/cloudflare');
+    const cfg = streamConfig();
+    if (cfg) {
+      try {
+        await deleteVideo(cfg, uid);
+      } catch {
+        /* Already gone, or Cloudflare is unhappy. The row is gone either way. */
+      }
+    }
+  }
 
   revalidateCatalogue();
   return ok;
@@ -492,7 +588,7 @@ export async function refreshVideoStatus(videoId: string): Promise<Result> {
   const { data: row } = await supabase
     .from('videos').select('provider_uid').eq('id', videoId).maybeSingle();
   const uid = (row as { provider_uid: string | null } | null)?.provider_uid;
-  if (!uid) return fail('This video has no upload yet.');
+  if (!uid) return fail('This exercise has no upload yet.');
 
   try {
     const v = await getVideo(cfg, uid);
@@ -529,8 +625,8 @@ export async function refreshVideoStatus(videoId: string): Promise<Result> {
   }
 }
 
-/** Detaches the footage without deleting the video row, so the slot and its
-    beat grid survive a re-upload. */
+/** Detaches the footage without deleting the exercise, so its tags and beat
+    grid survive a re-upload. */
 export async function clearVideoUpload(videoId: string): Promise<Result> {
   await requireAdmin();
   const supabase = await createClient();
