@@ -3,7 +3,7 @@ import { getLibrary, getMenus, QUICK_MENU_SLUG } from '@/lib/menus';
 import { getCurrentMenu, getWeek } from '@/lib/week';
 import { getMember } from '@/lib/member';
 import { signedPosters } from '@/lib/playback';
-import { todayWeekday } from '@/lib/i18n';
+import { getClock } from '@/lib/clock';
 import WeekView from './WeekView';
 import './week.css';
 
@@ -34,7 +34,7 @@ export default async function WeekPage() {
       library={library}
       posters={posters}
       signedIn={Boolean(member)}
-      today={todayWeekday()}
+      today={(await getClock()).weekday}
     />
   );
 }

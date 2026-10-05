@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getMember } from '@/lib/member';
-import { DAY_NAMES, todayWeekday } from '@/lib/i18n';
+import { DAY_NAMES } from '@/lib/i18n';
+import { getClock } from '@/lib/clock';
 import DayPage from '../DayPage';
 
 const dayOf = (raw: string): number | null => {
@@ -19,6 +20,6 @@ export async function generateMetadata({ params }: { params: Promise<{ weekday: 
 export default async function WeekdayPage({ params }: { params: Promise<{ weekday: string }> }) {
   const day = dayOf((await params).weekday);
   if (day == null) notFound();
-  const member = await getMember();
-  return <DayPage weekday={day} isToday={day === todayWeekday()} member={member} />;
+  const [member, clock] = await Promise.all([getMember(), getClock()]);
+  return <DayPage weekday={day} isToday={day === clock.weekday} member={member} />;
 }

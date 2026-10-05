@@ -31,10 +31,9 @@ const C: Copy<Key> = {
   },
 };
 
-const greeting = (c: Record<Key, string>) => {
-  const h = new Date().getHours();
-  return h < 12 ? c.morning : h < 18 ? c.afternoon : c.evening;
-};
+/* The hour comes from the server, in the member's time zone (lib/clock.ts):
+   reading it here would differ between the server's render and the browser's. */
+const greeting = (c: Record<Key, string>, h: number) => (h < 12 ? c.morning : h < 18 ? c.afternoon : c.evening);
 
 export default function DayHead({
   weekday,
@@ -45,9 +44,12 @@ export default function DayHead({
   minutes,
   empty,
   signedIn,
+  hour,
 }: {
   weekday: number;
   isToday: boolean;
+  /** The member's hour, 0–23, for the greeting. */
+  hour: number;
   name: string | null;
   week: { planned: boolean; done: boolean }[];
   menu: { title: Localized; week: number; stage: { name: Localized; weeks: number } | null } | null;
@@ -76,7 +78,7 @@ export default function DayHead({
             )}
           </p>
           <h1>
-            {isToday ? greeting(c) : c.hello}
+            {isToday ? greeting(c, hour) : c.hello}
             {name ? `, ${name}.` : '.'}
           </h1>
           <p className="sub">

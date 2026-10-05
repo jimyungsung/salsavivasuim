@@ -3,6 +3,7 @@ import { getMenus, QUICK_MENU_SLUG } from '@/lib/menus';
 import { dayPlaylist, getCurrentMenu, getWeek } from '@/lib/week';
 import { signedPosters } from '@/lib/playback';
 import { isConfigured } from '@/lib/supabase/config';
+import { getClock } from '@/lib/clock';
 import type { Member } from '@/lib/member';
 import { getPlayback } from '../actions';
 import DayHead, { QuickDrills } from './DayView';
@@ -23,9 +24,12 @@ export default async function DayPage({
   isToday: boolean;
   member: Member | null;
 }) {
-  const [week, current, menus] = member
-    ? await Promise.all([getWeek(), getCurrentMenu(), getMenus()])
-    : [{ days: Array(7).fill(null) }, null, await getMenus()];
+  const [[week, current, menus], clock] = await Promise.all([
+    member
+      ? Promise.all([getWeek(), getCurrentMenu(), getMenus()])
+      : Promise.all([{ days: Array(7).fill(null) }, null, getMenus()] as const),
+    getClock(),
+  ]);
   const day = week.days[weekday];
   const menu = menus.find(m => m.id === current?.menuId) ?? null;
   const quick = menus.find(m => m.slug === QUICK_MENU_SLUG) ?? null;
@@ -50,6 +54,7 @@ export default async function DayPage({
       minutes={Math.round(playlist.entries.reduce((n, e) => n + (e.video.durationMs ?? 0) * e.repeats, 0) / 60000)}
       empty={playlist.entries.length === 0}
       signedIn={signedIn}
+      hour={clock.hour}
     />
   );
   const quickRow = quick && quick.routines.length > 0 ? <QuickDrills menu={quick} posters={posters} /> : null;
