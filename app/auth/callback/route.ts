@@ -25,8 +25,15 @@ export async function GET(request: NextRequest) {
 
   const { createClient } = await import('@/lib/supabase/server');
   const supabase = await createClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) return fail(error.message);
+
+  /* A new member lands on Today with a week already on it. Best effort: if it
+     cannot be done, Today offers the same thing as one tap. */
+  if (data.user) {
+    const { startFirstWeek } = await import('@/lib/week-copy');
+    await startFirstWeek(supabase, data.user.id).catch(e => console.error('[auth] first week:', e));
+  }
 
   return NextResponse.redirect(`${origin}${next}`);
 }

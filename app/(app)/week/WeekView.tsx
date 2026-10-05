@@ -26,7 +26,7 @@ type Key =
   | 'buildT' | 'buildP' | 'buildFrom' | 'total' | 'practiceDays' | 'reset' | 'resetDay' | 'clearDay'
   | 'libT' | 'libN' | 'search' | 'all' | 'addTo' | 'noLib' | 'noMatch' | 'sheetOpen' | 'close'
   | 'today' | 'done' | 'markDone' | 'undone' | 'rest' | 'restP' | 'addEx' | 'play' | 'missing'
-  | 'aUp' | 'aDown' | 'aRemove' | 'signInT' | 'signInGo' | 'confirmMenu' | 'confirmClear'
+  | 'aUp' | 'aDown' | 'aRemove' | 'signInT' | 'signInGo' | 'joinGo' | 'joinHave' | 'confirmMenu' | 'confirmClear'
   | 'footer' | 'signout';
 
 const C: Copy<Key> = {
@@ -45,6 +45,7 @@ const C: Copy<Key> = {
     addEx: 'Add exercise', play: 'Play', missing: 'No longer available',
     aUp: 'Move earlier', aDown: 'Move later', aRemove: 'Remove',
     signInT: 'Your week is your own practice, so it needs an account.', signInGo: 'Sign in ↗',
+    joinGo: 'Create a free account', joinHave: 'I have an account',
     confirmMenu: 'Replace your whole week with this menu? What you have planned goes.',
     confirmClear: 'Clear this day?',
     footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
@@ -64,6 +65,7 @@ const C: Copy<Key> = {
     addEx: '운동 추가', play: '재생', missing: '더 이상 볼 수 없음',
     aUp: '앞으로', aDown: '뒤로', aRemove: '빼기',
     signInT: '나의 주간은 나만의 연습이라 계정이 필요합니다.', signInGo: '로그인 ↗',
+    joinGo: '무료 계정 만들기', joinHave: '이미 계정이 있어요',
     confirmMenu: '이 메뉴로 한 주를 통째로 바꿀까요? 지금 계획은 사라집니다.',
     confirmClear: '이 날을 비울까요?',
     footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
@@ -87,7 +89,10 @@ export default function WeekView({
   posters,
   signedIn,
   today,
+  recommendedId,
 }: {
+  /** The week a new member starts on (lib/menus.ts startingMenu). */
+  recommendedId: string | null;
   menus: Menu[];
   week: Week;
   currentMenuId: string | null;
@@ -129,9 +134,14 @@ export default function WeekView({
             <p>{c.sub}</p>
           </div>
           {!signedIn && (
-            <Link className="pill primary" href={signInHref('/week')}>
-              {c.signInGo}
-            </Link>
+            <div className="join">
+              <Link className="pill primary" href={signInHref('/week', 'register')}>
+                {c.joinGo}
+              </Link>
+              <Link className="have" href={signInHref('/week')}>
+                {c.joinHave}
+              </Link>
+            </div>
           )}
         </section>
 
@@ -143,7 +153,7 @@ export default function WeekView({
             <p>{c.menusP}</p>
           </div>
           <div className="mrow">
-            {menus.map((m, i) => {
+            {menus.map(m => {
               const on = m.id === currentMenuId;
               const days = m.routines.filter(r => r.weekday != null).length;
               const perDay = days ? Math.round(m.routines.reduce((n, r) => n + routineLengthMs(r), 0) / days / 60000) : 0;
@@ -151,7 +161,7 @@ export default function WeekView({
               return (
                 <article className={`menu${on ? ' on' : ''}`} key={m.id}>
                   <div className="pic">
-                    {on ? <span className="flag on">{c.inWeek}</span> : i === 0 && !current ? <span className="flag rec">{c.recommended}</span> : null}
+                    {on ? <span className="flag on">{c.inWeek}</span> : m.id === recommendedId && !current ? <span className="flag rec">{c.recommended}</span> : null}
                     <b>{T(m.title).split(' ')[0]}</b>
                   </div>
                   <div className="body">
@@ -180,7 +190,7 @@ export default function WeekView({
                         {on ? c.reset : c.useMenu}
                       </button>
                     ) : (
-                      <Link className="pill sm primary" href={signInHref('/week')}>
+                      <Link className="pill sm primary" href={signInHref('/week', 'register')}>
                         {c.useMenu}
                       </Link>
                     )}
@@ -260,9 +270,11 @@ export default function WeekView({
             Everyday Salsa<span className="dot">.</span>
           </b>
           <span>{c.footer}</span>
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="signout">{c.signout}</button>
-          </form>
+          {signedIn && (
+            <form action="/auth/signout" method="post">
+              <button type="submit" className="signout">{c.signout}</button>
+            </form>
+          )}
         </div>
       </footer>
       <span hidden>{lang}</span>

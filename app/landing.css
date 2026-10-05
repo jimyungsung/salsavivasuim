@@ -168,7 +168,12 @@
   .ld .sec{padding-block:64px 0}
 }
 @media (max-width:640px){
-  .ld .links,.ld .tools .in{display:none}
+  /* A phone has the hero's big start button right under the header, so the
+     header keeps Sign in for returning members and drops its own start. */
+  .ld .links{display:none}
+  .ld .lnav .tools{gap:12px}
+  .ld .tools .in{font-size:14px;white-space:nowrap}
+  .ld .lnav .tools .btn.primary{display:none}
   .ld .lnav .wrap{height:58px}
   .ld .ctas .btn{width:100%}
   .ld .show{width:min(100%,290px)}

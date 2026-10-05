@@ -22,15 +22,16 @@ type Key =
   | 's1' | 's1h' | 's1p' | 'signInH' | 'signInP'
   | 'lblEmail' | 'phEmail' | 'or' | 'alt1'
   | 's2' | 's2h' | 's2p'
-  | 'cta' | 'skip' | 'ctaIn' | 'sending' | 'legal'
-  | 'sentH' | 'sentP' | 'failH' | 'setupH' | 'setupP'
+  | 'cta' | 'ctaIn' | 'sending' | 'legal'
+  | 'sentH' | 'sentP' | 'again' | 'otherEmail' | 'noAccountH' | 'noAccountP'
+  | 'failH' | 'setupH' | 'setupP'
   | 'noEmailH' | 'noEmailP' | 'toSignIn' | 'toRegister' | 'toSignInQ' | 'toRegisterQ'
   | 'linkH' | 'linkP';
 
 const C: Copy<Key> = {
   en: {
-    sideH1: 'Ten movements you understand beat', sideH2: 'fifty you memorised.',
-    sideP: 'Three questions about your dancing, then your first session is ready. No card, nothing to install.',
+    sideH1: 'Fifteen minutes a day.', sideH2: 'Salsa that sticks.',
+    sideP: 'One question about your dancing, then your first week is ready. No card, nothing to install.',
     back: 'Home',
     linkH: 'That sign-in link did not work',
     linkP: 'Links expire and work once. Ask for a new one below.',
@@ -40,11 +41,14 @@ const C: Copy<Key> = {
     lblEmail: 'Email', phEmail: 'you@example.com', or: 'OR',
     alt1: 'Continue with Google',
     s2: 'About your dancing', s2h: 'So we start you in the right place',
-    s2p: 'You can change any of this later, or skip it entirely.',
-    cta: 'Create account and see the modules ↗', skip: 'Skip the questions',
+    s2p: 'Optional. It picks your first week.',
+    cta: 'Create account and start today',
     ctaIn: 'Send the sign-in link ↗', sending: 'Sending…',
     legal: 'By continuing you agree to the terms and privacy policy.',
     sentH: 'Check your email', sentP: 'We sent a link to {email}. Open it on this device and you are in.',
+    again: 'Send it again', otherEmail: 'Use a different email',
+    noAccountH: 'No account for this email yet',
+    noAccountP: 'Create one: it takes the same email and one optional question.',
     failH: 'That did not work',
     setupH: 'Accounts are not switched on yet',
     setupP: 'The Supabase project has not been created. Fill in NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env.local and this screen starts working.',
@@ -53,8 +57,8 @@ const C: Copy<Key> = {
     toSignInQ: 'Already have an account?', toRegisterQ: 'No account yet?',
   },
   ko: {
-    sideH1: '제대로 이해한 10개의 동작이', sideH2: '외운 50개보다 낫습니다.',
-    sideP: '세 가지 질문에 답하면 첫 세션이 준비됩니다. 카드 등록도, 설치할 것도 없습니다.',
+    sideH1: '하루 15분.', sideH2: '몸에 남는 살사.',
+    sideP: '춤에 대한 질문 하나면 첫 주가 준비됩니다. 카드 등록도, 설치할 것도 없습니다.',
     back: '홈으로',
     linkH: '로그인 링크가 동작하지 않았습니다',
     linkP: '링크는 한 번만, 정해진 시간 안에만 쓸 수 있습니다. 아래에서 새 링크를 받으세요.',
@@ -64,11 +68,14 @@ const C: Copy<Key> = {
     lblEmail: '이메일', phEmail: 'you@example.com', or: '또는',
     alt1: 'Google로 계속하기',
     s2: '당신의 춤에 대해', s2h: '맞는 지점에서 시작할 수 있도록',
-    s2p: '나중에 언제든 바꿀 수 있고, 건너뛰어도 됩니다.',
-    cta: '계정 만들고 모듈 보기 ↗', skip: '질문 건너뛰기',
+    s2p: '선택 사항이에요. 첫 주를 고르는 데 써요.',
+    cta: '계정 만들고 오늘 시작하기',
     ctaIn: '로그인 링크 받기 ↗', sending: '보내는 중…',
     legal: '계속하면 이용약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다.',
     sentH: '이메일을 확인하세요', sentP: '{email}로 링크를 보냈습니다. 이 기기에서 열면 로그인됩니다.',
+    again: '다시 보내기', otherEmail: '다른 이메일 쓰기',
+    noAccountH: '이 이메일로 된 계정이 아직 없어요',
+    noAccountP: '계정을 만들어 주세요. 같은 이메일과 선택 질문 하나면 됩니다.',
     failH: '문제가 발생했습니다',
     setupH: '계정 기능이 아직 켜지지 않았습니다',
     setupP: 'Supabase 프로젝트가 아직 생성되지 않았습니다. .env.local에 NEXT_PUBLIC_SUPABASE_URL과 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY를 채우면 이 화면이 동작합니다.',
@@ -78,7 +85,14 @@ const C: Copy<Key> = {
   },
 };
 
-type Status = { kind: 'idle' | 'sending' } | { kind: 'sent'; email: string } | { kind: 'error'; message: string };
+type Status =
+  | { kind: 'idle' | 'sending' | 'noAccount' }
+  | { kind: 'sent'; email: string }
+  | { kind: 'error'; message: string };
+
+/* Supabase's answer when signing in with an address that has no account
+   (shouldCreateUser: false). Shown raw it read "Signups not allowed for otp". */
+const NO_ACCOUNT = /signups? not allowed|user not found/i;
 
 export default function AuthPanel({
   mode,
@@ -102,7 +116,7 @@ export default function AuthPanel({
 
   const busy = status.kind === 'sending';
 
-  async function sendLink(withAnswers: boolean) {
+  async function sendLink() {
     if (!isConfigured) {
       setStatus({ kind: 'error', message: c.setupP });
       return;
@@ -121,10 +135,11 @@ export default function AuthPanel({
              address cannot silently become a second empty account. */
           shouldCreateUser: registering,
           emailRedirectTo: callback(),
-          data: { locale: lang, ...(withAnswers ? answers : {}) },
+          data: { locale: lang, ...answers },
         },
       });
-      if (error) setStatus({ kind: 'error', message: error.message });
+      if (error && !registering && NO_ACCOUNT.test(error.message)) setStatus({ kind: 'noAccount' });
+      else if (error) setStatus({ kind: 'error', message: error.message });
       else setStatus({ kind: 'sent', email: email.trim() });
     } catch (e) {
       setStatus({ kind: 'error', message: e instanceof Error ? e.message : String(e) });
@@ -160,11 +175,6 @@ export default function AuthPanel({
               {c.sideH1} <em>{c.sideH2}</em>
             </h2>
             <p>{c.sideP}</p>
-            <div className="steps" aria-hidden="true">
-              <span className="on" />
-              <span className={registering ? 'on' : undefined} />
-              <span />
-            </div>
           </div>
         </aside>
 
@@ -192,7 +202,7 @@ export default function AuthPanel({
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') sendLink(true);
+                  if (e.key === 'Enter') sendLink();
                 }}
               />
 
@@ -250,21 +260,10 @@ export default function AuthPanel({
                 className="pill primary"
                 type="button"
                 aria-busy={busy}
-                onClick={() => sendLink(true)}
+                onClick={() => sendLink()}
               >
                 {busy ? c.sending : registering ? c.cta : c.ctaIn}
               </button>
-
-              {registering && (
-                <button
-                  className="pill ghost onpaper"
-                  type="button"
-                  aria-busy={busy}
-                  onClick={() => sendLink(false)}
-                >
-                  {c.skip}
-                </button>
-              )}
 
               {!isConfigured && (
                 <div className="notice">
@@ -276,13 +275,35 @@ export default function AuthPanel({
               {linkError && status.kind === 'idle' && (
                 <div className="notice bad">
                   <b>{c.linkH}</b>
-                  {c.linkP} ({linkError})
+                  {c.linkP}
                 </div>
               )}
               {status.kind === 'sent' && (
                 <div className="notice good">
                   <b>{c.sentH}</b>
                   {c.sentP.replace('{email}', status.email)}
+                  <span className="again">
+                    <button type="button" onClick={() => sendLink()}>
+                      {c.again}
+                    </button>
+                    {' · '}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail('');
+                        setStatus({ kind: 'idle' });
+                      }}
+                    >
+                      {c.otherEmail}
+                    </button>
+                  </span>
+                </div>
+              )}
+              {status.kind === 'noAccount' && (
+                <div className="notice bad">
+                  <b>{c.noAccountH}</b>
+                  {c.noAccountP}{' '}
+                  <Link href={signInHref(next, 'register')}>{c.toRegister}</Link>
                 </div>
               )}
 

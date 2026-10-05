@@ -26,13 +26,13 @@ const C: Copy<Key> = {
     eyebrow: 'Solo salsa, one routine a day', h1a: 'Fifteen minutes a day.', h1b: 'Salsa that sticks.',
     lede: 'A short routine every day, taught by Suim on video and built from her real classes.',
     ledeB: 'Timing, footwork, turns, styling, in an order that adds up. No partner, no studio, no two-hour workout.',
-    cta: 'Start your first routine', seeWeek: 'See a week', fine: 'Free for the first week. Cancel in two taps.',
+    cta: 'Start your first routine', seeWeek: 'See a week', fine: 'Free while we’re starting out. No card.',
     pToday: 'Today · 2 of 4', pTrain: 'Footwork', pTitle: 'Shines for socials', pWith: 'With Suim · looping 8 counts',
     teacher: 'Suim', teacherP: 'Your teacher, every day', todayCard: 'Today · 14 min', todayT: 'Footwork & timing',
     s1: '10–15 min', s1p: 'a day, phone propped on a shelf', s2: '5 days', s2p: 'a week, plus a free Saturday and a rest day', s3: '8 weeks', s3p: 'to finish the first stage, Foundations',
     howK: 'How it works', howT: 'Open the app. Press start. That’s the whole habit.',
     howP: 'You never choose what to practise. The routine is chosen for you, and it changes every day, so you keep going without having to think about it.',
-    h1t: 'Tell us where you are', h1p: 'Never danced, took classes and stopped, or dance socially and want to get better. That sets your starting stage.',
+    h1t: 'Tell us where you are', h1p: 'Never danced, took classes and stopped, or dance socially and want to get better. That picks your first week.',
     h2t: 'Get a routine each day', h2p: 'Three or four short exercises: warm up, drill, dance. Each day has a theme, and each week builds on the last.',
     h3t: 'A player made for practice', h3p: 'Slow the teacher down without changing the pitch. Loop eight counts. Mirror the picture so their left is your left.',
     lvl1: 'Never danced', lvl2: 'Some classes', lvl3: 'Social dancer', loopNote: 'Looping counts 1–8 at three-quarter speed',
@@ -46,10 +46,10 @@ const C: Copy<Key> = {
     w1: 'Never danced', w1p: 'You start with the count and the basic, and nothing else, for a week. It feels slow. It’s the fastest way.',
     w2: 'Took classes, then stopped', w2p: 'Life happened. You remember the shapes but not the timing. Two weeks brings it back, in your own living room.',
     w3: 'Dance socially, want to improve', w3p: 'You follow fine on the floor but your feet are guessing. Daily drills fix the feet, so the rest can relax.',
-    priceK: 'Pricing', priceT: 'One plan. Less than a single class.', priceP: 'Try a full week free. If it isn’t for you, cancel from the app and nothing is charged.',
-    plan: 'Daily', amount: '₩9,900', per: 'a month, after a free week',
-    f1: 'A new routine every day', f2: 'The practice player: speed, loop, mirror, counts', f3: 'Quick 5-minute drills for busy days', f4: 'Your streak and progress, week by week', f5: 'In English and Korean',
-    priceFine: 'No card needed for the free week.',
+    priceK: 'Pricing', priceT: 'One plan. Less than a single class.', priceP: 'Everything is free while the first stage is filmed. When the paid plan starts it will be one price, and nothing is charged unless you choose it.',
+    plan: 'Daily', amount: '₩9,900', per: 'a month, once the paid plan starts',
+    f1: 'A new routine every day', f2: 'The practice player: speed, loop, mirror, counts', f3: 'Quick 5-minute drills for busy days', f4: 'A week planned for you, yours to change', f5: 'In English and Korean',
+    priceFine: 'Free for now. No card needed.',
     finalT: 'Fourteen minutes. Tonight.', finalP: 'The first routine is the count and the basic step. You’ll have it by the end of the song.',
     footPrograms: 'Solo salsa training', footHelp: 'Help', footPrivacy: 'Privacy',
   },
@@ -58,13 +58,13 @@ const C: Copy<Key> = {
     eyebrow: '솔로 살사, 하루 한 루틴', h1a: '하루 15분.', h1b: '몸에 남는 살사.',
     lede: '매일 짧은 루틴 하나. Suim이 영상으로 직접 가르치고, 실제 수업에서 가져왔습니다.',
     ledeB: '타이밍, 풋워크, 턴, 스타일링을 쌓이는 순서로. 파트너도, 스튜디오도, 두 시간짜리 운동도 필요 없습니다.',
-    cta: '첫 루틴 시작하기', seeWeek: '한 주 살펴보기', fine: '첫 주는 무료. 두 번 탭하면 해지됩니다.',
+    cta: '첫 루틴 시작하기', seeWeek: '한 주 살펴보기', fine: '시작하는 동안은 무료. 카드 등록 없음.',
     pToday: '오늘 · 2/4', pTrain: '풋워크', pTitle: '소셜을 위한 샤인', pWith: 'Suim과 함께 · 8카운트 반복',
     teacher: 'Suim', teacherP: '매일 만나는 선생님', todayCard: '오늘 · 14분', todayT: '풋워크 & 타이밍',
     s1: '10~15분', s1p: '하루, 휴대폰은 선반 위에', s2: '5일', s2p: '한 주에, 자유로운 토요일과 휴식일까지', s3: '8주', s3p: '첫 단계 파운데이션을 마치는 데',
     howK: '이용 방법', howT: '앱을 열고, 시작을 누르세요. 습관은 그게 전부입니다.',
     howP: '무엇을 연습할지 고를 필요가 없습니다. 루틴은 정해져 있고 매일 바뀌니, 생각하지 않아도 계속하게 됩니다.',
-    h1t: '지금 어디쯤인지 알려주세요', h1p: '춤춘 적이 없거나, 수업을 듣다 멈췄거나, 소셜에서 추지만 더 잘 추고 싶거나. 그것이 시작 단계를 정합니다.',
+    h1t: '지금 어디쯤인지 알려주세요', h1p: '춤춘 적이 없거나, 수업을 듣다 멈췄거나, 소셜에서 추지만 더 잘 추고 싶거나. 그것으로 첫 주가 정해집니다.',
     h2t: '매일 루틴 하나', h2p: '짧은 운동 서너 개: 워밍업, 드릴, 그리고 춤. 매일 주제가 있고, 매주 지난주 위에 쌓입니다.',
     h3t: '연습을 위해 만든 플레이어', h3p: '음정은 그대로 두고 선생님을 느리게. 8카운트 반복. 화면을 반전해 선생님의 왼쪽이 나의 왼쪽이 되게.',
     lvl1: '춤춘 적 없음', lvl2: '수업 조금', lvl3: '소셜 댄서', loopNote: '1~8카운트를 0.75배속으로 반복 중',
@@ -78,10 +78,10 @@ const C: Copy<Key> = {
     w1: '춤춘 적 없음', w1p: '한 주 동안 카운트와 기본 스텝만 합니다. 느리게 느껴지지만, 가장 빠른 길입니다.',
     w2: '수업을 듣다 멈춤', w2p: '살다 보니 그렇게 됐죠. 모양은 기억나는데 타이밍이 없습니다. 2주면 거실에서 돌아옵니다.',
     w3: '소셜에서 추지만 더 잘 추고 싶음', w3p: '플로어에서 팔로우는 되는데 발은 추측 중입니다. 매일의 드릴이 발을 고치면, 나머지가 편해집니다.',
-    priceK: '가격', priceT: '플랜 하나. 수업 한 번보다 쌉니다.', priceP: '한 주를 통째로 무료로. 맞지 않으면 앱에서 해지하면 되고, 아무것도 청구되지 않습니다.',
-    plan: '데일리', amount: '₩9,900', per: '무료 한 주 이후, 월',
-    f1: '매일 새 루틴', f2: '연습 플레이어: 속도, 반복, 반전, 카운트', f3: '바쁜 날을 위한 5분 드릴', f4: '주 단위 스트릭과 진행', f5: '영어와 한국어',
-    priceFine: '무료 한 주에는 카드가 필요 없습니다.',
+    priceK: '가격', priceT: '플랜 하나. 수업 한 번보다 쌉니다.', priceP: '첫 단계를 촬영하는 동안 모든 것이 무료입니다. 유료 플랜이 시작되면 가격은 하나이고, 직접 선택하지 않으면 아무것도 청구되지 않습니다.',
+    plan: '데일리', amount: '₩9,900', per: '유료 플랜 시작 후, 월',
+    f1: '매일 새 루틴', f2: '연습 플레이어: 속도, 반복, 반전, 카운트', f3: '바쁜 날을 위한 5분 드릴', f4: '나를 위해 짜인 한 주, 바꾸는 건 자유', f5: '영어와 한국어',
+    priceFine: '지금은 무료. 카드가 필요 없습니다.',
     finalT: '14분. 오늘 밤.', finalP: '첫 루틴은 카운트와 기본 스텝입니다. 노래가 끝날 즈음엔 몸에 들어와 있을 거예요.',
     footPrograms: '솔로 살사 트레이닝', footHelp: '도움말', footPrivacy: '개인정보',
   },
@@ -341,9 +341,10 @@ export default function LandingView({ signedIn }: { signedIn: boolean }) {
           <span>
             Everyday Salsa<span className="dot">.</span> {c.footPrograms}
           </span>
+          {/* Help and Privacy come back as links when their pages exist; as
+              plain text they looked like links that did nothing. */}
           <div className="fl">
-            <span>{c.footHelp}</span>
-            <span>{c.footPrivacy}</span>
+            {!signedIn && <Link href="/signin">{c.signIn}</Link>}
           </div>
         </footer>
       </main>

@@ -153,6 +153,8 @@ export default function Player({
   signedIn,
   above,
   below,
+  empty,
+  finish,
 }: {
   playlist: Playlist;
   /** Which entry opens, or null when nothing in the list is playable. */
@@ -165,6 +167,12 @@ export default function Player({
       quick drills. The player owns the footer, so they slot in here. */
   above?: React.ReactNode;
   below?: React.ReactNode;
+  /** Replaces the default "nothing to play" block: Today's sign-up card for a
+      visitor, or its first-week card for a member with nothing planned. */
+  empty?: React.ReactNode;
+  /** Shown over the picture once the last exercise has played its repeats:
+      Today's "that's today, mark it done". */
+  finish?: React.ReactNode;
 }) {
   const { T } = useLang();
   const c = useCopy(C);
@@ -188,6 +196,7 @@ export default function Player({
   const [mirrored, setMirrored] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [loopOn, setLoopOn] = useState(false);
   const [region, setRegion] = useState<Region | null>(null);
@@ -231,6 +240,7 @@ export default function Player({
        otherwise a little slow, which is how you meet a new exercise. */
     setSpeed(entry.speed ?? stored ?? 0.75);
     setStarted(false);
+    setFinished(false);
     setRegion(null);
     setLoopOn(false);
     setBeat(null);
@@ -434,6 +444,8 @@ export default function Player({
     if (offset >= 0) {
       autoplayRef.current = true;
       setIndex(index + 1 + offset);
+    } else {
+      setFinished(true);
     }
   }, [index, loopOn, entry, entries]);
 
@@ -562,23 +574,25 @@ export default function Player({
     return (
       <div className="sp">
         {above}
-        <div className="sp-empty">
-          <Link className="crumb" href={playlist.back.href}>
-            <span aria-hidden="true">←</span>
-            <span>{T(playlist.back.label)}</span>
-          </Link>
-          <h1>{T(playlist.title)}</h1>
-          {signedIn ? (
-            <p>{entries.length ? c.notReady : c.nothing}</p>
-          ) : (
-            <>
-              <p>{c.signInT}</p>
-              <Link className="pill primary sm" href={signInHref(playlist.href)}>
-                {c.signInGo}
-              </Link>
-            </>
-          )}
-        </div>
+        {empty ?? (
+          <div className="sp-empty">
+            <Link className="crumb" href={playlist.back.href}>
+              <span aria-hidden="true">←</span>
+              <span>{T(playlist.back.label)}</span>
+            </Link>
+            <h1>{T(playlist.title)}</h1>
+            {signedIn ? (
+              <p>{entries.length ? c.notReady : c.nothing}</p>
+            ) : (
+              <>
+                <p>{c.signInT}</p>
+                <Link className="pill primary sm" href={signInHref(playlist.href)}>
+                  {c.signInGo}
+                </Link>
+              </>
+            )}
+          </div>
+        )}
         {below}
       </div>
     );
@@ -679,6 +693,7 @@ export default function Player({
                 onPlay={() => {
                   setPlaying(true);
                   setStarted(true);
+                  setFinished(false);
                   wake();
                 }}
                 onPause={() => setPlaying(false)}
@@ -707,6 +722,8 @@ export default function Player({
                   {T(current.description) && <p>{T(current.description)}</p>}
                 </div>
               )}
+
+              {finished && finish && <div className="sp-finish">{finish}</div>}
 
               {grid && countsOn && started && (
                 <div className="counts" aria-hidden="true">
@@ -971,9 +988,11 @@ export default function Player({
             Everyday Salsa<span className="dot">.</span>
           </b>
           <span>{c.footer}</span>
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="signout">{c.signout}</button>
-          </form>
+          {signedIn && (
+            <form action="/auth/signout" method="post">
+              <button type="submit" className="signout">{c.signout}</button>
+            </form>
+          )}
         </div>
       </footer>
     </div>

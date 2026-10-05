@@ -74,7 +74,7 @@ export default function AppNavBar({ member }: { member: Member | null }) {
     <>
       <header className="nav">
         <div className="wrap">
-          <Link className="logo" href="/today">
+          <Link className="logo" href={member ? '/today' : '/'}>
             Everyday Salsa<span className="dot">.</span>
           </Link>
 

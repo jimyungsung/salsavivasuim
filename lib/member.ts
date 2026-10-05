@@ -14,6 +14,9 @@ import { createClient } from './supabase/server';
    trip rather than two. */
 
 export interface Member {
+  /** A first name worth greeting by, or null. The chip falls back to the
+      email's local part; "Good evening, jimyung.sung" does not. */
+  greetName: string | null;
   /** First name, for the chip. */
   name: string;
   initials: string;
@@ -39,15 +42,12 @@ export const getMember = cache(async (): Promise<Member | null> => {
     .maybeSingle();
 
   const meta = (user.user_metadata ?? {}) as { full_name?: string; name?: string };
-  const full =
-    (profile?.display_name as string | null)?.trim() ||
-    meta.full_name?.trim() ||
-    meta.name?.trim() ||
-    user.email?.split('@')[0] ||
-    '';
+  const given = (profile?.display_name as string | null)?.trim() || meta.full_name?.trim() || meta.name?.trim() || '';
+  const full = given || user.email?.split('@')[0] || '';
   const words = full.split(/\s+/).filter(Boolean);
 
   return {
+    greetName: given ? given.split(/\s+/)[0] : null,
     name: words[0] ?? full,
     initials: initialsOf(words),
     isAdmin: profile?.role === 'admin',

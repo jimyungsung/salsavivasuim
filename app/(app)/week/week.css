@@ -132,3 +132,7 @@
   .wk .day li{grid-template-columns:minmax(0,1fr) auto auto}
   .wk .day li .tg{display:none}
 }
+
+/* signed out: one way in, and the quieter one for members */
+.wk .head .join{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.wk .head .join .have{font-size:14px;font-weight:700;color:var(--ink);border-bottom:2px solid var(--lime)}
