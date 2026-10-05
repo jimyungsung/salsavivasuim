@@ -10,6 +10,8 @@ export type Localized = Record<Lang, string>;
 /** Where the language choice is kept so the server can set <html lang> on the
     first paint. */
 export const LANG_COOKIE = 'suim-lang';
+/** The browser's time zone, for the server's idea of today (lib/clock.ts). */
+export const TZ_COOKIE = 'suim-tz';
 export const isLang = (value: unknown): value is Lang => value === 'en' || value === 'ko';
 
 /** Reads a localized field, falling back to English when a translation is missing. */
@@ -77,7 +79,3 @@ export const DAY_SHORT: Localized[] = [
   { en: 'Sat', ko: '토' },
   { en: 'Sun', ko: '일' },
 ];
-
-/** Today's weekday as the database counts it, 0 = Monday, in the browser's or
-    server's local time. */
-export const todayWeekday = (date = new Date()): number => (date.getDay() + 6) % 7;

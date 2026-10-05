@@ -55,13 +55,14 @@ export async function setStatus(
   if (!PUBLISH_STATUSES.includes(status as PublishStatus)) return fail('Unknown status.');
 
   const supabase = await createClient();
-  const patch: Record<string, unknown> = { status };
-  /* published_at is set the first time something opens and left alone after —
-     it is when the material went live, not when it was last touched. */
-  if (table === 'menus' && status === 'open') patch.published_at = new Date().toISOString();
-
-  const { error } = await supabase.from(table).update(patch).eq('id', id);
+  const { error } = await supabase.from(table).update({ status }).eq('id', id);
   if (error) return fail(error.message);
+  /* published_at is set the first time a menu opens and left alone after — it
+     is when the material went live, not when it was last touched. Hence the
+     `is null`: reopening a menu must not move it. */
+  if (table === 'menus' && status === 'open') {
+    await supabase.from('menus').update({ published_at: new Date().toISOString() }).eq('id', id).is('published_at', null);
+  }
 
   revalidateCatalogue();
   return ok;
@@ -269,8 +270,40 @@ export async function setRoutineWeekday(id: string, weekday: number | null): Pro
     return fail('Not a day of the week.');
   }
   const supabase = await createClient();
+
+  /* One routine per weekday in a menu (a unique index holds it). Moving a
+     routine onto a taken day swaps the two, rather than refusing or silently
+     shadowing: members copy one routine per weekday, so two on a Tuesday lost
+     one of them. The other routine is parked on null first so the index never
+     sees two at once. */
+  const { data: self, error: selfError } = await supabase
+    .from('routines')
+    .select('menu_id, weekday')
+    .eq('id', id)
+    .single();
+  if (selfError || !self) return fail(selfError?.message ?? 'No such routine.');
+
+  let other: string | null = null;
+  if (weekday !== null && self.weekday !== weekday) {
+    const { data: clash } = await supabase
+      .from('routines')
+      .select('id')
+      .eq('menu_id', self.menu_id)
+      .eq('weekday', weekday)
+      .neq('id', id)
+      .maybeSingle();
+    other = clash?.id ?? null;
+  }
+  if (other) {
+    const { error: parkError } = await supabase.from('routines').update({ weekday: null }).eq('id', other);
+    if (parkError) return fail(parkError.message);
+  }
   const { error } = await supabase.from('routines').update({ weekday }).eq('id', id);
   if (error) return fail(error.message);
+  if (other) {
+    const { error: swapError } = await supabase.from('routines').update({ weekday: self.weekday }).eq('id', other);
+    if (swapError) return fail(swapError.message);
+  }
 
   revalidateCatalogue();
   return ok;

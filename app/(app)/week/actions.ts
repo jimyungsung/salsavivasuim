@@ -46,18 +46,40 @@ interface RoutineForCopy {
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-/** Makes a day out of a routine: one drill, its items copied, one slot. The
-    routine's own exercises are what the member's RLS lets them see, so a
-    routine holding a draft exercise copies without it. */
-async function copyRoutine(supabase: Client, userId: string, routine: RoutineForCopy, weekday: number): Promise<Result> {
+/** Makes a day out of a routine: one drill, its items copied, one slot.
+    Returns the new drill's id, or leaves nothing behind.
+
+    Only what the member can play is copied. A routine's items are readable
+    with the routine, but "own drill items" refuses an exercise can_access()
+    does not allow, so one draft or still-encoding exercise used to fail the
+    whole day. Reading the exercises first is the same RLS question asked
+    without the insert: what comes back is what may go in. */
+async function copyRoutine(
+  supabase: Client,
+  userId: string,
+  routine: RoutineForCopy,
+  weekday: number,
+): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const all = [...(routine.routine_items ?? [])].sort((a, b) => a.position - b.position);
+  const ids = [...new Set(all.map(i => i.video_id))];
+  const { data: playable } = ids.length
+    ? await supabase.from('videos').select('id').in('id', ids)
+    : { data: [] as { id: string }[] };
+  const can = new Set((playable ?? []).map(v => v.id));
+  const items = all.filter(i => can.has(i.video_id));
+
   const { data: drill, error } = await supabase
     .from('drills')
     .insert({ user_id: userId, name: routine.title_t.en, routine_id: routine.id })
     .select('id')
     .single();
-  if (error || !drill) return fail(error?.message ?? 'Could not copy the routine.');
+  if (error || !drill) return { ok: false, error: error?.message ?? 'Could not copy the routine.' };
 
-  const items = [...(routine.routine_items ?? [])].sort((a, b) => a.position - b.position);
+  const undo = async (message: string) => {
+    await supabase.from('drills').delete().eq('id', drill.id);
+    return { ok: false as const, error: message };
+  };
+
   if (items.length) {
     const { error: itemsError } = await supabase.from('drill_items').insert(
       items.map((i, k) => ({
@@ -70,21 +92,25 @@ async function copyRoutine(supabase: Client, userId: string, routine: RoutineFor
         repeats: i.repeats,
       })),
     );
-    if (itemsError) {
-      await supabase.from('drills').delete().eq('id', drill.id);
-      return fail(itemsError.message);
-    }
+    if (itemsError) return undo(itemsError.message);
   }
   const { error: slotError } = await supabase
     .from('drill_slots')
     .insert({ user_id: userId, drill_id: drill.id, weekday });
-  if (slotError) return fail(slotError.message);
-  return ok;
+  if (slotError) return undo(slotError.message);
+  return { ok: true, id: drill.id };
 }
+
+/* What a member reads when copying fails. The database's own message goes to
+   the log; it means nothing to a dancer. */
+const COPY_FAILED = 'Your week could not be set up just now. Nothing was changed. Please try again.';
 
 /** Replaces the whole week with a menu's routines, one per weekday, and
     remembers the menu on the profile. What was there goes: a menu is a fresh
-    start, and "Reset to menu" is how you get it back. */
+    start, and "Reset to menu" is how you get it back.
+
+    The new week is built first and the old one removed only once it stands,
+    so a failure halfway leaves the member's week as it was, not empty. */
 export async function useMenu(menuId: string): Promise<Result> {
   const { supabase, userId } = await whoami();
   if (!userId) return fail('Sign in to plan your week.');
@@ -97,13 +123,25 @@ export async function useMenu(menuId: string): Promise<Result> {
     .not('weekday', 'is', null);
   if (error) return fail(error.message);
 
-  const { error: clearError } = await supabase.from('drills').delete().eq('user_id', userId);
-  if (clearError) return fail(clearError.message);
+  const { data: before, error: beforeError } = await supabase.from('drills').select('id').eq('user_id', userId);
+  if (beforeError) return fail(beforeError.message);
 
+  const built: string[] = [];
   for (const routine of (routines ?? []) as unknown as RoutineForCopy[]) {
     if (routine.weekday == null) continue;
     const result = await copyRoutine(supabase, userId, routine, routine.weekday);
-    if (!result.ok) return result;
+    if (!result.ok) {
+      console.error('[week] useMenu copy failed:', result.error);
+      if (built.length) await supabase.from('drills').delete().in('id', built);
+      return fail(COPY_FAILED);
+    }
+    built.push(result.id);
+  }
+
+  const old = (before ?? []).map(d => d.id);
+  if (old.length) {
+    const { error: clearError } = await supabase.from('drills').delete().in('id', old);
+    if (clearError) console.error('[week] useMenu could not clear the old week:', clearError.message);
   }
 
   const { error: profileError } = await supabase
@@ -140,11 +178,14 @@ export async function resetDay(weekday: number): Promise<Result> {
     .maybeSingle();
   if (error || !routine) return fail(error?.message ?? 'That routine is no longer available.');
 
-  const { error: delError } = await supabase.from('drills').delete().eq('id', (slot as { drill_id: string }).drill_id);
-  if (delError) return fail(delError.message);
-
+  /* The fresh copy first; the old day goes only once it exists. */
   const result = await copyRoutine(supabase, userId, routine as unknown as RoutineForCopy, weekday);
-  if (!result.ok) return result;
+  if (!result.ok) {
+    console.error('[week] resetDay copy failed:', result.error);
+    return fail(COPY_FAILED);
+  }
+  const { error: delError } = await supabase.from('drills').delete().eq('id', (slot as { drill_id: string }).drill_id);
+  if (delError) console.error('[week] resetDay could not remove the old day:', delError.message);
   refresh();
   return ok;
 }

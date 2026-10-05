@@ -20,7 +20,7 @@ import { signInHref } from '@/lib/safe-next';
 type Key =
   | 'sideH1' | 'sideH2' | 'sideP' | 'back'
   | 's1' | 's1h' | 's1p' | 'signInH' | 'signInP'
-  | 'lblEmail' | 'phEmail' | 'or' | 'alt1' | 'alt2'
+  | 'lblEmail' | 'phEmail' | 'or' | 'alt1'
   | 's2' | 's2h' | 's2p'
   | 'cta' | 'skip' | 'ctaIn' | 'sending' | 'legal'
   | 'sentH' | 'sentP' | 'failH' | 'setupH' | 'setupP'
@@ -38,7 +38,7 @@ const C: Copy<Key> = {
     s1p: 'We send a sign-in link — there is no password to remember.',
     signInH: 'Sign in', signInP: 'We send a link to your email. No password to remember.',
     lblEmail: 'Email', phEmail: 'you@example.com', or: 'OR',
-    alt1: 'Continue with Google', alt2: 'Continue with Apple',
+    alt1: 'Continue with Google',
     s2: 'About your dancing', s2h: 'So we start you in the right place',
     s2p: 'You can change any of this later, or skip it entirely.',
     cta: 'Create account and see the modules ↗', skip: 'Skip the questions',
@@ -62,7 +62,7 @@ const C: Copy<Key> = {
     s1p: '로그인 링크를 보내드립니다. 기억할 비밀번호가 없습니다.',
     signInH: '로그인', signInP: '이메일로 링크를 보내드립니다. 비밀번호는 필요 없습니다.',
     lblEmail: '이메일', phEmail: 'you@example.com', or: '또는',
-    alt1: 'Google로 계속하기', alt2: 'Apple로 계속하기',
+    alt1: 'Google로 계속하기',
     s2: '당신의 춤에 대해', s2h: '맞는 지점에서 시작할 수 있도록',
     s2p: '나중에 언제든 바꿀 수 있고, 건너뛰어도 됩니다.',
     cta: '계정 만들고 모듈 보기 ↗', skip: '질문 건너뛰기',
@@ -131,7 +131,7 @@ export default function AuthPanel({
     }
   }
 
-  async function withProvider(provider: 'google' | 'apple') {
+  async function withProvider(provider: 'google') {
     if (!isConfigured) {
       setStatus({ kind: 'error', message: c.setupP });
       return;
@@ -203,9 +203,8 @@ export default function AuthPanel({
                 <button className="pill ghost onpaper" type="button" onClick={() => withProvider('google')}>
                   {c.alt1}
                 </button>
-                <button className="pill ghost onpaper" type="button" onClick={() => withProvider('apple')}>
-                  {c.alt2}
-                </button>
+                {/* Apple: add the button back once the provider is enabled in
+                    Supabase. A button that cannot sign anyone in is worse than none. */}
               </div>
             </div>
 

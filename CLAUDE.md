@@ -10,8 +10,7 @@ right about the stack, the player and the delivery chain, is
 end, and the migration `20260928120000_daily.sql` **is applied to the live
 database** (28 September 2026), with `supabase/seed.sql` run after it: one
 stage, two draft menus of six routines, the quick-drills menu, and the three
-Pachanga clips kept as draft exercises to tag. **Until this branch is merged,
-the live site (main) reads tables that no longer exist**; merge it next. A JSON
+Pachanga clips kept as draft exercises to tag. A JSON
 copy of the old catalogue was taken before the migration; the placeholder
 programs are also in git history (`supabase/seed.sql` before this branch).
 
@@ -79,6 +78,9 @@ item's own speed overrides it.
     lib/playlist.ts       the Playlist shape, routinePlaylist(), the length sums
     lib/playback.ts       every signed URL and thumbnail is minted here
     lib/member.ts         getMember() — chrome only; never an access check
+    lib/clock.ts          the member's today, hour and week start, in their time
+                          zone (a cookie TimeZoneSync sets; Seoul until then).
+                          Never new Date() for "today" on the server: it is UTC
     lib/safe-next.ts      the one check on a `next` return path; signInHref()
     supabase/migrations/  the schema, RLS and the entitlement function
     supabase/seed.sql     a starting catalogue for a fresh database
@@ -107,6 +109,10 @@ item's own speed overrides it.
 - **Adding is a tap, not a drag.** HTML5 drag does not fire on touch, and a
   phone in a practice room is the likely device. The planner's library has
   "Add to <day>" buttons; the arrows order a day.
+- **A day is done this week, not forever.** `done_at` stays on the slot;
+  `getWeek()` counts it only from this week's Monday, in the member's zone.
+  A menu's routines hold one weekday each (unique index); moving one onto a
+  taken day swaps the two.
 - **Old addresses redirect** (`next.config.mjs`): `/masterplan`, `/programs`,
   `/sessions`, `/drills`, `/prototype` land on their successors.
 

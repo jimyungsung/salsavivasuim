@@ -2,6 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { createClient } from './supabase/server';
 import { isConfigured } from './supabase/config';
+import { getClock, localDate } from './clock';
 import type { Localized } from './i18n';
 import { DAY_NAMES } from './i18n';
 import { VIDEO_COLUMNS, toExercise, type Exercise, type VideoSummaryRow } from './menus';
@@ -75,8 +76,12 @@ export interface Week {
 async function loadWeek(): Promise<Week> {
   const days: (Day | null)[] = Array(7).fill(null);
   if (!isConfigured) return { days };
-  const supabase = await createClient();
+  const [supabase, clock] = await Promise.all([createClient(), getClock()]);
   const { data, error } = await supabase.from('drills').select(DRILL_SELECT).order('created_at');
+  /* A slot is ticked once and the tick stays on the row; what reads as done
+     is a tick from this week, in the member's time zone. Last Monday's tick is
+     history, not this Monday. */
+  const thisWeek = (at: string | null) => (at && localDate(at, clock.tz) >= clock.weekStart ? at : null);
   if (error) {
     console.error('[week] read failed:', error.message);
     return { days };
@@ -89,7 +94,7 @@ async function loadWeek(): Promise<Week> {
         slotId: slot.id,
         name: row.name,
         routineId: row.routine_id,
-        doneAt: slot.done_at,
+        doneAt: thisWeek(slot.done_at),
         items: [...(row.drill_items ?? [])]
           .sort((a, b) => a.position - b.position)
           .map(i => ({
