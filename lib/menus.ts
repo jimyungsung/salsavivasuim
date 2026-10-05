@@ -250,6 +250,21 @@ const toMenu = (m: MenuRow): Menu => ({
     exercise each, no stage. Made in the back office like any other menu. */
 export const QUICK_MENU_SLUG = 'quick-drills';
 
+/** Where a new member starts: the first open menu of the earliest stage that
+    has days on it. The onboarding answer (profiles.start_point) is stored for
+    when there is more than one stage to choose between; with one stage, every
+    answer starts at its first week. Takes the list rather than reading it, so
+    the page and the first sign-in pick the same way. */
+export function startingMenu<M extends { slug: string; status: string; stage: { position: number } | null; position: number; routines: { weekday: number | null }[] }>(
+  menus: M[],
+): M | null {
+  return (
+    menus
+      .filter(m => m.status === 'open' && m.stage && m.slug !== QUICK_MENU_SLUG && m.routines.some(r => r.weekday != null))
+      .sort((a, b) => a.stage!.position - b.stage!.position || a.position - b.position)[0] ?? null
+  );
+}
+
 /** Every menu this viewer may see, with its routines and their exercises, in
     stage order then position. Stageless menus come last. One query: the week
     planner shows them all. */

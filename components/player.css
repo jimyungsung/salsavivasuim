@@ -40,6 +40,8 @@
 .sp-status{position:absolute;inset:0;z-index:3;display:grid;place-items:center;margin:0;color:#fff;font-size:13px;font-weight:700;background:#0b0f0eb0;pointer-events:none}
 
 /* before the first play: what this part is for */
+/* after the last exercise: what the page wants said (Today: mark it done) */
+.sp .sp-finish{position:absolute;inset:0;z-index:3;display:grid;place-content:center;justify-items:center;gap:14px;text-align:center;padding:24px;background:#0b0f0ed9;color:#fff}
 .sp .stack{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:12px;text-align:center;padding:0 24px 70px;background:radial-gradient(ellipse at center,#0b0f0e99,#0b0f0e33 70%);pointer-events:none}
 .sp .stack .big{pointer-events:auto;width:76px;height:76px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--lime);color:var(--ink);cursor:pointer;transition:transform .2s}
 .sp .stack .big:hover{transform:scale(1.06)}

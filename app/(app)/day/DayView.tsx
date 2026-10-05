@@ -10,24 +10,23 @@ import { mmss } from '@/lib/db';
 import { DAY_NAMES, DAY_SHORT, TAG_LABELS, type Localized } from '@/lib/i18n';
 import type { Menu } from '@/lib/menus';
 import { routineLengthMs } from '@/lib/playlist';
-import { signInHref } from '@/lib/safe-next';
 
 type Key =
   | 'morning' | 'afternoon' | 'evening' | 'hello' | 'weekOf' | 'takes' | 'nothing' | 'planWeek'
-  | 'restDay' | 'quickT' | 'quickP' | 'signIn' | 'aWeek';
+  | 'restDay' | 'quickT' | 'quickP' | 'aWeek' | 'min';
 
 const C: Copy<Key> = {
   en: {
     morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening', hello: 'Hello',
     weekOf: 'Week', takes: 'Today takes', nothing: 'Nothing planned for', planWeek: 'Plan your week →',
     restDay: 'A rest day. Rest is part of the week.', quickT: 'Got 5 minutes?', quickP: 'Short drills for a coffee break.',
-    signIn: 'Sign in to see your week', aWeek: 'This week',
+    aWeek: 'This week', min: 'min',
   },
   ko: {
     morning: '좋은 아침이에요', afternoon: '좋은 오후예요', evening: '좋은 저녁이에요', hello: '안녕하세요',
     weekOf: '주차', takes: '오늘은', nothing: '계획이 없어요:', planWeek: '주간 계획하기 →',
     restDay: '휴식일입니다. 휴식도 한 주의 일부예요.', quickT: '5분 있으세요?', quickP: '잠깐 쉬는 시간의 짧은 드릴.',
-    signIn: '로그인하면 나의 주간이 보입니다', aWeek: '이번 주',
+    aWeek: '이번 주', min: '분',
   },
 };
 
@@ -45,11 +44,14 @@ export default function DayHead({
   empty,
   signedIn,
   hour,
+  done,
 }: {
   weekday: number;
   isToday: boolean;
   /** The member's hour, 0–23, for the greeting. */
   hour: number;
+  /** The day's Done button, when there is a day to finish. */
+  done?: React.ReactNode;
   name: string | null;
   week: { planned: boolean; done: boolean }[];
   menu: { title: Localized; week: number; stage: { name: Localized; weeks: number } | null } | null;
@@ -81,40 +83,51 @@ export default function DayHead({
             {isToday ? greeting(c, hour) : c.hello}
             {name ? `, ${name}.` : '.'}
           </h1>
-          <p className="sub">
-            {!signedIn ? (
-              <Link href={signInHref(isToday ? '/today' : `/day/${weekday}`)}>{c.signIn}</Link>
-            ) : empty ? (
-              <>
-                {c.nothing} {T(DAY_NAMES[weekday]).toLowerCase()}. {c.restDay}{' '}
-                <Link href="/week">{c.planWeek}</Link>
-              </>
-            ) : (
-              <>
-                {c.takes} <b>{minutes} min</b>. <Link href="/week">{c.planWeek}</Link>
-              </>
-            )}
-          </p>
+          {/* Signed out, the card under the head is the way in; a second
+              invitation up here only competed with it. */}
+          {signedIn && (
+            <p className="sub">
+              {empty ? (
+                <>
+                  {c.nothing} {T(DAY_NAMES[weekday])}. {c.restDay}{' '}
+                  <Link href="/week">{c.planWeek}</Link>
+                </>
+              ) : (
+                <>
+                  {c.takes} <b>{minutes} {c.min}</b>. <Link href="/week">{c.planWeek}</Link>
+                </>
+              )}
+            </p>
+          )}
+          {done && <div className="doneslot">{done}</div>}
         </div>
 
         <div className="week" aria-label={c.aWeek}>
-          {week.map((d, di) => (
-            <Link
-              key={di}
-              href={di === weekday ? '#' : `/day/${di}`}
-              className={`day${d.done ? ' done' : ''}${di === weekday ? ' now' : ''}${!d.planned ? ' rest' : ''}`}
-              aria-current={di === weekday ? 'date' : undefined}
-            >
-              <i>
-                {d.done && (
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </i>
-              {T(DAY_SHORT[di])}
-            </Link>
-          ))}
+          {week.map((d, di) => {
+            const cls = `day${d.done ? ' done' : ''}${di === weekday ? ' now' : ''}${!d.planned ? ' rest' : ''}`;
+            const inner = (
+              <>
+                <i>
+                  {d.done && (
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </i>
+                {T(DAY_SHORT[di])}
+              </>
+            );
+            /* The day you are on is where you are, not a link to it. */
+            return di === weekday ? (
+              <span key={di} className={cls} aria-current="date">
+                {inner}
+              </span>
+            ) : (
+              <Link key={di} href={`/day/${di}`} className={cls}>
+                {inner}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

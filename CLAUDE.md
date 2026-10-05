@@ -41,6 +41,16 @@ An exercise carries **tags** (`text[]`: what it works, from `EXERCISE_TAGS` in
 gone from the data; every exercise is something you repeat. **Levels** describe
 the material, not the dancer, and are not a ladder.
 
+**A new member starts on a week, not a choice.** Onboarding asks one
+question, stored as `profiles.start_point` (the old experience/timing/goal are
+kept as data, no longer asked). The first sign-in copies the starting menu
+into the week (`startFirstWeek` in `lib/week-copy.ts`, called from
+`/auth/callback`); `startingMenu()` in `lib/menus.ts` picks it — the first open
+menu of the earliest stage — and Today shows the same menu as a one-tap card if
+the copy could not happen. Done is on Today: under the greeting, and on the
+card the player shows after the last exercise (`finish`); the player's `empty`
+slot is how Today puts its sign-up and first-week cards where the player goes.
+
 **A member's week is My drills under the hood** (`lib/week.ts`): a `drill` is
 one day — its exercises in order, each with its own loop, speed and repeats —
 and a `drill_slot` is the weekday it sits on, with `done_at`. "Use this menu"
@@ -162,7 +172,6 @@ shortened. `drill_items` cascades, as members' own rows always did.
   the mockup shows are not on the page yet.
 - **Pointer-event drag** in the planner; tap-to-add is the launch.
 - **Progress** and **Library** as nav sections; the bar has Today and My week.
-- Onboarding still asks the three old questions; the plan trims it to one.
 - The name in the code and the infrastructure is still SUIM; the domain is
   salsadrill.com. Only what a member reads says Everyday Salsa.
 

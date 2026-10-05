@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getLibrary, getMenus, QUICK_MENU_SLUG } from '@/lib/menus';
+import { getLibrary, getMenus, QUICK_MENU_SLUG, startingMenu } from '@/lib/menus';
 import { getCurrentMenu, getWeek } from '@/lib/week';
 import { getMember } from '@/lib/member';
 import { signedPosters } from '@/lib/playback';
@@ -35,6 +35,7 @@ export default async function WeekPage() {
       posters={posters}
       signedIn={Boolean(member)}
       today={(await getClock()).weekday}
+      recommendedId={startingMenu(menus)?.id ?? null}
     />
   );
 }

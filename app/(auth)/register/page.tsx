@@ -7,7 +7,7 @@ import '../auth.css';
 
 export const metadata: Metadata = {
   title: 'Create your account',
-  description: 'Three questions about your dancing, then your first session is ready.',
+  description: 'One question about your dancing, then your first week is ready.',
 };
 
 export default async function RegisterPage({

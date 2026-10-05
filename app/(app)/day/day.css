@@ -44,3 +44,35 @@
   .td .week{width:100%;justify-content:space-between;gap:4px}
   .td .day i{width:34px;height:34px}
 }
+
+/* Today's cards: a visitor's way in, a member's first week. They stand in for
+   the player, so they sit where it would, on the same white ground. */
+.sp .tcard{width:min(calc(100% - 40px),640px);margin:28px auto 8px;padding:30px 30px 28px;border:1px solid var(--line);border-radius:22px;background:#fff}
+.sp .tcard .kicker{color:var(--red);margin:0 0 6px}
+.sp .tcard h2{margin:0;font-size:clamp(24px,3vw,32px);letter-spacing:-.03em;font-weight:800;line-height:1.1}
+.sp .tcard p{margin:10px 0 0;color:var(--muted);font-size:16px;line-height:1.5}
+.sp .tcard .meta{font-size:14px}
+.sp .tcard .meta b{color:var(--ink)}
+.sp .tcard .err{color:#a2482a}
+.sp .tcard .acts{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;margin-top:22px}
+.sp .tcard .other{font-size:14px;font-weight:700;color:var(--ink);border-bottom:2px solid var(--lime)}
+
+/* the day's Done, under the greeting */
+.td .doneslot{margin-top:16px}
+.donechip{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;color:var(--ink)}
+.donechip svg{width:20px;height:20px;padding:3px;border-radius:50%;background:var(--ink);color:#fff}
+.donechip .undo{border:0;background:none;padding:0 0 0 6px;font:inherit;font-weight:600;color:var(--muted);text-decoration:underline;cursor:pointer}
+
+/* after the last exercise, over the picture */
+.sp-finish .finish{display:grid;justify-items:center;gap:12px}
+.sp-finish h2{margin:0;font-size:clamp(26px,4vw,40px);letter-spacing:-.035em;font-weight:900;color:#fff}
+.sp-finish p{margin:0;color:#ffffffb3;font-size:15px}
+.sp-finish .donechip{color:#fff}
+.sp-finish .donechip svg{background:var(--lime);color:var(--ink)}
+.sp-finish .donechip .undo{color:#ffffffa0}
+.sp-finish .week{font-size:14px;font-weight:700;color:#fff;border-bottom:2px solid var(--lime)}
+
+@media (max-width:640px){
+  .sp .tcard{padding:24px 20px 22px;margin-top:20px}
+  .sp .tcard .acts .pill{width:100%}
+}
