@@ -7,16 +7,20 @@
 
    Uploads here are simple on purpose: several at once, a progress bar each,
    no pause and no resume across a reload. The editor's upload box still has
-   those for one big file that keeps dropping. */
+   those for one big file that keeps dropping.
+
+   Tick several cards and the bar above them edits them together: a tag on or
+   off, a difficulty, mirror, open or draft. That is the bulk of setting up a
+   day's filming, done once instead of clip by clip. */
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import * as tus from 'tus-js-client';
 import Crumbs from '../Crumbs';
 import { STATUS_WORDS } from '../LengthStrip';
-import { createExercise, deleteExercise, refreshVideoStatus, requestUploadUrl, setLocalized, type Result } from '../actions';
-import { EXERCISE_TAGS, mmss, type ExerciseTag } from '@/lib/db';
+import { bulkVideos, createExercise, deleteExercise, refreshVideoStatus, requestUploadUrl, setLocalized, type Result } from '../actions';
+import { EXERCISE_TAGS, LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
 import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
 import type { ListVideo } from './page';
 
@@ -29,6 +33,8 @@ const titleOf = (name: string) =>
 
 interface Job {
   key: number;
+  /** The exercise the file became, once it exists. */
+  id?: string;
   name: string;
   sent: number;
   total: number;
@@ -36,7 +42,12 @@ interface Job {
   error?: string;
 }
 
-type Footage = 'all' | 'ready' | 'missing';
+type Footage = 'all' | 'ready' | 'missing' | 'draft';
+
+/* Cloudflare's webhook flips a clip to ready, but the page does not hear it.
+   While anything is still encoding, ask every so often, for a while. */
+const POLL_MS = 10_000;
+const POLL_FOR_MS = 15 * 60_000;
 
 export default function MediaLibrary({
   videos,
@@ -53,7 +64,8 @@ export default function MediaLibrary({
   const [jobs, setJobs] = useState<Job[]>([]);
   const [over, setOver] = useState(false);
   const [pending, start] = useTransition();
-  const [tag, setTag] = useState<ExerciseTag | 'all'>('all');
+  const [tag, setTag] = useState<ExerciseTag | 'all' | 'none'>('all');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [footage, setFootage] = useState<Footage>('all');
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
@@ -62,8 +74,9 @@ export default function MediaLibrary({
     () =>
       videos.filter(
         v =>
-          (tag === 'all' || v.tags.includes(tag)) &&
-          (footage === 'all' || (footage === 'ready' ? v.status === 'ready' : v.status !== 'ready')) &&
+          (tag === 'all' || (tag === 'none' ? v.tags.length === 0 : v.tags.includes(tag))) &&
+          (footage === 'all' ||
+            (footage === 'ready' ? v.status === 'ready' : footage === 'draft' ? v.publish !== 'open' : v.status !== 'ready')) &&
           (!q || v.title_t.en.toLowerCase().includes(q) || (v.title_t.ko ?? '').toLowerCase().includes(q)),
       ),
     [videos, tag, footage, q],
@@ -74,6 +87,31 @@ export default function MediaLibrary({
       const result = await fn();
       setError(result.ok ? null : result.error);
     });
+
+  /* Selection outlives a filter change but not a clip's deletion. */
+  const ids = useMemo(() => new Set(videos.map(v => v.id)), [videos]);
+  const picked = [...selected].filter(id => ids.has(id));
+  const pick = (id: string) =>
+    setSelected(s => {
+      const next = new Set(s);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  const bulk = (change: Parameters<typeof bulkVideos>[1]) => run(() => bulkVideos(picked, change));
+
+  const encoding = videos.filter(v => v.status === 'processing').map(v => v.id);
+  const encodingKey = encoding.join(',');
+  useEffect(() => {
+    const waiting = encodingKey ? encodingKey.split(',') : [];
+    if (!waiting.length) return;
+    const until = Date.now() + POLL_FOR_MS;
+    const timer = setInterval(async () => {
+      if (Date.now() > until) return clearInterval(timer);
+      await Promise.all(waiting.map(id => refreshVideoStatus(id)));
+      router.refresh();
+    }, POLL_MS);
+    return () => clearInterval(timer);
+  }, [encodingKey, router]);
 
   const patch = (key: number, next: Partial<Job>) =>
     setJobs(js => js.map(j => (j.key === key ? { ...j, ...next } : j)));
@@ -87,6 +125,7 @@ export default function MediaLibrary({
       return;
     }
     const id = created.id;
+    patch(key, { id });
     const ticket = await requestUploadUrl(id, window.location.origin, file.size);
     if (!ticket.ok) {
       patch(key, { state: 'failed', error: ticket.error });
@@ -108,9 +147,10 @@ export default function MediaLibrary({
       patch(key, { state: 'failed', error: `The upload stopped: ${outcome}. Open the exercise to try again.` });
       return;
     }
+    /* Uploaded: Cloudflare encodes from here. The row reads "encoding" until
+       the poll above sees it ready. */
     patch(key, { state: 'encoding' });
     await refreshVideoStatus(id);
-    patch(key, { state: 'done' });
     router.refresh();
   }
 
@@ -187,14 +227,15 @@ export default function MediaLibrary({
         <div className="uplist">
           {jobs.map(j => {
             const pct = j.total ? Math.floor((j.sent / j.total) * 100) : 0;
+            if (j.state === 'encoding' && j.id && videos.find(v => v.id === j.id)?.status === 'ready') j = { ...j, state: 'done' };
             return (
               <div className={`uprow ${j.state}`} key={j.key}>
                 <span className="nm">{j.name}</span>
                 <span className="st">
                   {j.state === 'creating' && 'Starting…'}
                   {j.state === 'uploading' && `${pct}% · ${MB(j.sent)} of ${MB(j.total)} MB`}
-                  {j.state === 'encoding' && 'Uploaded · Cloudflare is encoding'}
-                  {j.state === 'done' && 'Done'}
+                  {j.state === 'encoding' && 'Uploaded · Cloudflare is encoding (this page checks every few seconds)'}
+                  {j.state === 'done' && 'Ready'}
                   {j.state === 'failed' && (j.error ?? 'Failed')}
                 </span>
                 <i style={{ width: `${j.state === 'done' || j.state === 'encoding' ? 100 : pct}%` }} />
@@ -213,14 +254,15 @@ export default function MediaLibrary({
         <div className="filters">
           <input type="search" className="num" style={{ width: '26ch' }} placeholder="Search" aria-label="Search clips" value={query} onChange={e => setQuery(e.target.value)} />
           <div className="levels">
-            {(['all', 'ready', 'missing'] as Footage[]).map(f => (
+            {(['all', 'ready', 'missing', 'draft'] as Footage[]).map(f => (
               <button key={f} type="button" className={`chip${footage === f ? ' open' : ''}`} aria-pressed={footage === f} onClick={() => setFootage(f)}>
-                {f === 'all' ? 'Any footage' : f === 'ready' ? 'With footage' : 'Needs footage'}
+                {f === 'all' ? 'Any footage' : f === 'ready' ? 'With footage' : f === 'missing' ? 'Needs footage' : 'Draft'}
               </button>
             ))}
           </div>
           <div className="levels">
             <button type="button" className={`chip${tag === 'all' ? ' open' : ''}`} aria-pressed={tag === 'all'} onClick={() => setTag('all')}>All tags</button>
+            <button type="button" className={`chip${tag === 'none' ? ' open' : ''}`} aria-pressed={tag === 'none'} onClick={() => setTag('none')}>No tags</button>
             {EXERCISE_TAGS.map(t => (
               <button key={t} type="button" className={`chip${tag === t ? ' open' : ''}`} aria-pressed={tag === t} onClick={() => setTag(t)}>
                 {TAG_LABELS[t].en}
@@ -229,6 +271,49 @@ export default function MediaLibrary({
           </div>
         </div>
 
+        {shown.length > 0 && (
+          <div className="selbar">
+            <label>
+              <input
+                type="checkbox"
+                checked={shown.every(v => selected.has(v.id))}
+                onChange={e =>
+                  setSelected(s => {
+                    const next = new Set(s);
+                    for (const v of shown) e.target.checked ? next.add(v.id) : next.delete(v.id);
+                    return next;
+                  })
+                }
+              />
+              {picked.length ? `${picked.length} selected` : 'Select all shown'}
+            </label>
+            {picked.length > 0 && (
+              <>
+                <select className="status" value="" disabled={pending} aria-label="Add a tag" onChange={e => e.target.value && bulk({ addTag: e.target.value })}>
+                  <option value="">+ Tag</option>
+                  {EXERCISE_TAGS.map(t => <option key={t} value={t}>{TAG_LABELS[t].en}</option>)}
+                </select>
+                <select className="status" value="" disabled={pending} aria-label="Remove a tag" onChange={e => e.target.value && bulk({ removeTag: e.target.value })}>
+                  <option value="">− Tag</option>
+                  {EXERCISE_TAGS.map(t => <option key={t} value={t}>{TAG_LABELS[t].en}</option>)}
+                </select>
+                <select className="status" value="" disabled={pending} aria-label="Difficulty" onChange={e => e.target.value && bulk({ difficulty: e.target.value })}>
+                  <option value="">Difficulty</option>
+                  {LEVEL_KEYS.map(l => <option key={l} value={l}>{LEVEL_LABELS[l].en}</option>)}
+                </select>
+                <select className="status" value="" disabled={pending} aria-label="Mirror" onChange={e => e.target.value && bulk({ mirror_default: e.target.value === 'on' })}>
+                  <option value="">Mirror</option>
+                  <option value="on">Opens mirrored</option>
+                  <option value="off">Not mirrored</option>
+                </select>
+                <button className="btn tiny primary" type="button" disabled={pending} title="Only clips with finished footage open" onClick={() => bulk({ publish: 'open' })}>Open</button>
+                <button className="btn tiny" type="button" disabled={pending} onClick={() => bulk({ publish: 'draft' })}>Draft</button>
+                <button className="btn tiny ghost" type="button" onClick={() => setSelected(new Set())}>Clear</button>
+              </>
+            )}
+          </div>
+        )}
+
         {videos.length === 0 ? (
           <p className="empty">Nothing here yet. Drop a video above.</p>
         ) : shown.length === 0 ? (
@@ -236,7 +321,7 @@ export default function MediaLibrary({
         ) : (
           <div className="media">
             {shown.map(v => (
-              <MediaCard key={v.id} video={v} poster={posters[v.id]} pending={pending} onRun={run} />
+              <MediaCard key={v.id} video={v} poster={posters[v.id]} pending={pending} onRun={run} picked={selected.has(v.id)} onPick={() => pick(v.id)} />
             ))}
           </div>
         )}
@@ -265,11 +350,15 @@ function MediaCard({
   poster,
   pending,
   onRun,
+  picked,
+  onPick,
 }: {
   video: ListVideo;
   poster?: string;
   pending: boolean;
   onRun: (fn: () => Promise<Result>) => void;
+  picked: boolean;
+  onPick: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(v.title_t.en);
@@ -285,7 +374,8 @@ function MediaCard({
   const trouble = v.status !== 'ready' ? STATUS_WORDS[v.status] : v.publish !== 'open' ? `Not open (${v.publish})` : null;
 
   return (
-    <article className="mcard">
+    <article className={`mcard${picked ? ' picked' : ''}`}>
+      <input className="mpick" type="checkbox" checked={picked} onChange={onPick} aria-label={`Select ${v.title_t.en || 'Untitled'}`} />
       <Link className="mthumb" href={`/admin/exercises/${v.id}`} tabIndex={-1} aria-hidden="true">
         {poster ? (
           // eslint-disable-next-line @next/next/no-img-element

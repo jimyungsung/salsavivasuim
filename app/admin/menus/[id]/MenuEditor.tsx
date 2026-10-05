@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
-import PublishSwitch, { publishMeaning } from '../../PublishSwitch';
+import { publishMeaning } from '../../PublishSwitch';
 import LengthStrip from '../../LengthStrip';
 import { routineLength, stripOf } from '../../Tree';
 import {
@@ -17,16 +17,29 @@ import {
   deleteMenu,
   deleteRoutine,
   movePosition,
+  publishWeek,
   setMenuFields,
   setStatus,
   type Result,
 } from '../../actions';
+import type { Readiness } from '../../readiness';
 import { LEVEL_KEYS, mmss, untranslated } from '@/lib/db';
 import type { EditorMenu } from './page';
 
 const DAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export default function MenuEditor({ menu, stages }: { menu: EditorMenu; stages: { id: string; name: string }[] }) {
+export default function MenuEditor({
+  menu,
+  stages,
+  readiness,
+  members,
+}: {
+  menu: EditorMenu;
+  stages: { id: string; name: string }[];
+  readiness: Readiness;
+  /** Members whose week was copied from this menu. */
+  members: number;
+}) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [slug, setSlug] = useState(menu.slug);
@@ -65,8 +78,8 @@ export default function MenuEditor({ menu, stages }: { menu: EditorMenu; stages:
           </p>
         </div>
         <div className="acts">
-          <Link className="btn" href="/week" target="_blank">
-            See it in the planner ↗
+          <Link className="btn" href="/week" target="_blank" title="Admins see drafts too, so this is not exactly what a member sees.">
+            Preview in the planner (admin view) ↗
           </Link>
         </div>
       </div>
@@ -125,7 +138,11 @@ export default function MenuEditor({ menu, stages }: { menu: EditorMenu; stages:
               })
             )}
             <div className="addbar">
-              <button className="btn ghost" type="button" disabled={pending} onClick={() => run(() => createRoutine(menu.id))}>
+              <button className="btn ghost" type="button" disabled={pending} onClick={() => start(async () => {
+                const r = await createRoutine(menu.id);
+                if (r.ok) router.push(`/admin/routines/${r.id}`);
+                else setError(r.error);
+              })}>
                 + Add a routine
               </button>
               <span>It lands on the first free weekday; change that on the routine.</span>
@@ -158,7 +175,66 @@ export default function MenuEditor({ menu, stages }: { menu: EditorMenu; stages:
         <div>
           <section className="panel">
             <h2>Publish</h2>
-            <PublishSwitch value={menu.status} disabled={pending} onChange={next => run(() => setStatus('menus', menu.id, next))} />
+            {menu.status === 'open' ? (
+              <>
+                <p className="visible-note yes">Live: members can start this week.</p>
+                <p className="hint" style={{ margin: '10px 0 0' }}>
+                  {members === 0
+                    ? 'Nobody is on this week yet.'
+                    : `${members} member${members === 1 ? ' is' : 's are'} on this week. They keep the copy they started with; your edits reach them only if they reset their week.`}
+                </p>
+              </>
+            ) : readiness.blockers.length ? (
+              <>
+                <p className="hint" style={{ margin: 0 }}>Before members can have this week:</p>
+                <ul className="issues">
+                  {readiness.blockers.map(t => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="visible-note no">
+                Ready: {readiness.days} day{readiness.days === 1 ? '' : 's'}, every exercise has footage.
+                {readiness.toOpen.length > 0 &&
+                  ` Publishing also opens ${readiness.toOpen.length} exercise${readiness.toOpen.length === 1 ? '' : 's'} still in draft.`}
+              </p>
+            )}
+            {readiness.warnings.length > 0 && menu.status !== 'open' && (
+              <ul className="issues warn">
+                {readiness.warnings.map(t => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            )}
+
+            <div className="addbar" style={{ paddingTop: 14 }}>
+              {menu.status === 'open' ? (
+                <button className="btn" type="button" disabled={pending}
+                  onClick={() => {
+                    if (confirm('Take this week down? Members already on it keep their copy; nobody new can start it.')) {
+                      run(() => setStatus('menus', menu.id, 'draft'));
+                    }
+                  }}>
+                  Take the week down
+                </button>
+              ) : (
+                <button className="btn primary" type="button" disabled={pending || readiness.blockers.length > 0} onClick={() => run(() => publishWeek(menu.id))}>
+                  Publish week
+                </button>
+              )}
+              {menu.status !== 'soon' && menu.status !== 'open' && (
+                <button className="btn ghost" type="button" disabled={pending} onClick={() => run(() => setStatus('menus', menu.id, 'soon'))}
+                  title={publishMeaning('soon')}>
+                  Show as coming soon
+                </button>
+              )}
+              {menu.status === 'soon' && (
+                <button className="btn ghost" type="button" disabled={pending} onClick={() => run(() => setStatus('menus', menu.id, 'draft'))}>
+                  Back to draft
+                </button>
+              )}
+            </div>
             <p className="hint" style={{ margin: '12px 0 0' }}>
               {publishMeaning(menu.status)}.{' '}
               {menu.published_at ? `First opened ${new Date(menu.published_at).toLocaleDateString()}.` : 'Never opened yet.'}

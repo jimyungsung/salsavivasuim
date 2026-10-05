@@ -41,6 +41,9 @@ export async function useMenu(menuId: string): Promise<Result> {
   const { supabase, userId } = await whoami();
   if (!userId) return fail('Sign in to plan your week.');
   if (!UUID.test(menuId)) return fail('Not a menu.');
+  /* Only an open week can be started; a "coming soon" one is shown, not used. */
+  const { data: menu } = await supabase.from('menus').select('status').eq('id', menuId).maybeSingle();
+  if (menu?.status !== 'open') return fail('This week is not open yet.');
   const result = await applyMenu(supabase, userId, menuId);
   if (!result.ok) return result;
   refresh();

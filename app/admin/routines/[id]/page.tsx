@@ -35,6 +35,7 @@ export interface EditorRoutine {
   status: PublishStatus;
   menu: {
     id: string;
+    slug: string;
     title_t: LocalizedRow;
     status: PublishStatus;
     stage: { id: string; name_t: LocalizedRow } | null;
@@ -56,7 +57,7 @@ export default async function RoutinePage({ params }: { params: Promise<{ id: st
       .from('routines')
       .select(
         `id, position, weekday, title_t, blurb_t, levels, status,
-         menu:menus ( id, title_t, status, stage:stages ( id, name_t ) ),
+         menu:menus ( id, slug, title_t, status, stage:stages ( id, name_t ) ),
          routine_items ( id, position, repeats, speed, video:videos ( ${PICK} ) )`,
       )
       .eq('id', id)

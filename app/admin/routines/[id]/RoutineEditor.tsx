@@ -76,8 +76,8 @@ export default function RoutineEditor({
           </p>
         </div>
         <div className="acts">
-          <Link className="btn" href={`/routines/${routine.id}`} target="_blank">
-            Preview as a member ↗
+          <Link className="btn" href={`/routines/${routine.id}`} target="_blank" title="Admins can play drafts, so this plays even what members cannot yet.">
+            Preview (admin view) ↗
           </Link>
         </div>
       </div>
@@ -151,7 +151,7 @@ export default function RoutineEditor({
         <div>
           <section className="panel">
             <h2>Publish</h2>
-            <PublishSwitch value={routine.status} disabled={pending} onChange={next => run(() => setStatus('routines', routine.id, next))} />
+            <PublishSwitch value={routine.status} options={['draft', 'open']} disabled={pending} onChange={next => run(() => setStatus('routines', routine.id, next))} />
             <Readiness routine={routine} />
           </section>
 
@@ -337,9 +337,12 @@ function Readiness({ routine }: { routine: EditorRoutine }) {
   if (items.length === 0) issues.push('No exercises yet.');
   if (notReady) issues.push(`${notReady} exercise${notReady === 1 ? ' has' : 's have'} no footage.`);
   if (notOpen) issues.push(`${notOpen} exercise${notOpen === 1 ? ' is' : 's are'} not open to members.`);
-  if (routine.weekday == null) issues.push('No day of the week, so it is not part of the menu’s week.');
-  if (!menuOpen) issues.push(`The menu is ${routine.menu?.status ?? 'missing'}; members see the routine only when its menu is open.`);
-  if (items.length > 0 && (totalMin < 5 || totalMin > 20)) issues.push(`${Math.round(totalMin)} minutes; a routine is 10–15.`);
+  /* The quick drills are not a week, so they sit on no day on purpose. */
+  const quick = routine.menu?.slug === 'quick-drills';
+  if (routine.weekday == null && !quick) issues.push('No day of the week, so it is not part of the menu’s week.');
+  if (!menuOpen) issues.push(`The menu is ${routine.menu?.status ?? 'missing'}; members get this routine when its week is published.`);
+  /* Missing footage counts as 0 minutes; only judge the length once it is all there. */
+  if (items.length > 0 && !notReady && !quick && (totalMin < 5 || totalMin > 20)) issues.push(`${Math.round(totalMin)} minutes; a routine is 10–15.`);
 
   const live = routine.status === 'open' && issues.length === 0;
 

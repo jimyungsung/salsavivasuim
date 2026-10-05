@@ -336,7 +336,12 @@
 .bo .uprow.failed .st { color: #a2482a; white-space: normal; }
 .bo .uprow.failed i { background: #d9432f; }
 .bo .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 16px; }
-.bo .mcard { display: flex; flex-direction: column; border: 1px solid var(--bo-line); border-radius: 12px; background: #fff; overflow: hidden; }
+.bo .mcard { position: relative; display: flex; flex-direction: column; border: 1px solid var(--bo-line); border-radius: 12px; background: #fff; overflow: hidden; }
+.bo .mcard.picked { border-color: var(--ink); box-shadow: 0 0 0 2px var(--lime); }
+.bo .mcard .mpick { position: absolute; right: 8px; top: 8px; z-index: 2; width: 18px; height: 18px; accent-color: var(--ink); cursor: pointer; }
+/* the selection bar: what to do to every ticked clip */
+.bo .selbar { position: sticky; top: calc(var(--bar-h, 64px) + 8px); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; padding: 10px 12px; border: 1px solid var(--bo-line); border-radius: 10px; background: #fffffff2; backdrop-filter: blur(6px); }
+.bo .selbar label { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; margin-right: 6px; }
 .bo .mthumb {
   position: relative; aspect-ratio: 16/9; background: repeating-linear-gradient(135deg, #eceee6 0 8px, #f4f5f0 8px 16px);
   display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #9ba19c;
@@ -377,6 +382,8 @@
 .bo .issues { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .bo .issues li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; font-size: 14px; line-height: 1.45; }
 .bo .issues li::before { content: "!"; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; font-weight: 900; background: #fbe7df; color: #a2482a; }
+.bo .issues.warn li::before { content: "·"; background: #f1f2ec; color: var(--bo-dim); }
+.bo .issues.warn li { color: var(--bo-dim); }
 @media (max-width: 900px) {
   .bo .irow { grid-template-columns: 22px 64px minmax(0, 1fr); }
   .bo .ictl, .bo .iops { grid-column: 3; }

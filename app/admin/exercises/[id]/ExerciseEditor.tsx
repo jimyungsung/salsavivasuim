@@ -71,6 +71,8 @@ export default function ExerciseEditor({
   const phraseMs = beatMs ? beatMs * beats : null;
 
   const uses = (video.routine_items ?? []).filter(i => i.routine);
+  /* Days members can have right now: an open routine in an open menu. */
+  const liveUses = uses.filter(i => i.routine!.status === 'open' && i.routine!.menu?.status === 'open');
   const tags = video.tags as ExerciseTag[];
   const title = video.title_t.en || 'Untitled exercise';
 
@@ -184,6 +186,7 @@ export default function ExerciseEditor({
                   <li key={i.id}>
                     <Link href={`/admin/routines/${i.routine!.id}`}>{i.routine!.title_t.en || 'Untitled routine'}</Link>
                     {i.routine!.menu && <span> · {i.routine!.menu.title_t.en}</span>}
+                    {liveUses.includes(i) && <span className="chip open" style={{ marginLeft: 6 }}>live</span>}
                   </li>
                 ))}
               </ul>
@@ -222,7 +225,17 @@ export default function ExerciseEditor({
         <div>
           <section className="panel">
             <h2>Publish</h2>
-            <PublishSwitch value={video.publish} disabled={pending} onChange={next => save({ publish: next })} />
+            <PublishSwitch
+              value={video.publish}
+              options={['draft', 'open']}
+              disabled={pending}
+              onChange={next => {
+                /* Taking it back to draft empties it out of days members are on. */
+                if (next === 'draft' && liveUses.length > 0 &&
+                  !confirm(`${liveUses.length} live day${liveUses.length === 1 ? ' uses' : 's use'} this exercise. Members on those days will lose it until it opens again. Take it back to draft?`)) return;
+                save({ publish: next });
+              }}
+            />
             <p className="hint" style={{ margin: '12px 0 0' }}>
               {publishMeaning(video.publish)}.
               {video.status !== 'ready' && ' It also needs footage marked Ready before anyone can play it.'}
