@@ -13,6 +13,7 @@
    that does not belong squeezed into a tree row. */
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import {
   createMenu,
@@ -20,6 +21,7 @@ import {
   createStage,
   movePosition,
   setStatus,
+  type Created,
   type Result,
 } from './actions';
 import { PUBLISH_STATUSES, mmss, untranslated, type PublishStatus } from '@/lib/db';
@@ -48,10 +50,18 @@ export default function Tree({ stages }: { stages: TreeStage[] }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
+  const router = useRouter();
   const run = (fn: () => Promise<Result>) =>
     start(async () => {
       const result = await fn();
       setError(result.ok ? null : result.error);
+    });
+  /* Creating something opens it: the next thing to do is always on its page. */
+  const create = (fn: () => Promise<Created>, path: (id: string) => string) =>
+    start(async () => {
+      const result = await fn();
+      if (result.ok) router.push(path(result.id));
+      else setError(result.error);
     });
 
   const toggle = (id: string) =>
@@ -108,10 +118,11 @@ export default function Tree({ stages }: { stages: TreeStage[] }) {
                 ))}
                 <div className="prow" style={{ paddingTop: 12, paddingBottom: 12 }}>
                   <NameAndAdd
-                    placeholder="New menu title"
-                    label="+ Add menu"
+                    placeholder="New week, e.g. Turns & spotting"
+                    label="+ New week"
                     disabled={pending}
-                    onAdd={title => run(() => createMenu(stage.id || null, title))}
+                    withDays
+                    onAdd={(title, days) => create(() => createMenu(stage.id || null, title, days), id => `/admin/menus/${id}`)}
                   />
                 </div>
               </div>
@@ -132,7 +143,7 @@ export default function Tree({ stages }: { stages: TreeStage[] }) {
             placeholder="New menu with no stage"
             label="+ Add a stageless menu"
             disabled={pending}
-            onAdd={title => run(() => createMenu(null, title))}
+            onAdd={title => create(() => createMenu(null, title), id => `/admin/menus/${id}`)}
           />
         )}
       </div>
@@ -142,21 +153,34 @@ export default function Tree({ stages }: { stages: TreeStage[] }) {
 
 /* A name, then the button. Creating something nameless and renaming it later is
    how catalogues end up full of "Untitled". */
+/* Which days a new week starts with. Monday to Saturday is the landing
+   page's week: five days, a free Saturday, Sunday off. */
+const PATTERNS: { label: string; days: number[] }[] = [
+  { label: 'Mon–Sat', days: [0, 1, 2, 3, 4, 5] },
+  { label: 'Mon–Fri', days: [0, 1, 2, 3, 4] },
+  { label: 'Every day', days: [0, 1, 2, 3, 4, 5, 6] },
+  { label: 'No days yet', days: [] },
+];
+
 function NameAndAdd({
   placeholder,
   label,
   disabled,
+  withDays,
   onAdd,
 }: {
   placeholder: string;
   label: string;
   disabled: boolean;
-  onAdd: (name: string) => void;
+  /** Offer the day pattern: a new week arrives with one routine per day. */
+  withDays?: boolean;
+  onAdd: (name: string, days: number[]) => void;
 }) {
   const [name, setName] = useState('');
+  const [pattern, setPattern] = useState(0);
   const submit = () => {
     if (!name.trim()) return;
-    onAdd(name.trim());
+    onAdd(name.trim(), withDays ? PATTERNS[pattern].days : []);
     setName('');
   };
 
@@ -173,6 +197,13 @@ function NameAndAdd({
           if (e.key === 'Enter') submit();
         }}
       />
+      {withDays && (
+        <select className="status" value={pattern} disabled={disabled} aria-label="Days" onChange={e => setPattern(Number(e.target.value))}>
+          {PATTERNS.map((p, i) => (
+            <option key={p.label} value={i}>{p.label}</option>
+          ))}
+        </select>
+      )}
       <button className="btn ghost" type="button" disabled={disabled || !name.trim()} onClick={submit}>
         {label}
       </button>
@@ -201,6 +232,7 @@ function MenuRow({
       const result = await fn();
       onError(result.ok ? null : result.error);
     });
+  const router = useRouter();
 
   const items = menu.routines.flatMap(r => r.routine_items);
   const ready = items.filter(i => i.video?.status === 'ready').length;
@@ -244,7 +276,11 @@ function MenuRow({
             ))
           )}
           <div style={{ paddingTop: 8 }}>
-            <button className="btn ghost tiny" type="button" disabled={pending} onClick={() => run(() => createRoutine(menu.id))}>
+            <button className="btn ghost tiny" type="button" disabled={pending} onClick={() => start(async () => {
+              const r = await createRoutine(menu.id);
+              if (r.ok) router.push(`/admin/routines/${r.id}`);
+              else onError(r.error);
+            })}>
               + Add routine
             </button>
           </div>
@@ -324,7 +360,7 @@ function StatusPicker({
         onRun(() => setStatus(table, id, next));
       }}
     >
-      {PUBLISH_STATUSES.map(s => (
+      {(table === 'routines' ? (['draft', 'open'] as PublishStatus[]) : PUBLISH_STATUSES).map(s => (
         <option key={s} value={s}>
           {s}
         </option>

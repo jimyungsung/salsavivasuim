@@ -20,8 +20,11 @@ import {
   type LevelKey,
   type PublishStatus,
 } from '@/lib/db';
+import { DAY_NAMES } from '@/lib/i18n';
+import { weekReadiness, type ReadinessRoutine } from './readiness';
 
 export type Result = { ok: true } | { ok: false; error: string };
+export type Created = { ok: true; id: string } | { ok: false; error: string };
 
 export type CatalogueTable = 'stages' | 'menus' | 'routines' | 'videos';
 
@@ -53,16 +56,54 @@ export async function setStatus(
 ): Promise<Result> {
   await requireAdmin();
   if (!PUBLISH_STATUSES.includes(status as PublishStatus)) return fail('Unknown status.');
+  /* "Soon" means something only for a menu: a card members see with nothing
+     to start. On a routine or an exercise it read as open to RLS and as draft
+     to the player, so it is not offered there. */
+  if (table === 'routines' && status === 'soon') return fail('A routine is draft or open.');
+  /* A menu opens only through publishWeek, whichever control asked: that is
+     where the week is checked and its parts opened with it. */
+  if (table === 'menus' && status === 'open') return publishWeek(id);
 
   const supabase = await createClient();
   const { error } = await supabase.from(table).update({ status }).eq('id', id);
   if (error) return fail(error.message);
-  /* published_at is set the first time a menu opens and left alone after — it
-     is when the material went live, not when it was last touched. Hence the
-     `is null`: reopening a menu must not move it. */
-  if (table === 'menus' && status === 'open') {
-    await supabase.from('menus').update({ published_at: new Date().toISOString() }).eq('id', id).is('published_at', null);
+
+  revalidateCatalogue();
+  return ok;
+}
+
+const WEEK_SELECT = `id, title_t, promise_t,
+  routines ( id, weekday, title_t,
+    routine_items ( repeats, video:videos ( id, status, publish, duration_ms, title_t ) ) )`;
+
+/** Opens a week for members in one go: checks it (app/admin/readiness.ts),
+    then opens its exercises that have footage, its day routines, and last the
+    menu — in that order, so members never see an open menu with closed parts.
+    Refuses, with the list, if anything would leave a member with an empty day
+    or an exercise that cannot play. */
+export async function publishWeek(menuId: string): Promise<Result> {
+  await requireAdmin();
+  if (!UUID.test(menuId)) return fail('Not a menu.');
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from('menus').select(WEEK_SELECT).eq('id', menuId).maybeSingle();
+  if (error || !data) return fail(error?.message ?? 'No such menu.');
+  const week = data as unknown as { title_t: { en: string }; promise_t: { en: string }; routines: ReadinessRoutine[] };
+  const check = weekReadiness(week);
+  if (check.blockers.length) return fail(`Not published. ${check.blockers.join(' ')}`);
+
+  if (check.toOpen.length) {
+    const { error: vError } = await supabase.from('videos').update({ publish: 'open' }).in('id', check.toOpen);
+    if (vError) return fail(vError.message);
   }
+  const { error: rError } = await supabase
+    .from('routines').update({ status: 'open' }).eq('menu_id', menuId).not('weekday', 'is', null);
+  if (rError) return fail(rError.message);
+  const { error: mError } = await supabase.from('menus').update({ status: 'open' }).eq('id', menuId);
+  if (mError) return fail(mError.message);
+  /* published_at is set the first time a menu opens and left alone after — it
+     is when the material went live, not when it was last touched. */
+  await supabase.from('menus').update({ published_at: new Date().toISOString() }).eq('id', menuId).is('published_at', null);
 
   revalidateCatalogue();
   return ok;
@@ -139,59 +180,90 @@ export async function createStage(name: string): Promise<Result> {
 
 /** A menu is a week. It belongs to a stage, or to none: the quick drills are
     a stageless menu. */
-export async function createMenu(stageId: string | null, title: string): Promise<Result> {
+export async function createMenu(stageId: string | null, title: string, days: number[] = []): Promise<Created> {
   await requireAdmin();
   const en = title.trim();
-  if (!en) return fail('A menu needs a title.');
+  if (!en) return { ok: false, error: 'A menu needs a title.' };
+  if (days.some(d => !Number.isInteger(d) || d < 0 || d > 6)) return { ok: false, error: 'Not a day of the week.' };
 
   const supabase = await createClient();
   let query = supabase.from('menus').select('position');
   query = stageId ? query.eq('stage_id', stageId) : query.is('stage_id', null);
   const { data: last } = await query.order('position', { ascending: false }).limit(1).maybeSingle();
 
-  const { error } = await supabase.from('menus').insert({
-    stage_id: stageId,
-    slug: await freeSlug(supabase, 'menus', en),
-    position: (last?.position ?? 0) + 1,
-    title_t: { en },
-    subtitle_t: { en: '' },
-    promise_t: { en: '' },
-    level: 'all',
-    status: 'draft',
-  });
-  if (error) return fail(error.message);
+  const { data: menu, error } = await supabase
+    .from('menus')
+    .insert({
+      stage_id: stageId,
+      slug: await freeSlug(supabase, 'menus', en),
+      position: (last?.position ?? 0) + 1,
+      title_t: { en },
+      subtitle_t: { en: '' },
+      promise_t: { en: '' },
+      level: 'all',
+      status: 'draft',
+    })
+    .select('id')
+    .single();
+  if (error || !menu) return { ok: false, error: error?.message ?? 'Could not create the menu.' };
+
+  /* A week laid out at once: one routine per chosen day, named after it in
+     both languages, so the menu opens on its days rather than on "Routine 01". */
+  const unique = [...new Set(days)].sort();
+  if (unique.length) {
+    const { error: rError } = await supabase.from('routines').insert(
+      unique.map((d, i) => ({
+        menu_id: menu.id,
+        position: i + 1,
+        weekday: d,
+        title_t: { en: DAY_NAMES[d].en, ko: DAY_NAMES[d].ko },
+        blurb_t: { en: '' },
+        levels: [],
+        status: 'draft',
+      })),
+    );
+    if (rError) return { ok: false, error: rError.message };
+  }
 
   revalidateCatalogue();
-  return ok;
+  return { ok: true, id: menu.id };
 }
 
 /** Appends a routine to a menu, on the first weekday the menu has nothing on
     yet. Starts empty: exercises are picked from the library. */
-export async function createRoutine(menuId: string): Promise<Result> {
+export async function createRoutine(menuId: string): Promise<Created> {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { data: rows } = await supabase
-    .from('routines')
-    .select('position, weekday')
-    .eq('menu_id', menuId);
+  const [{ data: rows }, { data: menu }] = await Promise.all([
+    supabase.from('routines').select('position, weekday').eq('menu_id', menuId),
+    supabase.from('menus').select('slug').eq('id', menuId).maybeSingle(),
+  ]);
   const taken = new Set((rows ?? []).map(r => (r as { weekday: number | null }).weekday));
   const position = Math.max(0, ...(rows ?? []).map(r => (r as { position: number }).position)) + 1;
-  const weekday = [0, 1, 2, 3, 4, 5, 6].find(d => !taken.has(d)) ?? null;
+  /* The quick drills are not a week: their routines sit on no day. */
+  const quick = (menu as { slug: string } | null)?.slug === 'quick-drills';
+  const weekday = quick ? null : ([0, 1, 2, 3, 4, 5, 6].find(d => !taken.has(d)) ?? null);
 
-  const { error } = await supabase.from('routines').insert({
-    menu_id: menuId,
-    position,
-    weekday,
-    title_t: { en: `Routine ${String(position).padStart(2, '0')}` },
-    blurb_t: { en: '' },
-    levels: [],
-    status: 'draft',
-  });
-  if (error) return fail(error.message);
+  const { data, error } = await supabase
+    .from('routines')
+    .insert({
+      menu_id: menuId,
+      position,
+      weekday,
+      title_t: weekday == null
+        ? { en: `Quick drill ${String(position).padStart(2, '0')}` }
+        : { en: DAY_NAMES[weekday].en, ko: DAY_NAMES[weekday].ko },
+      blurb_t: { en: '' },
+      levels: [],
+      status: 'draft',
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { ok: false, error: error?.message ?? 'Could not create the routine.' };
 
   revalidateCatalogue();
-  return ok;
+  return { ok: true, id: data.id };
 }
 
 /** A new exercise, as a draft with no footage. Returns its id so the library
@@ -397,8 +469,8 @@ export async function setVideoFields(
   if (fields.difficulty && !LEVEL_KEYS.includes(fields.difficulty as LevelKey)) {
     return fail('Unknown difficulty.');
   }
-  if (fields.publish && !PUBLISH_STATUSES.includes(fields.publish as PublishStatus)) {
-    return fail('Unknown status.');
+  if (fields.publish && fields.publish !== 'draft' && fields.publish !== 'open') {
+    return fail('An exercise is draft or open.');
   }
   if (fields.bpm != null && (fields.bpm <= 0 || fields.bpm > 400)) {
     return fail('BPM should be between 1 and 400.');
@@ -406,12 +478,20 @@ export async function setVideoFields(
   if (fields.beats_per_phrase != null && fields.beats_per_phrase < 1) {
     return fail('Beats per phrase must be at least 1.');
   }
-  const { default_loop_start_ms: s, default_loop_end_ms: e } = fields;
-  if (s != null && e != null && e <= s) {
-    return fail('The loop has to end after it starts.');
+  const supabase = await createClient();
+
+  /* The editor saves one field per blur, so the loop's other end is usually
+     the stored one: check against it, not just against what arrived. */
+  if ('default_loop_start_ms' in fields || 'default_loop_end_ms' in fields) {
+    const { data: row } = await supabase
+      .from('videos').select('default_loop_start_ms, default_loop_end_ms, duration_ms').eq('id', id).maybeSingle();
+    const s = 'default_loop_start_ms' in fields ? fields.default_loop_start_ms : row?.default_loop_start_ms;
+    const e = 'default_loop_end_ms' in fields ? fields.default_loop_end_ms : row?.default_loop_end_ms;
+    if ((s != null && s < 0) || (e != null && e < 0)) return fail('A loop point cannot be before the start of the video.');
+    if (s != null && e != null && e <= s) return fail('The loop has to end after it starts.');
+    if (e != null && row?.duration_ms && e > row.duration_ms) return fail('The loop ends after the video does.');
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.from('videos').update(fields).eq('id', id);
   if (error) return fail(error.message);
 
@@ -689,6 +769,49 @@ export async function clearVideoUpload(videoId: string): Promise<Result> {
         /* Already gone, or Cloudflare is unhappy. The row is clean either way. */
       }
     }
+  }
+
+  revalidateCatalogue();
+  return ok;
+}
+
+/* ------------------------------------------------------------------ bulk ---- */
+
+/** One change to many exercises at once, from the media library's selection
+    bar: a tag added or taken off, a difficulty, mirror, or open/draft. */
+export async function bulkVideos(
+  ids: string[],
+  change:
+    | { addTag: string }
+    | { removeTag: string }
+    | { difficulty: string }
+    | { publish: 'draft' | 'open' }
+    | { mirror_default: boolean },
+): Promise<Result> {
+  await requireAdmin();
+  const list = [...new Set(ids)].filter(id => UUID.test(id));
+  if (!list.length) return fail('Nothing selected.');
+  const supabase = await createClient();
+
+  if ('addTag' in change || 'removeTag' in change) {
+    const tag = 'addTag' in change ? change.addTag : change.removeTag;
+    if (!isTag(tag)) return fail('Unknown tag.');
+    const { data, error } = await supabase.from('videos').select('id, tags').in('id', list);
+    if (error) return fail(error.message);
+    for (const v of (data ?? []) as { id: string; tags: string[] }[]) {
+      const next = 'addTag' in change ? [...new Set([...v.tags, tag])] : v.tags.filter(t => t !== tag);
+      if (next.length === v.tags.length && next.every((t, i) => t === v.tags[i])) continue;
+      const { error: uError } = await supabase.from('videos').update({ tags: next }).eq('id', v.id);
+      if (uError) return fail(uError.message);
+    }
+  } else {
+    if ('difficulty' in change && !LEVEL_KEYS.includes(change.difficulty as LevelKey)) return fail('Unknown difficulty.');
+    if ('publish' in change && change.publish !== 'draft' && change.publish !== 'open') return fail('Unknown status.');
+    let query = supabase.from('videos').update(change).in('id', list);
+    /* Only footage that has finished encoding can open; the rest stay draft. */
+    if ('publish' in change && change.publish === 'open') query = query.eq('status', 'ready');
+    const { error } = await query;
+    if (error) return fail(error.message);
   }
 
   revalidateCatalogue();

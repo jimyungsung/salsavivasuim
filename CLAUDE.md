@@ -135,8 +135,15 @@ delete, blocked while a routine uses it; tag and footage filters), then
 stages → menus → routines. A routine's editor is a **picker**: the library
 beside a numbered running order, a tap appends, each row has its own speed
 and repeats. Footage, tags, difficulty, publish and the beat grid are edited
-on the exercise. The Publish panel lists only what stands in the way of
-members, or says the routine is live. `LengthStrip` draws a menu's routines
+on the exercise. **A week is published once, from its menu** ("Publish week",
+`publishWeek()`): it checks the week (`app/admin/readiness.ts`: an empty day or
+an exercise without footage blocks; missing Korean or an odd length warns),
+then opens the exercises, the day routines and last the menu. Every way of
+opening a menu goes through it, the overview's dropdown included. Routines and
+exercises are draft or open; only a menu can be "soon", which members see as a
+card with nothing to start. "+ New week" lays out one routine per chosen day,
+named after it; whatever you create opens straight away. The media library
+edits a ticked selection together (tags, difficulty, mirror, open/draft). `LengthStrip` draws a menu's routines
 sized by length, one colour, hatched until footage lands.
 
 Scope admin classes under `.bo` and check `app/globals.css` for the name first.

@@ -9,7 +9,12 @@ import ExerciseEditor from './ExerciseEditor';
 export interface EditorVideo extends VideoRow {
   /** The routines that borrow this exercise, for the "used in" list and as a
       warning before deleting it. */
-  routine_items: { id: string; routine: { id: string; title_t: LocalizedRow; menu: { title_t: LocalizedRow } | null } | null }[] | null;
+  routine_items:
+    | {
+        id: string;
+        routine: { id: string; title_t: LocalizedRow; status: string; menu: { title_t: LocalizedRow; status: string } | null } | null;
+      }[]
+    | null;
 }
 
 export default async function ExercisePage({ params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +30,7 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
        provider, provider_uid, hls_playback_id, mp4_url, poster_url, status, width, height,
        bpm, first_beat_ms, beats_per_phrase,
        default_loop_start_ms, default_loop_end_ms, mirror_default,
-       routine_items ( id, routine:routines ( id, title_t, menu:menus ( title_t ) ) )`,
+       routine_items ( id, routine:routines ( id, title_t, status, menu:menus ( title_t, status ) ) )`,
     )
     .eq('id', id)
     .maybeSingle();

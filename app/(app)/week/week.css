@@ -24,6 +24,7 @@
 .wk .menu .flag{position:absolute;left:12px;top:12px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:12px;background:#fff}
 .wk .menu .flag.rec{background:var(--red);color:#fff}
 .wk .menu .flag.on{background:var(--lime);color:var(--ink)}
+.wk .menu .flag.soon{background:var(--ink);color:#fff}
 .wk .menu .body{padding:16px 18px 18px;display:grid;gap:10px;align-content:start}
 .wk .menu h3{margin:0;font-size:18px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
 .wk .menu .desc{margin:0;font-size:14px;color:var(--muted);line-height:1.5}

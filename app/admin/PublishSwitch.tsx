@@ -7,7 +7,7 @@ import { PUBLISH_STATUSES, type PublishStatus } from '@/lib/db';
 
 const MEANING: Record<PublishStatus, string> = {
   draft: 'Only admins see it',
-  soon: 'Shown as "in production", nothing plays',
+  soon: 'Members see it as coming soon and cannot start it',
   open: 'Members can watch',
 };
 
@@ -15,14 +15,17 @@ export default function PublishSwitch({
   value,
   disabled,
   onChange,
+  options = PUBLISH_STATUSES,
 }: {
   value: PublishStatus;
   disabled?: boolean;
   onChange: (next: PublishStatus) => void;
+  /** Routines and exercises are draft or open; only a menu can be "soon". */
+  options?: PublishStatus[];
 }) {
   return (
     <div className="pubseg" role="group" aria-label="Publish status">
-      {PUBLISH_STATUSES.map(s => (
+      {options.map(s => (
         <button
           key={s}
           type="button"

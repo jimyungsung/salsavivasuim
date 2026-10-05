@@ -26,7 +26,7 @@ type Key =
   | 'buildT' | 'buildP' | 'buildFrom' | 'total' | 'practiceDays' | 'reset' | 'resetDay' | 'clearDay'
   | 'libT' | 'libN' | 'search' | 'all' | 'addTo' | 'noLib' | 'noMatch' | 'sheetOpen' | 'close'
   | 'today' | 'done' | 'markDone' | 'undone' | 'rest' | 'restP' | 'addEx' | 'play' | 'missing'
-  | 'aUp' | 'aDown' | 'aRemove' | 'signInT' | 'signInGo' | 'joinGo' | 'joinHave' | 'confirmMenu' | 'confirmClear'
+  | 'aUp' | 'aDown' | 'aRemove' | 'signInT' | 'signInGo' | 'joinGo' | 'joinHave' | 'soon' | 'soonP' | 'confirmMenu' | 'confirmClear'
   | 'footer' | 'signout';
 
 const C: Copy<Key> = {
@@ -46,6 +46,7 @@ const C: Copy<Key> = {
     aUp: 'Move earlier', aDown: 'Move later', aRemove: 'Remove',
     signInT: 'Your week is your own practice, so it needs an account.', signInGo: 'Sign in ↗',
     joinGo: 'Create a free account', joinHave: 'I have an account',
+    soon: 'Coming soon', soonP: 'Being filmed. It opens here when it is ready.',
     confirmMenu: 'Replace your whole week with this menu? What you have planned goes.',
     confirmClear: 'Clear this day?',
     footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
@@ -66,6 +67,7 @@ const C: Copy<Key> = {
     aUp: '앞으로', aDown: '뒤로', aRemove: '빼기',
     signInT: '나의 주간은 나만의 연습이라 계정이 필요합니다.', signInGo: '로그인 ↗',
     joinGo: '무료 계정 만들기', joinHave: '이미 계정이 있어요',
+    soon: '곧 공개', soonP: '촬영 중이에요. 준비되면 여기서 열려요.',
     confirmMenu: '이 메뉴로 한 주를 통째로 바꿀까요? 지금 계획은 사라집니다.',
     confirmClear: '이 날을 비울까요?',
     footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
@@ -161,7 +163,7 @@ export default function WeekView({
               return (
                 <article className={`menu${on ? ' on' : ''}`} key={m.id}>
                   <div className="pic">
-                    {on ? <span className="flag on">{c.inWeek}</span> : m.id === recommendedId && !current ? <span className="flag rec">{c.recommended}</span> : null}
+                    {on ? <span className="flag on">{c.inWeek}</span> : m.status === 'soon' ? <span className="flag soon">{c.soon}</span> : m.id === recommendedId && !current ? <span className="flag rec">{c.recommended}</span> : null}
                     <b>{T(m.title).split(' ')[0]}</b>
                   </div>
                   <div className="body">
@@ -178,7 +180,11 @@ export default function WeekView({
                         ))}
                       </div>
                     )}
-                    {signedIn ? (
+                    {m.status !== 'open' && !on ? (
+                      /* "Coming soon": shown so members know it is on its way,
+                         with nothing to start until it opens. */
+                      <p className="meta">{c.soonP}</p>
+                    ) : signedIn ? (
                       <button
                         className={`pill sm ${on ? 'ghost onpaper' : 'primary'}`}
                         type="button"
