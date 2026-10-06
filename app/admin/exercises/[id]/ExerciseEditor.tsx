@@ -20,6 +20,7 @@ import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
 import PublishSwitch, { publishMeaning } from '../../PublishSwitch';
 import UploadField from './UploadField';
+import BeatTapper from './BeatTapper';
 import { deleteExercise, setVideoFields, type Result } from '../../actions';
 import { EXERCISE_TAGS, LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
 import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
@@ -117,16 +118,35 @@ export default function ExerciseEditor({
               <h2>Beat grid</h2>
               <span className="hint">optional · counts, phrase marks and loop 8 counts in the player</span>
             </summary>
+            {video.status === 'ready' ? (
+              <BeatTapper
+                videoId={video.id}
+                durationMs={video.duration_ms}
+                bpm={toNum(bpm)}
+                firstBeatMs={toNum(firstBeat)}
+                beatsPerPhrase={toNum(perPhrase) ?? 8}
+                onSet={fields => {
+                  if ('bpm' in fields) setBpm(fields.bpm?.toString() ?? '');
+                  if ('first_beat_ms' in fields) setFirstBeat(fields.first_beat_ms?.toString() ?? '');
+                  if ('default_loop_start_ms' in fields) setLoopStart(fields.default_loop_start_ms?.toString() ?? '');
+                  if ('default_loop_end_ms' in fields) setLoopEnd(fields.default_loop_end_ms?.toString() ?? '');
+                  save(fields);
+                }}
+              />
+            ) : (
+              <p className="hint" style={{ margin: '0 0 14px' }}>Once the footage is ready, you can set this by ear here: tap the tempo, mark the first 1, hear a click on the beat.</p>
+            )}
+            <h3 className="sub-h">By the numbers</h3>
             <div className="fields">
               <Labelled label="BPM">
-                <input className="num" value={bpm} disabled={pending} inputMode="decimal" onChange={e => setBpm(e.target.value)} onBlur={() => save({ bpm: toNum(bpm) })} placeholder="—" />
+                <input className="num" value={bpm} inputMode="decimal" onChange={e => setBpm(e.target.value)} onBlur={() => save({ bpm: toNum(bpm) })} placeholder="—" />
               </Labelled>
               <Labelled label="First beat (ms)">
-                <input className="num" value={firstBeat} disabled={pending} inputMode="numeric" onChange={e => setFirstBeat(e.target.value)} onBlur={() => save({ first_beat_ms: toNum(firstBeat) })} placeholder="—" />
+                <input className="num" value={firstBeat} inputMode="numeric" onChange={e => setFirstBeat(e.target.value)} onBlur={() => save({ first_beat_ms: toNum(firstBeat) })} placeholder="—" />
                 <Hint>Where the first 1 falls in the video.</Hint>
               </Labelled>
               <Labelled label="Beats per phrase">
-                <input className="num" value={perPhrase} disabled={pending} inputMode="numeric" onChange={e => setPerPhrase(e.target.value)} onBlur={() => save({ beats_per_phrase: toNum(perPhrase) ?? 8 })} />
+                <input className="num" value={perPhrase} inputMode="numeric" onChange={e => setPerPhrase(e.target.value)} onBlur={() => save({ beats_per_phrase: toNum(perPhrase) ?? 8 })} />
                 <Hint>Salsa counts in eights. Change it only for material that does not.</Hint>
               </Labelled>
             </div>
@@ -152,10 +172,10 @@ export default function ExerciseEditor({
             <h3 className="sub-h">Default loop</h3>
             <div className="fields">
               <Labelled label="Start (ms)">
-                <input className="num" value={loopStart} disabled={pending} inputMode="numeric" onChange={e => setLoopStart(e.target.value)} onBlur={() => save({ default_loop_start_ms: toNum(loopStart) })} placeholder="—" />
+                <input className="num" value={loopStart} inputMode="numeric" onChange={e => setLoopStart(e.target.value)} onBlur={() => save({ default_loop_start_ms: toNum(loopStart) })} placeholder="—" />
               </Labelled>
               <Labelled label="End (ms)">
-                <input className="num" value={loopEnd} disabled={pending} inputMode="numeric" onChange={e => setLoopEnd(e.target.value)} onBlur={() => save({ default_loop_end_ms: toNum(loopEnd) })} placeholder="—" />
+                <input className="num" value={loopEnd} inputMode="numeric" onChange={e => setLoopEnd(e.target.value)} onBlur={() => save({ default_loop_end_ms: toNum(loopEnd) })} placeholder="—" />
               </Labelled>
               <Labelled label="That is">
                 <span style={{ fontSize: 14.5, paddingTop: 10 }}>
@@ -169,11 +189,6 @@ export default function ExerciseEditor({
               </Labelled>
             </div>
 
-            <div className="note" style={{ marginTop: 18 }}>
-              <b>Tap tempo and the click-track preview are not built yet.</b>
-              Checking a BPM properly means hearing a click against the music. Until then the derived
-              numbers above are the only check on what you type.
-            </div>
           </details>
 
           <section className="panel">

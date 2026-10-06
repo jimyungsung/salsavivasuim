@@ -143,7 +143,12 @@ opening a menu goes through it, the overview's dropdown included. Routines and
 exercises are draft or open; only a menu can be "soon", which members see as a
 card with nothing to start. "+ New week" lays out one routine per chosen day,
 named after it; whatever you create opens straight away. The media library
-edits a ticked selection together (tags, difficulty, mirror, open/draft). `LengthStrip` draws a menu's routines
+edits a ticked selection together (tags, difficulty, mirror, open/draft). A menu's page is
+a **week builder**: its days as columns, the library (`app/admin/Picker.tsx`,
+shared with a routine's page) beside them; pick a day, tap exercises to append.
+Adds are optimistic and saved in order behind. The beat grid is set **by ear**
+on the exercise (`BeatTapper.tsx`): tap tempo, first beat here, a click on the
+beat to check it, loop these eight counts; the number fields stay for nudging. `LengthStrip` draws a menu's routines
 sized by length, one colour, hatched until footage lands.
 
 Scope admin classes under `.bo` and check `app/globals.css` for the name first.

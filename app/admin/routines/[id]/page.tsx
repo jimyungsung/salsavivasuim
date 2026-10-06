@@ -43,7 +43,7 @@ export interface EditorRoutine {
   routine_items: EditorItem[];
 }
 
-const PICK = 'id, title_t, tags, difficulty, publish, status, duration_ms, bpm';
+export const PICK = 'id, title_t, tags, difficulty, publish, status, duration_ms, bpm';
 
 export default async function RoutinePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
