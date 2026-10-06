@@ -13,7 +13,7 @@
    footage, not open) shows only when it is wrong. */
 
 import Link from 'next/link';
-import { useMemo, useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
 import PublishSwitch, { publishMeaning } from '../../PublishSwitch';
@@ -28,9 +28,10 @@ import {
   setStatus,
   type Result,
 } from '../../actions';
-import { EXERCISE_TAGS, LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
+import { LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
 import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
 import type { EditorItem, EditorRoutine, PickVideo } from './page';
+import Picker from '../../Picker';
 
 const DAY = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const SPEEDS = [0.5, 0.75, 1, 1.25];
@@ -51,6 +52,22 @@ export default function RoutineEditor({
       const result = await fn();
       setError(result.ok ? null : result.error);
     });
+
+  /* Picking is optimistic: a tapped exercise shows in the running order at
+     once, and the saves run one after another behind it (positions are
+     max + 1, so two at once would collide). Each one's server response brings
+     the real row and drops the stand-in. */
+  const [adding, setAdding] = useState<{ key: number; video: PickVideo }[]>([]);
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const pickOne = (video: PickVideo) => {
+    const key = Date.now() + Math.random();
+    setAdding(a => [...a, { key, video }]);
+    queue.current = queue.current.then(async () => {
+      const result = await addRoutineItem(routine.id, video.id);
+      if (!result.ok) setError(result.error);
+      setAdding(a => a.filter(x => x.key !== key));
+    });
+  };
 
   const items = routine.routine_items;
   const totalMs = items.reduce((n, i) => n + (i.video?.duration_ms ?? 0) * i.repeats, 0);
@@ -92,7 +109,7 @@ export default function RoutineEditor({
               <span className="aside-note">Aim for 10–15 minutes. Add from the library on the right.</span>
             </div>
 
-            {items.length === 0 ? (
+            {items.length + adding.length === 0 ? (
               <p className="empty">No exercises yet. Tap one in the library to add it here.</p>
             ) : (
               <ol className="ilist">
@@ -107,6 +124,21 @@ export default function RoutineEditor({
                     pending={pending}
                     onRun={run}
                   />
+                ))}
+                {adding.map((a, i) => (
+                  <li className="irow saving" key={a.key}>
+                    <span className="inum">{items.length + i + 1}</span>
+                    <span className="ithumb" aria-hidden="true">
+                      {posters[a.video.id] && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={posters[a.video.id]} alt="" />
+                      )}
+                    </span>
+                    <div className="ibody">
+                      <span className="ititle">{a.video.title_t.en || 'Untitled exercise'}</span>
+                      <span className="imeta">Adding…</span>
+                    </div>
+                  </li>
                 ))}
               </ol>
             )}
@@ -155,7 +187,12 @@ export default function RoutineEditor({
             <Readiness routine={routine} />
           </section>
 
-          <Picker library={library} posters={posters} pending={pending} onPick={id => run(() => addRoutineItem(routine.id, id))} />
+          <Picker
+            library={library}
+            posters={posters}
+            inRoutine={[...items.map(i => i.video?.id), ...adding.map(a => a.video.id)].filter((id): id is string => Boolean(id))}
+            onPick={pickOne}
+          />
         </div>
       </div>
     </>
@@ -235,92 +272,6 @@ function ItemRow({
         </button>
       </span>
     </li>
-  );
-}
-
-/* The library, filtered by tag and a search, each card a button that appends. */
-function Picker({
-  library,
-  posters,
-  pending,
-  onPick,
-}: {
-  library: PickVideo[];
-  posters: Record<string, string>;
-  pending: boolean;
-  onPick: (videoId: string) => void;
-}) {
-  const [tag, setTag] = useState<ExerciseTag | 'all'>('all');
-  const [query, setQuery] = useState('');
-  const q = query.trim().toLowerCase();
-
-  const shown = useMemo(
-    () =>
-      library.filter(
-        v =>
-          (tag === 'all' || v.tags.includes(tag)) &&
-          (!q || v.title_t.en.toLowerCase().includes(q) || (v.title_t.ko ?? '').toLowerCase().includes(q)),
-      ),
-    [library, tag, q],
-  );
-  const used = new Set(library.flatMap(v => v.tags));
-
-  return (
-    <section className="panel picker">
-      <div className="ph">
-        <h2>Add from the library</h2>
-        <span className="aside-note"><Link href="/admin/exercises">Media library →</Link></span>
-      </div>
-      <input
-        type="search"
-        className="num"
-        style={{ width: '100%', marginBottom: 10 }}
-        placeholder="Search"
-        aria-label="Search the library"
-        value={query}
-        onChange={e => setQuery(e.target.value)}
-      />
-      {used.size > 0 && (
-        <div className="levels" style={{ marginBottom: 14 }}>
-          <button type="button" className={`chip${tag === 'all' ? ' open' : ''}`} aria-pressed={tag === 'all'} onClick={() => setTag('all')}>All</button>
-          {EXERCISE_TAGS.filter(t => used.has(t)).map(t => (
-            <button key={t} type="button" className={`chip${tag === t ? ' open' : ''}`} aria-pressed={tag === t} onClick={() => setTag(t)}>
-              {TAG_LABELS[t].en}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {library.length === 0 ? (
-        <p className="empty">
-          The library is empty. <Link href="/admin/exercises">Drop a video in the media library</Link> first.
-        </p>
-      ) : shown.length === 0 ? (
-        <p className="empty">Nothing matches.</p>
-      ) : (
-        <div className="pgrid">
-          {shown.map(v => (
-            <button key={v.id} type="button" className="pcard" disabled={pending} onClick={() => onPick(v.id)} title="Add to the routine">
-              <span className="pthumb">
-                {posters[v.id] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={posters[v.id]} alt="" loading="lazy" />
-                ) : (
-                  <span>{STATUS_WORDS[v.status]}</span>
-                )}
-                {v.duration_ms ? <span className="len">{mmss(v.duration_ms)}</span> : null}
-                <span className="padd" aria-hidden="true">+</span>
-              </span>
-              <span className="pname">{v.title_t.en || 'Untitled'}</span>
-              <span className="pmeta">
-                {v.tags.slice(0, 2).map(t => TAG_LABELS[t as ExerciseTag]?.en ?? t).join(' · ') || LEVEL_LABELS[v.difficulty].en}
-                {v.publish !== 'open' && ` · ${v.publish}`}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
 

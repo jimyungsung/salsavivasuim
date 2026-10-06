@@ -4,6 +4,8 @@ import { adminGate } from '@/lib/supabase/admin';
 import type { LevelKey, LocalizedRow, PublishStatus } from '@/lib/db';
 import type { TreeRoutine } from '../../page';
 import MenuEditor from './MenuEditor';
+import { PICK, type PickVideo } from '../../routines/[id]/page';
+import { signedPosters } from '@/lib/playback';
 import { weekReadiness, type Readiness, type ReadinessRoutine } from '../../readiness';
 
 export interface EditorMenu {
@@ -27,7 +29,7 @@ export default async function MenuPage({ params }: { params: Promise<{ id: strin
   if (!gate.ok) return null;
 
   const supabase = await createClient();
-  const [{ data, error }, { data: stages }, { count: members }] = await Promise.all([
+  const [{ data, error }, { data: stages }, { count: members }, { data: library }] = await Promise.all([
     supabase
       .from('menus')
       .select(
@@ -42,6 +44,7 @@ export default async function MenuPage({ params }: { params: Promise<{ id: strin
     /* Members whose week was copied from this menu: they keep their copy, so
        an edit here reaches them only if they reset. Admins read all profiles. */
     supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('menu_id', id),
+    supabase.from('videos').select(PICK).order('created_at'),
   ]);
 
   if (error) {
@@ -63,8 +66,14 @@ export default async function MenuPage({ params }: { params: Promise<{ id: strin
     menu as unknown as { title_t: LocalizedRow & { en: string }; promise_t: LocalizedRow & { en: string }; routines: ReadinessRoutine[] },
   );
 
+  const videos = (library ?? []) as unknown as PickVideo[];
+  /* Thumbnails: signed, because the stored poster_url is not. */
+  const posters = await signedPosters(videos.map(v => v.id));
+
   return (
     <MenuEditor
+      library={videos}
+      posters={posters}
       readiness={readiness}
       members={members ?? 0}
       menu={menu}

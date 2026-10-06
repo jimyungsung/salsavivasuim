@@ -10,30 +10,31 @@ import { useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
 import { publishMeaning } from '../../PublishSwitch';
-import LengthStrip from '../../LengthStrip';
-import { routineLength, stripOf } from '../../Tree';
+import { routineLength } from '../../Tree';
 import {
-  createRoutine,
   deleteMenu,
-  deleteRoutine,
-  movePosition,
   publishWeek,
   setMenuFields,
   setStatus,
   type Result,
 } from '../../actions';
 import type { Readiness } from '../../readiness';
-import { LEVEL_KEYS, mmss, untranslated } from '@/lib/db';
+import type { PickVideo } from '../../routines/[id]/page';
+import WeekBuilder from './WeekBuilder';
+import { LEVEL_KEYS } from '@/lib/db';
 import type { EditorMenu } from './page';
 
-const DAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function MenuEditor({
   menu,
   stages,
   readiness,
   members,
+  library,
+  posters,
 }: {
+  library: PickVideo[];
+  posters: Record<string, string>;
   menu: EditorMenu;
   stages: { id: string; name: string }[];
   readiness: Readiness;
@@ -86,69 +87,16 @@ export default function MenuEditor({
 
       {error && <p className="banner">{error}</p>}
 
+      <section className="panel">
+        <div className="ph">
+          <h2>The week</h2>
+          <span className="aside-note">Pick a day, then tap exercises in the library to add them.</span>
+        </div>
+        <WeekBuilder menuId={menu.id} routines={menu.routines} library={library} posters={posters} onError={setError} />
+      </section>
+
       <div className="editor">
         <div>
-          <section className="panel">
-            <div className="ph">
-              <h2>The week</h2>
-              <span className="aside-note">Each bar is a routine&rsquo;s exercises, sized by length.</span>
-            </div>
-
-            {menu.routines.length === 0 ? (
-              <p className="empty">No routines yet.</p>
-            ) : (
-              menu.routines.map((r, i) => {
-                const n = r.routine_items.length;
-                const filmed = r.routine_items.filter(x => x.video?.status === 'ready').length;
-                return (
-                  <div className="srow" key={r.id}>
-                    <span className="sn">{r.weekday == null ? '—' : DAY[r.weekday]}</span>
-                    <span>
-                      <Link className="name" href={`/admin/routines/${r.id}`}>
-                        {r.title_t.en || 'Untitled routine'}
-                      </Link>{' '}
-                      {untranslated(r.title_t) && <span className="chip ko">needs KO</span>}
-                      <br />
-                      <span className="vids">
-                        {n === 0 ? 'No exercises' : `${n} exercise${n === 1 ? '' : 's'} · ${mmss(routineLength(r))} · ${filmed} with footage`}
-                      </span>
-                    </span>
-                    <LengthStrip items={stripOf(r)} hrefFor={() => `/admin/routines/${r.id}`} />
-                    <span className="end">
-                      <span className={`chip ${r.status}`} title={publishMeaning(r.status)}>{r.status}</span>
-                      <button className="btn icon" type="button" disabled={pending || i === 0} onClick={() => run(() => movePosition('routines', r.id, 'up'))} aria-label="Move earlier" title="Move earlier">↑</button>
-                      <button className="btn icon" type="button" disabled={pending || i === menu.routines.length - 1} onClick={() => run(() => movePosition('routines', r.id, 'down'))} aria-label="Move later" title="Move later">↓</button>
-                      <button
-                        className="btn icon danger"
-                        type="button"
-                        disabled={pending}
-                        aria-label="Delete routine"
-                        title="Delete routine"
-                        onClick={() => {
-                          if (confirm(`Delete the routine "${r.title_t.en || 'Untitled'}"? Its exercises stay in the library.`)) {
-                            run(() => deleteRoutine(r.id));
-                          }
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </span>
-                  </div>
-                );
-              })
-            )}
-            <div className="addbar">
-              <button className="btn ghost" type="button" disabled={pending} onClick={() => start(async () => {
-                const r = await createRoutine(menu.id);
-                if (r.ok) router.push(`/admin/routines/${r.id}`);
-                else setError(r.error);
-              })}>
-                + Add a routine
-              </button>
-              <span>It lands on the first free weekday; change that on the routine.</span>
-            </div>
-          </section>
-
           <section className="panel">
             <h2>Danger</h2>
             <p className="hint" style={{ fontSize: 14, margin: '0 0 12px' }}>
