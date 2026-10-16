@@ -204,7 +204,6 @@ export interface Menu {
   promise: Localized;
   level: LevelKey;
   status: PublishStatus;
-  isFree: boolean;
   stage: { id: string; slug: string; name: Localized; position: number } | null;
   /** In weekday order, then position. */
   routines: Routine[];
@@ -219,12 +218,11 @@ interface MenuRow {
   promise_t: LocalizedRow;
   level: LevelKey;
   status: PublishStatus;
-  is_free: boolean;
   stage: { id: string; slug: string; name_t: LocalizedRow; position: number } | null;
   routines: RoutineRow[] | null;
 }
 
-const MENU_SELECT = `id, slug, position, title_t, subtitle_t, promise_t, level, status, is_free,
+const MENU_SELECT = `id, slug, position, title_t, subtitle_t, promise_t, level, status,
   stage:stages ( id, slug, name_t, position ),
   routines ( ${ROUTINE_SELECT} )`;
 
@@ -237,7 +235,6 @@ const toMenu = (m: MenuRow): Menu => ({
   promise: localized(m.promise_t),
   level: m.level,
   status: m.status,
-  isFree: m.is_free,
   stage: m.stage
     ? { id: m.stage.id, slug: m.stage.slug, name: localized(m.stage.name_t), position: m.stage.position }
     : null,
@@ -284,17 +281,6 @@ export async function getMenus(): Promise<Menu[]> {
     );
 }
 
-async function loadMenu(id: string): Promise<Menu | null> {
-  if (!isConfigured || !UUID.test(id)) return null;
-  const supabase = await createClient();
-  const { data, error } = await supabase.from('menus').select(MENU_SELECT).eq('id', id).maybeSingle();
-  if (error) {
-    console.error('[menus] read failed:', error.message);
-    return null;
-  }
-  return data ? toMenu(data as unknown as MenuRow) : null;
-}
-
 async function loadRoutine(id: string): Promise<(Routine & { menu: Pick<Menu, 'id' | 'slug' | 'title'> | null }) | null> {
   if (!isConfigured || !UUID.test(id)) return null;
   const supabase = await createClient();
@@ -316,5 +302,4 @@ async function loadRoutine(id: string): Promise<(Routine & { menu: Pick<Menu, 'i
 }
 
 /* Cached per request: generateMetadata and the page both ask for the same row. */
-export const getMenu = cache(loadMenu);
 export const getRoutine = cache(loadRoutine);

@@ -30,6 +30,19 @@ export const LEVEL_LABELS: Record<LevelKey, Localized> = {
   pro: { en: 'Pro', ko: '프로' },
 };
 
+/** The level a set of exercises spans, worked out from their difficulty
+    rather than typed in: "Beginner", or "Beginner – Intermediate". "All
+    levels" is not a difficulty on the scale, so it does not count. Null when
+    nothing has a difficulty yet. */
+export function levelSpan(levels: LevelKey[]): Localized | null {
+  const scale: LevelKey[] = ['beginner', 'intermediate', 'advanced', 'pro'];
+  const on = scale.filter(l => levels.includes(l));
+  if (!on.length) return null;
+  const lo = LEVEL_LABELS[on[0]];
+  const hi = LEVEL_LABELS[on[on.length - 1]];
+  return on.length === 1 ? lo : { en: `${lo.en} – ${hi.en}`, ko: `${lo.ko} – ${hi.ko}` };
+}
+
 /* What an exercise works. Not a Postgres enum: a new tag is a line here, not a
    migration. Not free text either: the planner's chips filter by this list, and
    a typo would make a tag nobody can filter by. Ten to twelve is the right size. */

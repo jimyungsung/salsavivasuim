@@ -21,8 +21,10 @@ import {
 import { mmss } from '@/lib/db';
 import type { TreeRoutine } from '../../page';
 import type { PickVideo } from '../../routines/[id]/page';
+import { DAY_NAMES } from '@/lib/i18n';
 
-const DAY = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+/* The back office is English; the names live once, in lib/i18n. */
+const DAY = DAY_NAMES.map(d => d.en);
 
 export default function WeekBuilder({
   menuId,

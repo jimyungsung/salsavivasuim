@@ -320,21 +320,6 @@ export async function setLocalized(
   return ok;
 }
 
-/** Which levels a routine sits in. The scale is not a ladder — a routine can
-    sit in two at once — so this is a set, kept in the scale's order. */
-export async function setRoutineLevels(id: string, levels: string[]): Promise<Result> {
-  await requireAdmin();
-  if (levels.some(l => !LEVEL_KEYS.includes(l as LevelKey))) return fail('Unknown level.');
-  const ordered = LEVEL_KEYS.filter(k => levels.includes(k));
-
-  const supabase = await createClient();
-  const { error } = await supabase.from('routines').update({ levels: ordered }).eq('id', id);
-  if (error) return fail(error.message);
-
-  revalidateCatalogue();
-  return ok;
-}
-
 /** Which day of its menu's week a routine is, or none. */
 export async function setRoutineWeekday(id: string, weekday: number | null): Promise<Result> {
   await requireAdmin();
@@ -527,21 +512,6 @@ export async function setMenuFields(
   const { error } = await supabase.from('menus').update(patch).eq('id', id);
   if (error) {
     return fail(error.code === '23505' ? 'Another menu already uses that slug or position.' : error.message);
-  }
-
-  revalidateCatalogue();
-  return ok;
-}
-
-export async function setStageSlug(id: string, slug: string): Promise<Result> {
-  await requireAdmin();
-  const clean = slugify(slug);
-  if (!clean) return fail('A slug cannot be empty.');
-
-  const supabase = await createClient();
-  const { error } = await supabase.from('stages').update({ slug: clean }).eq('id', id);
-  if (error) {
-    return fail(error.code === '23505' ? 'Another stage already uses that slug.' : error.message);
   }
 
   revalidateCatalogue();

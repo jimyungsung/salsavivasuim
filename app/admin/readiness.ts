@@ -7,6 +7,8 @@
    nothing in it, or an exercise that cannot play. Warnings do not: a missing
    Korean title is worth fixing, not worth keeping the week from members. */
 
+import { DAY_NAMES } from '@/lib/i18n';
+
 export interface ReadinessVideo {
   id: string;
   status: string;
@@ -30,7 +32,8 @@ export interface Readiness {
   days: number;
 }
 
-const DAY = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+/* The back office is English; the names live once, in lib/i18n. */
+const DAY = DAY_NAMES.map(d => d.en);
 const noKo = (t: { ko?: string | null }) => !t.ko?.trim();
 
 export function weekReadiness(menu: {

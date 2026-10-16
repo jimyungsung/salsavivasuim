@@ -27,8 +27,10 @@ import {
 import { PUBLISH_STATUSES, mmss, untranslated, type PublishStatus } from '@/lib/db';
 import LengthStrip, { type StripItem } from './LengthStrip';
 import type { TreeMenu, TreeRoutine, TreeStage } from './page';
+import { DAY_SHORT } from '@/lib/i18n';
 
-const DAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+/* The back office is English; the names live once, in lib/i18n. */
+const DAY = DAY_SHORT.map(d => d.en);
 
 export const stripOf = (routine: TreeRoutine): StripItem[] =>
   routine.routine_items.map(i => ({
@@ -242,8 +244,7 @@ function MenuRow({
       <div className="prow">
         <div className="t">
           <Link href={`/admin/menus/${menu.id}`}>{menu.title_t.en}</Link>
-          {menu.subtitle_t.en && <span>{menu.subtitle_t.en}</span>}
-          {untranslated(menu.title_t, menu.subtitle_t) && <span className="chip ko">needs KO</span>}
+          {untranslated(menu.title_t) && <span className="chip ko">needs KO</span>}
         </div>
         <div className="meta">
           <span className="count">

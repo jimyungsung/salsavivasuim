@@ -9,7 +9,7 @@
    and routinePlaylist() is pure. The builders that read the database live in
    lib/menus.ts and lib/week.ts. */
 
-import { LEVEL_LABELS, type Localized } from './i18n';
+import { levelSpan, type Localized } from './i18n';
 import type { Exercise, Routine } from './menus';
 
 export interface PlaylistEntry {
@@ -32,8 +32,9 @@ export interface Playlist {
   title: Localized;
   /** The small line above the title — "Tuesday · 14 min", "Beginner". */
   kicker: Localized;
-  /** One level up, as the back link. */
-  back: PlaylistLink;
+  /** One level up, as the back link. Null where there is no level up: Today
+      is home, and a link to the page you are on is not a way back. */
+  back: PlaylistLink | null;
   prev: PlaylistLink | null;
   /** Where to go when the last entry has played. */
   next: PlaylistLink | null;
@@ -47,18 +48,20 @@ export interface Playlist {
     from the back office. Exercises this viewer may not see are left out. */
 export function routinePlaylist(
   routine: Routine,
-  back: PlaylistLink,
+  back: PlaylistLink | null,
   href: string,
 ): Playlist {
-  const levels = (lang: 'en' | 'ko') => routine.levels.map(k => LEVEL_LABELS[k][lang]).join(' · ');
+  /* Worked out from the exercises, not a field someone has to keep in step. */
+  const span = levelSpan(routine.items.flatMap(i => (i.video ? [i.video.difficulty] : [])));
   return {
     kind: 'routine',
     href,
     title: routine.title,
-    kicker: { en: levels('en') || 'Routine', ko: levels('ko') || '루틴' },
+    kicker: span ?? { en: 'Routine', ko: '루틴' },
     back,
     prev: null,
-    next: back,
+    /* Back and onwards were the same link, three times over. Once is enough. */
+    next: null,
     notes: [routine.blurb],
     entries: routine.items
       .filter(i => i.video)

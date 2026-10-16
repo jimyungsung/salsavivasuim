@@ -1,19 +1,18 @@
 'use client';
 
-/* One stage: the top of the tree. Not much to it — a name, a blurb and a slug —
-   but it is the only place those can be changed. */
+/* One stage: the top of the tree, and only its name. The blurb and slug are
+   still columns, but no member reads them, so they are not asked for here. */
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
 import LocalizedField from '../../LocalizedField';
-import { deleteStage, setStageSlug, type Result } from '../../actions';
+import { deleteStage, type Result } from '../../actions';
 import type { EditorStage } from './page';
 
 export default function StageEditor({ stage }: { stage: EditorStage }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [slug, setSlug] = useState(stage.slug);
   const [pending, start] = useTransition();
 
   const run = (fn: () => Promise<Result>, after?: () => void) =>
@@ -52,25 +51,6 @@ export default function StageEditor({ stage }: { stage: EditorStage }) {
       <section className="panel">
         <h2>Copy</h2>
         <LocalizedField table="stages" id={stage.id} column="name_t" label="Name" value={stage.name_t} onError={setError} />
-        <LocalizedField table="stages" id={stage.id} column="blurb_t" label="Blurb" value={stage.blurb_t} multiline onError={setError} />
-      </section>
-
-      <section className="panel">
-        <h2>Identity</h2>
-        <div className="fieldset" style={{ maxWidth: '40ch' }}>
-          <span className="lf-label">Slug</span>
-          <input
-            className="num"
-            style={{ width: '100%' }}
-            value={slug}
-            disabled={pending}
-            onChange={e => setSlug(e.target.value)}
-            onBlur={() => slug !== stage.slug && run(() => setStageSlug(stage.id, slug))}
-          />
-          <span className="hint">
-            Used in links to this stage. Changing it breaks any link already shared.
-          </span>
-        </div>
       </section>
 
       <section className="panel">

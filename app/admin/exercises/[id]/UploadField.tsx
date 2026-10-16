@@ -247,7 +247,7 @@ export default function UploadField({
               type="button"
               disabled={busy}
               onClick={() => {
-                if (confirm('Remove this footage? The video row, its step and its beat grid stay.')) {
+                if (confirm('Remove this footage? The exercise, its tags and its beat grid stay.')) {
                   run(() => clearVideoUpload(videoId));
                 }
               }}

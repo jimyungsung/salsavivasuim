@@ -18,7 +18,6 @@ export { EXERCISE_TAGS, LEVEL_ORDER as LEVEL_KEYS, isTag, type ExerciseTag, type
 export type PublishStatus = 'draft' | 'soon' | 'open';
 export type VideoStatus = 'uploading' | 'processing' | 'ready' | 'failed';
 export type CameraAngle = 'front' | 'back' | 'detail';
-export type MemberRole = 'member' | 'admin';
 
 export const PUBLISH_STATUSES: PublishStatus[] = ['draft', 'soon', 'open'];
 
@@ -128,11 +127,3 @@ export const mmss = (ms: number | null | undefined): string => {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, '0')}`;
 };
 
-/** A routine's running time is the sum of its exercises — never a stored number. */
-export const runningTime = (videos: Pick<VideoRow, 'duration_ms'>[]): number =>
-  videos.reduce((n, v) => n + (v.duration_ms ?? 0), 0);
-
-/* A video is only playable once the host has finished with it. `ready` is
-   enforced by a check constraint too, so this and the database agree. */
-export const isPlayable = (v: Pick<VideoRow, 'status' | 'provider_uid'>): boolean =>
-  v.status === 'ready' && Boolean(v.provider_uid);
