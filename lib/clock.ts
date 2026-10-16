@@ -38,6 +38,8 @@ export interface Clock {
   hour: number;
   /** YYYY-MM-DD of this week's Monday: a day ticked before it is last week's. */
   weekStart: string;
+  /** YYYY-MM-DD of today, in the member's zone. */
+  today: string;
 }
 
 export const getClock = cache(async (): Promise<Clock> => {
@@ -52,5 +54,5 @@ export const getClock = cache(async (): Promise<Clock> => {
   const weekday = WEEKDAYS.indexOf(parts.weekday);
   const [y, m, d] = localDate(now, tz).split('-').map(Number);
   const weekStart = new Date(Date.UTC(y, m - 1, d - weekday)).toISOString().slice(0, 10);
-  return { tz, weekday, hour: Number(parts.hour) % 24, weekStart };
+  return { tz, weekday, hour: Number(parts.hour) % 24, weekStart, today: localDate(now, tz) };
 });

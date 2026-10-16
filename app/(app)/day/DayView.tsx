@@ -13,7 +13,7 @@ import { routineLengthMs } from '@/lib/playlist';
 
 type Key =
   | 'morning' | 'afternoon' | 'evening' | 'hello' | 'weekOf' | 'takes' | 'nothing' | 'planWeek'
-  | 'restDay' | 'quickT' | 'quickP' | 'aWeek' | 'min';
+  | 'restDay' | 'quickT' | 'quickP' | 'aWeek' | 'min' | 'inARow' | 'practised' | 'takesShort';
 
 const C: Copy<Key> = {
   en: {
@@ -21,12 +21,14 @@ const C: Copy<Key> = {
     weekOf: 'Week', takes: 'Today takes', nothing: 'Nothing planned for', planWeek: 'Plan your week →',
     restDay: 'A rest day. Rest is part of the week.', quickT: 'Got 5 minutes?', quickP: 'Short drills for a coffee break.',
     aWeek: 'This week', min: 'min',
+    inARow: '{n} days in a row.', practised: 'You’ve practised {m} of this week’s {M} minutes.', takesShort: 'Today takes {t}.',
   },
   ko: {
     morning: '좋은 아침이에요', afternoon: '좋은 오후예요', evening: '좋은 저녁이에요', hello: '안녕하세요',
     weekOf: '주차', takes: '오늘은', nothing: '계획이 없어요:', planWeek: '주간 계획하기 →',
     restDay: '휴식일입니다. 휴식도 한 주의 일부예요.', quickT: '5분 있으세요?', quickP: '잠깐 쉬는 시간의 짧은 드릴.',
     aWeek: '이번 주', min: '분',
+    inARow: '{n}일 연속.', practised: '이번 주 {M}분 중 {m}분 연습했어요.', takesShort: '오늘은 {t}분.',
   },
 };
 
@@ -45,6 +47,7 @@ export default function DayHead({
   signedIn,
   hour,
   done,
+  progress,
 }: {
   weekday: number;
   isToday: boolean;
@@ -52,6 +55,8 @@ export default function DayHead({
   hour: number;
   /** The day's Done button, when there is a day to finish. */
   done?: React.ReactNode;
+  /** What the log says (lib/progress.ts), on Today only. */
+  progress?: { streak: number; minutesThisWeek: number; plannedThisWeek: number } | null;
   name: string | null;
   week: { planned: boolean; done: boolean }[];
   menu: { title: Localized; week: number; stage: { name: Localized; weeks: number } | null } | null;
@@ -91,6 +96,15 @@ export default function DayHead({
                 <>
                   {c.nothing} {T(DAY_NAMES[weekday])}. {c.restDay}{' '}
                   <Link href="/week">{c.planWeek}</Link>
+                </>
+              ) : progress && (progress.streak > 1 || progress.minutesThisWeek > 0) ? (
+                /* "5 days in a row. You've practised 12 of this week's 83
+                   minutes. Today takes 14." — each part only when it is true. */
+                <>
+                  {progress.streak > 1 && <b>{c.inARow.replace('{n}', String(progress.streak))} </b>}
+                  {progress.minutesThisWeek > 0 &&
+                    `${c.practised.replace('{m}', String(progress.minutesThisWeek)).replace('{M}', String(progress.plannedThisWeek))} `}
+                  {c.takesShort.replace('{t}', String(minutes))} <Link href="/week">{c.planWeek}</Link>
                 </>
               ) : (
                 <>

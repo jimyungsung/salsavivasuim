@@ -27,7 +27,7 @@ type Key =
   | 'libT' | 'libN' | 'search' | 'all' | 'addTo' | 'noLib' | 'noMatch' | 'sheetOpen' | 'close'
   | 'today' | 'done' | 'rest' | 'restP' | 'addEx' | 'play' | 'missing'
   | 'aUp' | 'aDown' | 'aRemove' | 'signInT' | 'signInGo' | 'joinGo' | 'joinHave' | 'soon' | 'soonP' | 'confirmMenu' | 'confirmClear'
-  | 'min' | 'footer' | 'signout';
+  | 'min' | 'practisedOf' | 'footer' | 'signout';
 
 const C: Copy<Key> = {
   en: {
@@ -49,7 +49,7 @@ const C: Copy<Key> = {
     soon: 'Coming soon', soonP: 'Being filmed. It opens here when it is ready.',
     confirmMenu: 'Replace your whole week with this menu? What you have planned goes.',
     confirmClear: 'Clear this day?',
-    min: 'min', footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
+    min: 'min', practisedOf: '{m} of {M} min practised this week', footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
   },
   ko: {
     kicker: '나의 주간', h1: '이번 주 계획하기',
@@ -70,7 +70,7 @@ const C: Copy<Key> = {
     soon: '곧 공개', soonP: '촬영 중이에요. 준비되면 여기서 열려요.',
     confirmMenu: '이 메뉴로 한 주를 통째로 바꿀까요? 지금 계획은 사라집니다.',
     confirmClear: '이 날을 비울까요?',
-    min: '분', footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
+    min: '분', practisedOf: '이번 주 {M}분 중 {m}분 연습', footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
   },
 };
 
@@ -92,7 +92,10 @@ export default function WeekView({
   signedIn,
   today,
   recommendedId,
+  practisedMinutes,
 }: {
+  /** Wall-clock minutes practised since Monday, from the log. */
+  practisedMinutes: number;
   /** The week a new member starts on (lib/menus.ts startingMenu). */
   recommendedId: string | null;
   menus: Menu[];
@@ -230,7 +233,15 @@ export default function WeekView({
               </div>
               <div className="acts">
                 <span className="total">
-                  <b>{mins(totalMs)} min</b> {c.total} · {practiceDays} {c.practiceDays}
+                  {practisedMinutes > 0 ? (
+                    <>
+                      {c.practisedOf.replace('{m}', String(practisedMinutes)).replace('{M}', String(mins(totalMs)))} · {practiceDays} {c.practiceDays}
+                    </>
+                  ) : (
+                    <>
+                      <b>{mins(totalMs)} {c.min}</b> {c.total} · {practiceDays} {c.practiceDays}
+                    </>
+                  )}
                 </span>
               </div>
             </div>

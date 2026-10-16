@@ -4,6 +4,7 @@ import { getCurrentMenu, getWeek } from '@/lib/week';
 import { getMember } from '@/lib/member';
 import { signedPosters } from '@/lib/playback';
 import { getClock } from '@/lib/clock';
+import { getProgress } from '@/lib/progress';
 import WeekView from './WeekView';
 import './week.css';
 
@@ -36,6 +37,7 @@ export default async function WeekPage() {
       signedIn={Boolean(member)}
       today={(await getClock()).weekday}
       recommendedId={startingMenu(menus)?.id ?? null}
+      practisedMinutes={member ? (await getProgress()).minutesThisWeek : 0}
     />
   );
 }
