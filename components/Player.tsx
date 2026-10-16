@@ -35,6 +35,7 @@ import { signInHref } from '@/lib/safe-next';
 import type { Exercise } from '@/lib/menus';
 import { playlistLengthMs, type Playlist } from '@/lib/playlist';
 import { getPlayback, type PlaybackResult } from '@/app/(app)/actions';
+import { usePracticeLog } from './usePracticeLog';
 
 type Key =
   | 'total' | 'listRoutine' | 'listDay' | 'notReady' | 'nothing'
@@ -375,6 +376,16 @@ export default function Player({
   const loopRef = useRef<Region | null>(null);
   loopRef.current = loopOn ? region : null;
 
+  /* Practice, reported as it happens (usePracticeLog): wall-clock time while
+     playing, each lap, and 90% watched once per time through an exercise. */
+  const log = usePracticeLog({ enabled: signedIn, videoId: current?.id ?? null, playing, speed });
+  const logRef = useRef(log);
+  logRef.current = log;
+  const completedRef = useRef(false);
+  useEffect(() => {
+    completedRef.current = false;
+  }, [index]);
+
   useEffect(() => {
     const el = videoRef.current as (HTMLVideoElement & {
       requestVideoFrameCallback?: (cb: () => void) => number;
@@ -388,7 +399,14 @@ export default function Player({
       if (stopped) return;
       const L = loopRef.current;
       /* Jump one frame early, so the seek lands before B rather than after. */
-      if (L && el.currentTime >= L.b / 1000 - FRAME) el.currentTime = L.a / 1000;
+      if (L && el.currentTime >= L.b / 1000 - FRAME) {
+        el.currentTime = L.a / 1000;
+        logRef.current.loop();
+      }
+      if (!completedRef.current && el.duration && el.currentTime / el.duration >= 0.9) {
+        completedRef.current = true;
+        logRef.current.complete();
+      }
       paint();
       handle = perFrame ? el.requestVideoFrameCallback!(tick) : requestAnimationFrame(tick);
     };
@@ -450,6 +468,9 @@ export default function Player({
     lapsRef.current += 1;
     if (lapsRef.current < entry.repeats) {
       setLap(lapsRef.current + 1);
+      /* Another time through: a lap, and it can complete again. */
+      logRef.current.loop();
+      completedRef.current = false;
       const el = videoRef.current;
       if (el) {
         el.currentTime = 0;
@@ -710,7 +731,10 @@ export default function Player({
                      net under it. A hidden tab presents no frames, so with the
                      music still playing the loop would otherwise run past B. */
                   const L = loopRef.current;
-                  if (L && e.currentTarget.currentTime >= L.b / 1000) e.currentTarget.currentTime = L.a / 1000;
+                  if (L && e.currentTarget.currentTime >= L.b / 1000) {
+                    e.currentTarget.currentTime = L.a / 1000;
+                    logRef.current.loop();
+                  }
                   if (!playing) paint();
                 }}
                 onSeeked={paint}

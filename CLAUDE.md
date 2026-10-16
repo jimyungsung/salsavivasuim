@@ -51,6 +51,19 @@ the copy could not happen. Done is on Today: under the greeting, and on the
 card the player shows after the last exercise (`finish`); the player's `empty`
 slot is how Today puts its sign-up and first-week cards where the player goes.
 
+**Practice is logged as it happens** (BUILD-PLAN §5). The player
+(`components/usePracticeLog.ts`) reports `play`, a `heartbeat` every fifteen
+seconds of playback, `loop` per lap and `complete` at 90% watched, in batches to
+`/api/practice` (a route, so `sendBeacon` can flush it as the page goes away).
+Minutes are **wall-clock**: a heartbeat carries the time that passed, so footage
+at 0.5× counts double. Rows go in as the member, so "log own practice" (own id,
+`can_access`) decides. A trigger keeps `video_progress` from the log.
+`practice_days(tz)` sums the caller's log per local day (security invoker, so
+RLS applies); `lib/progress.ts` turns that into the streak (a day needs a
+minute; the streak ends today, or yesterday until today is practised), minutes
+this week and today. Today says "5 days in a row. You've practised 12 of this
+week's 83 minutes"; the planner shows practised against planned.
+
 **A member's week is My drills under the hood** (`lib/week.ts`): a `drill` is
 one day — its exercises in order, each with its own loop, speed and repeats —
 and a `drill_slot` is the weekday it sits on, with `done_at`. "Use this menu"
@@ -185,9 +198,10 @@ shortened. `drill_items` cascades, as members' own rows always did.
 
 ## Not built yet
 
-- **Practice events (BUILD-PLAN P4).** Nothing logs practice; "Done" on a day
-  is the member's own tick (`drill_slots.done_at`), and the streak and minutes
-  the mockup shows are not on the page yet.
+- **A Progress page.** The log is there and Today and the planner read it; a
+  page of its own (weeks, minutes per day, what has been practised most) is not.
+- **Done is still the member's tick** (`drill_slots.done_at`), not worked out
+  from the log; the "That's today" card is where it is offered.
 - **Pointer-event drag** in the planner; tap-to-add is the launch.
 - **Progress** and **Library** as nav sections; the bar has Today and My week.
 - The name in the code and the infrastructure is still SUIM; the domain is

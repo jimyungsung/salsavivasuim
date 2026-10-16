@@ -5,6 +5,8 @@ import { dayPlaylist, getCurrentMenu, getWeek } from '@/lib/week';
 import { signedPosters } from '@/lib/playback';
 import { isConfigured } from '@/lib/supabase/config';
 import { getClock } from '@/lib/clock';
+import { getProgress } from '@/lib/progress';
+import { dayLengthMs } from '@/lib/week';
 import type { Member } from '@/lib/member';
 import { getPlayback } from '../actions';
 import DayHead, { QuickDrills } from './DayView';
@@ -26,11 +28,12 @@ export default async function DayPage({
   isToday: boolean;
   member: Member | null;
 }) {
-  const [[week, current, menus], clock] = await Promise.all([
+  const [[week, current, menus], clock, progress] = await Promise.all([
     member
       ? Promise.all([getWeek(), getCurrentMenu(), getMenus()])
       : Promise.all([{ days: Array(7).fill(null) }, null, getMenus()] as const),
     getClock(),
+    member && isToday ? getProgress() : null,
   ]);
   const day = week.days[weekday];
   const menu = menus.find(m => m.id === current?.menuId) ?? null;
@@ -95,6 +98,15 @@ export default async function DayPage({
       empty={playlist.entries.length === 0}
       signedIn={signedIn}
       hour={clock.hour}
+      progress={
+        progress
+          ? {
+              streak: progress.streak,
+              minutesThisWeek: progress.minutesThisWeek,
+              plannedThisWeek: Math.round(week.days.reduce((n, d) => n + (d ? dayLengthMs(d) : 0), 0) / 60000),
+            }
+          : null
+      }
       done={member && day && planned ? <DoneToggle slotId={day.slotId} done={Boolean(day.doneAt)} /> : null}
     />
   );
