@@ -37,6 +37,9 @@ export interface Day {
   /** The slot row, which carries done_at. */
   slotId: string;
   name: string;
+  /** The day's theme in both languages: its routine's title when it was
+      copied from one (a drill's own name is a single string), else the name. */
+  title: Localized;
   /** The routine this day was copied from, if any. */
   routineId: string | null;
   doneAt: string | null;
@@ -47,6 +50,7 @@ interface DrillRow {
   id: string;
   name: string;
   routine_id: string | null;
+  routine: { title_t: { en: string; ko?: string | null } } | null;
   created_at: string;
   drill_items:
     | {
@@ -60,7 +64,7 @@ interface DrillRow {
   drill_slots: { id: string; weekday: number; done_at: string | null; created_at: string }[] | null;
 }
 
-const DRILL_SELECT = `id, name, routine_id, created_at,
+const DRILL_SELECT = `id, name, routine_id, created_at, routine:routines ( title_t ),
   drill_items ( id, position, repeats, speed, video:videos ( ${VIDEO_COLUMNS} ) ),
   drill_slots ( id, weekday, done_at, created_at )`;
 
@@ -93,6 +97,9 @@ async function loadWeek(): Promise<Week> {
         weekday: slot.weekday,
         slotId: slot.id,
         name: row.name,
+        title: row.routine
+          ? { en: row.routine.title_t.en || row.name, ko: row.routine.title_t.ko || row.routine.title_t.en || row.name }
+          : { en: row.name, ko: row.name },
         routineId: row.routine_id,
         doneAt: thisWeek(slot.done_at),
         items: [...(row.drill_items ?? [])]
@@ -133,7 +140,6 @@ async function loadCurrentMenu(): Promise<CurrentMenu | null> {
 
 /* ------------------------------------------------------------ playlists ---- */
 
-const BACK: Localized = { en: 'My week', ko: '나의 주간' };
 const TODAY: Localized = { en: 'Today', ko: '오늘' };
 
 export const dayLengthMs = (day: Pick<Day, 'items'>): number =>
@@ -143,18 +149,20 @@ export const dayLengthMs = (day: Pick<Day, 'items'>): number =>
     repeats and speed ride along. */
 export function dayPlaylist(weekday: number, day: Day | null, isToday: boolean): Playlist {
   const n = day?.items.length ?? 0;
-  const mins = day ? Math.round(dayLengthMs(day) / 60000) : 0;
   return {
     kind: 'day',
     href: isToday ? '/today' : `/day/${weekday}`,
-    title: day ? { en: day.name, ko: day.name } : DAY_NAMES[weekday],
+    title: day ? day.title : DAY_NAMES[weekday],
+    /* The length is said once, in the player's bar; the kicker just counts. */
     kicker: {
-      en: `${DAY_NAMES[weekday].en}${n ? ` · ${n} exercise${n === 1 ? '' : 's'} · ${mins} min` : ''}`,
-      ko: `${DAY_NAMES[weekday].ko}${n ? ` · 운동 ${n}개 · ${mins}분` : ''}`,
+      en: `${DAY_NAMES[weekday].en}${n ? ` · ${n} exercise${n === 1 ? '' : 's'}` : ''}`,
+      ko: `${DAY_NAMES[weekday].ko}${n ? ` · 운동 ${n}개` : ''}`,
     },
-    back: { href: '/week', label: BACK },
+    /* Today is home: nothing above it, nothing to go "back to today" for.
+       Any other day goes back to Today. */
+    back: isToday ? null : { href: '/today', label: TODAY },
     prev: null,
-    next: { href: '/today', label: { en: 'Back to today →', ko: '오늘로 →' } },
+    next: null,
     notes: [],
     entries: (day?.items ?? [])
       .filter(i => i.video)
@@ -162,7 +170,6 @@ export function dayPlaylist(weekday: number, day: Day | null, isToday: boolean):
   };
 }
 
-export { TODAY };
 
 /* Cached per request: the page's metadata and body both ask. */
 export const getWeek = cache(loadWeek);

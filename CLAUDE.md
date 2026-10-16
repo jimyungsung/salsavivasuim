@@ -60,8 +60,10 @@ menu on `profiles.menu_id`. `drills.routine_id` says where a day came from, so
 
 **The player takes a playlist** (`lib/playlist.ts`): a routine or a day are one
 shape, entries of `{ video, repeats, speed }`. Anything new the player plays is
-another builder, not another player. Speed is remembered once, globally; an
-item's own speed overrides it.
+another builder, not another player. Speed is remembered once, globally, and
+**the member's choice wins**: an item's own speed is only the starting point
+until they have picked one. A day's page has no back link to itself (Today is
+home; `Playlist.back` can be null).
 
 ## Layout
 
@@ -116,6 +118,10 @@ item's own speed overrides it.
 - **Every way into sign-in carries where you were.** Link with
   `signInHref(path)`, never a bare `/signin`. Pass any `next` through
   `safeNext()` — it is attacker-controlled.
+- **The planner shows a day as one row** (theme, minutes, done, Play) and
+  opens it to edit; Done is ticked on Today, not here. A day's theme is its
+  routine's `title_t`, in both languages. Levels are never set by hand:
+  `levelSpan()` works them out from the exercises' difficulty.
 - **Adding is a tap, not a drag.** HTML5 drag does not fire on touch, and a
   phone in a practice room is the likely device. The planner's library has
   "Add to <day>" buttons; the arrows order a day.

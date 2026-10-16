@@ -99,12 +99,22 @@ export default function AppNavBar({ member }: { member: Member | null }) {
               </div>
             )}
             {member ? (
-              <div className="me">
-                <span className="av" aria-hidden="true">
-                  {member.initials}
-                </span>
-                <span>{member.name}</span>
-              </div>
+              /* The name chip is a menu: the one place to sign out from,
+                 rather than a footer at the bottom of a long page. */
+              <details className="memenu" key={pathname}>
+                <summary className="me">
+                  <span className="av" aria-hidden="true">
+                    {member.initials}
+                  </span>
+                  <span>{member.name}</span>
+                </summary>
+                <div className="mepop">
+                  <Link href="/week">{label({ en: 'My week', ko: '나의 주간' })}</Link>
+                  <form action="/auth/signout" method="post">
+                    <button type="submit">{label({ en: 'Sign out', ko: '로그아웃' })}</button>
+                  </form>
+                </div>
+              </details>
             ) : (
               <Link className="pill primary sm" href={signInHref(pathname)}>
                 {label({ en: 'Sign in', ko: '로그인' })}

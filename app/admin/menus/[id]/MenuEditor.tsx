@@ -21,7 +21,6 @@ import {
 import type { Readiness } from '../../readiness';
 import type { PickVideo } from '../../routines/[id]/page';
 import WeekBuilder from './WeekBuilder';
-import { LEVEL_KEYS } from '@/lib/db';
 import type { EditorMenu } from './page';
 
 
@@ -74,7 +73,7 @@ export default function MenuEditor({
         <div>
           <h1>{menu.title_t.en || 'Untitled menu'}</h1>
           <p>
-            {menu.subtitle_t.en || 'No subtitle yet'} · {menu.routines.length} routine
+            {menu.stage ? menu.stage.name_t.en : 'No stage'} · {menu.routines.length} routine
             {menu.routines.length === 1 ? '' : 's'} · {minutes} min in the week · {ready}/{items.length} with footage
           </p>
         </div>
@@ -192,22 +191,12 @@ export default function MenuEditor({
           <section className="panel">
             <h2>Copy</h2>
             <LocalizedField stacked table="menus" id={menu.id} column="title_t" label="Title" value={menu.title_t} onError={setError} />
-            <LocalizedField stacked table="menus" id={menu.id} column="subtitle_t" label="Subtitle" value={menu.subtitle_t} onError={setError} />
             <LocalizedField stacked table="menus" id={menu.id} column="promise_t" label="What the week does" value={menu.promise_t} multiline onError={setError} />
           </section>
 
           <section className="panel">
             <h2>Shape</h2>
             <div className="fields">
-              <div className="fieldset">
-                <span className="lf-label">Level</span>
-                <select className="field" value={menu.level} disabled={pending} onChange={e => run(() => setMenuFields(menu.id, { level: e.target.value }))}>
-                  {LEVEL_KEYS.map(l => (
-                    <option key={l} value={l}>{l}</option>
-                  ))}
-                </select>
-              </div>
-
               <div className="fieldset">
                 <span className="lf-label">Stage</span>
                 <select className="field" value={menu.stage_id ?? ''} disabled={pending} onChange={e => run(() => setMenuFields(menu.id, { stage_id: e.target.value || null }))}>
@@ -219,8 +208,8 @@ export default function MenuEditor({
               </div>
             </div>
             <p className="hint" style={{ margin: '8px 0 16px' }}>
-              The level describes the material, not the dancer. A menu with no stage is one
-              a member can pick on its own; the quick drills are one of those.
+              A menu with no stage is one a member can pick on its own; the quick drills
+              are one of those. Its level is worked out from its exercises&rsquo; difficulty.
             </p>
 
             <div className="fieldset" style={{ maxWidth: 'none' }}>

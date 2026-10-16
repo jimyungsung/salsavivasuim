@@ -14,20 +14,20 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useCopy, useLang } from '@/lib/lang';
 import type { Copy } from '@/lib/lang';
 import { mmss } from '@/lib/db';
-import { DAY_NAMES, DAY_SHORT, EXERCISE_TAGS, LEVEL_LABELS, TAG_LABELS, type ExerciseTag } from '@/lib/i18n';
+import { DAY_NAMES, DAY_SHORT, EXERCISE_TAGS, LEVEL_LABELS, TAG_LABELS, levelSpan, type ExerciseTag } from '@/lib/i18n';
 import { signInHref } from '@/lib/safe-next';
 import type { Exercise, Menu } from '@/lib/menus';
 import { routineLengthMs } from '@/lib/playlist';
 import type { Day, Week } from '@/lib/week';
-import { addToDay, clearDay, moveInDay, removeFromDay, resetDay, setDone, useMenu, type Result } from './actions';
+import { addToDay, clearDay, moveInDay, removeFromDay, resetDay, useMenu, type Result } from './actions';
 
 type Key =
   | 'kicker' | 'h1' | 'sub' | 'menusT' | 'menusP' | 'inWeek' | 'useMenu' | 'recommended' | 'days' | 'aDay'
   | 'buildT' | 'buildP' | 'buildFrom' | 'total' | 'practiceDays' | 'reset' | 'resetDay' | 'clearDay'
   | 'libT' | 'libN' | 'search' | 'all' | 'addTo' | 'noLib' | 'noMatch' | 'sheetOpen' | 'close'
-  | 'today' | 'done' | 'markDone' | 'undone' | 'rest' | 'restP' | 'addEx' | 'play' | 'missing'
+  | 'today' | 'done' | 'rest' | 'restP' | 'addEx' | 'play' | 'missing'
   | 'aUp' | 'aDown' | 'aRemove' | 'signInT' | 'signInGo' | 'joinGo' | 'joinHave' | 'soon' | 'soonP' | 'confirmMenu' | 'confirmClear'
-  | 'footer' | 'signout';
+  | 'min' | 'footer' | 'signout';
 
 const C: Copy<Key> = {
   en: {
@@ -41,7 +41,7 @@ const C: Copy<Key> = {
     libT: 'Mini exercises', libN: 'in the library', search: 'Search exercises', all: 'All', addTo: 'Add to',
     noLib: 'Nothing to add yet. Exercises appear here as they are published.', noMatch: 'Nothing matches.',
     sheetOpen: 'Add exercise', close: 'Close',
-    today: 'Today', done: 'Done', markDone: 'Mark done', undone: 'Not done', rest: 'Rest', restP: 'Nothing planned. Rest is part of the week.',
+    today: 'Today', done: 'Done', rest: 'Rest', restP: 'Nothing planned. Rest is part of the week.',
     addEx: 'Add exercise', play: 'Play', missing: 'No longer available',
     aUp: 'Move earlier', aDown: 'Move later', aRemove: 'Remove',
     signInT: 'Your week is your own practice, so it needs an account.', signInGo: 'Sign in ↗',
@@ -49,7 +49,7 @@ const C: Copy<Key> = {
     soon: 'Coming soon', soonP: 'Being filmed. It opens here when it is ready.',
     confirmMenu: 'Replace your whole week with this menu? What you have planned goes.',
     confirmClear: 'Clear this day?',
-    footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
+    min: 'min', footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
   },
   ko: {
     kicker: '나의 주간', h1: '이번 주 계획하기',
@@ -62,7 +62,7 @@ const C: Copy<Key> = {
     libT: '미니 운동', libN: '개', search: '운동 검색', all: '전체', addTo: '추가:',
     noLib: '아직 추가할 운동이 없습니다. 공개되는 대로 여기에 나타납니다.', noMatch: '검색 결과가 없습니다.',
     sheetOpen: '운동 추가', close: '닫기',
-    today: '오늘', done: '완료', markDone: '완료 표시', undone: '미완료', rest: '휴식', restP: '계획 없음. 휴식도 한 주의 일부입니다.',
+    today: '오늘', done: '완료', rest: '휴식', restP: '계획 없음. 휴식도 한 주의 일부입니다.',
     addEx: '운동 추가', play: '재생', missing: '더 이상 볼 수 없음',
     aUp: '앞으로', aDown: '뒤로', aRemove: '빼기',
     signInT: '나의 주간은 나만의 연습이라 계정이 필요합니다.', signInGo: '로그인 ↗',
@@ -70,7 +70,7 @@ const C: Copy<Key> = {
     soon: '곧 공개', soonP: '촬영 중이에요. 준비되면 여기서 열려요.',
     confirmMenu: '이 메뉴로 한 주를 통째로 바꿀까요? 지금 계획은 사라집니다.',
     confirmClear: '이 날을 비울까요?',
-    footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
+    min: '분', footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
   },
 };
 
@@ -107,6 +107,8 @@ export default function WeekView({
   const c = useCopy(C);
   const [error, setError] = useState<string | null>(null);
   const [target, setTarget] = useState(today);
+  /* One day open at a time; the one you open is the one the library adds to. */
+  const [openDay, setOpenDay] = useState<number | null>(null);
   const [sheet, setSheet] = useState(false);
   const [pending, start] = useTransition();
 
@@ -124,7 +126,9 @@ export default function WeekView({
   const current = menus.find(m => m.id === currentMenuId) ?? null;
   const totalMs = week.days.reduce((n, d) => n + dayMs(d), 0);
   const practiceDays = week.days.filter(d => d && d.items.length > 0).length;
-  const add = (videoId: string) => run(() => addToDay(target, videoId), () => setSheet(false));
+  /* The sheet stays open after an add: three exercises used to be three
+     open-scroll-tap cycles. */
+  const add = (videoId: string) => run(() => addToDay(target, videoId));
 
   return (
     <div className="wk">
@@ -160,6 +164,8 @@ export default function WeekView({
               const days = m.routines.filter(r => r.weekday != null).length;
               const perDay = days ? Math.round(m.routines.reduce((n, r) => n + routineLengthMs(r), 0) / days / 60000) : 0;
               const tags = [...new Set(m.routines.flatMap(r => r.items.flatMap(it => it.video?.tags ?? [])))].slice(0, 3) as ExerciseTag[];
+              /* The week's level, from its exercises' difficulty. */
+              const span = levelSpan(m.routines.flatMap(r => r.items.flatMap(it => (it.video ? [it.video.difficulty] : []))));
               return (
                 <article className={`menu${on ? ' on' : ''}`} key={m.id}>
                   <div className="pic">
@@ -171,7 +177,8 @@ export default function WeekView({
                     {T(m.promise) && <p className="desc">{T(m.promise)}</p>}
                     <p className="meta">
                       {m.stage && <span>{T(m.stage.name)} · </span>}
-                      <b>{days} {c.days}</b> · <b>~{perDay} min</b> {c.aDay} · {T(LEVEL_LABELS[m.level])}
+                      <b>{days} {c.days}</b> · <b>~{perDay} {c.min}</b> {c.aDay}
+                      {span && <> · {T(span)}</>}
                     </p>
                     {tags.length > 0 && (
                       <div className="focus">
@@ -242,17 +249,23 @@ export default function WeekView({
 
               <div className="week">
                 {week.days.map((day, di) => (
-                  <DayCard
+                  <DayRow
                     key={di}
                     weekday={di}
                     day={day}
                     isToday={di === today}
-                    targeted={di === target}
+                    open={openDay === di}
                     pending={pending}
+                    onToggle={() => {
+                      setOpenDay(o => (o === di ? null : di));
+                      setTarget(di);
+                    }}
                     onRun={run}
                     onAdd={() => {
                       setTarget(di);
-                      setSheet(true);
+                      /* Beside the week on a wide screen the library is
+                         already there; on a phone it comes up as a sheet. */
+                      if (window.matchMedia('(max-width: 900px)').matches) setSheet(true);
                     }}
                   />
                 ))}
@@ -283,25 +296,31 @@ export default function WeekView({
           )}
         </div>
       </footer>
-      <span hidden>{lang}</span>
     </div>
   );
 }
 
-function DayCard({
+/* One day of the week as a row: the day, its theme, its minutes and whether
+   it is done, with Play. Open it to change it: the exercises with their
+   arrows and remove, Add, Reset to menu, Clear. Closed, the week reads at a
+   glance; there used to be some 127 controls on the page, all at once. Done
+   itself is ticked on Today, where the practice happens. */
+function DayRow({
   weekday,
   day,
   isToday,
-  targeted,
+  open,
   pending,
+  onToggle,
   onRun,
   onAdd,
 }: {
   weekday: number;
   day: Day | null;
   isToday: boolean;
-  targeted: boolean;
+  open: boolean;
   pending: boolean;
+  onToggle: () => void;
   onRun: (fn: () => Promise<Result>, after?: () => void) => void;
   onAdd: () => void;
 }) {
@@ -312,73 +331,77 @@ function DayCard({
   const done = Boolean(day?.doneAt);
 
   return (
-    <article className={`day${isToday ? ' today' : ''}${done ? ' done' : ''}${empty ? ' rest' : ''}${targeted ? ' target' : ''}`}>
-      <div className="dh">
-        <span className="dn">
-          {T(DAY_SHORT[weekday])}
-          {isToday && <em>{c.today}</em>}
-        </span>
-        {!empty && (
-          <span className="meter" aria-hidden="true">
-            <i style={{ width: `${Math.min(100, (total / 900000) * 100)}%` }} />
+    <article className={`day${isToday ? ' today' : ''}${done ? ' done' : ''}${empty ? ' rest' : ''}${open ? ' open' : ''}`}>
+      <div className="dsum">
+        <button type="button" className="dtog" onClick={onToggle} aria-expanded={open}>
+          <span className="dn">
+            {T(DAY_SHORT[weekday])}
+            {isToday && <em>{c.today}</em>}
           </span>
-        )}
-        <span className="dm">
-          {empty ? c.rest : done ? `${c.done} · ${mins(total)} min` : `${mins(total)} min`}
-        </span>
-      </div>
-
-      {empty ? (
-        <p className="restp">{c.restP}</p>
-      ) : (
-        <ul>
-          {day!.items.map((item, i) => (
-            <li key={item.id}>
-              <span className="nm">{item.video ? T(item.video.title) : c.missing}</span>
-              <span className="tg">{item.video?.tags[0] ? T(TAG_LABELS[item.video.tags[0]]) : ''}</span>
-              <span className="min">{item.video ? mmss(item.video.durationMs ? item.video.durationMs * item.repeats : null) : '—'}</span>
-              <span className="ops">
-                <button type="button" disabled={pending || i === 0} onClick={() => onRun(() => moveInDay(item.id, 'up'))} aria-label={c.aUp} title={c.aUp}>↑</button>
-                <button type="button" disabled={pending || i === day!.items.length - 1} onClick={() => onRun(() => moveInDay(item.id, 'down'))} aria-label={c.aDown} title={c.aDown}>↓</button>
-                <button type="button" disabled={pending} onClick={() => onRun(() => removeFromDay(item.id))} aria-label={c.aRemove} title={c.aRemove}>×</button>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="dacts">
-        <button className="more" type="button" disabled={pending} onClick={onAdd}>
-          <i>+</i>
-          {c.addEx}
+          <span className="dt">{empty ? c.rest : T(day!.title)}</span>
+          <span className="dm">
+            {done && (
+              <svg viewBox="0 0 24 24" aria-label={c.done}>
+                <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+            {!empty && `${mins(total)} ${c.min}`}
+          </span>
+          <span className="chev" aria-hidden="true">▾</span>
         </button>
         {!empty && (
-          <>
-            <Link className="more play" href={isToday ? '/today' : `/day/${weekday}`}>
-              <i>{PLAY}</i>
-              {c.play}
-            </Link>
-            <button className="more" type="button" disabled={pending} onClick={() => onRun(() => setDone(day!.slotId, !done))}>
-              {done ? c.undone : c.markDone}
+          <Link className="dplay" href={isToday ? '/today' : `/day/${weekday}`} aria-label={c.play}>
+            {PLAY}
+          </Link>
+        )}
+      </div>
+
+      {open && (
+        <div className="dbody">
+          {empty ? (
+            <p className="restp">{c.restP}</p>
+          ) : (
+            <ul>
+              {day!.items.map((item, i) => (
+                <li key={item.id}>
+                  <span className="nm">{item.video ? T(item.video.title) : c.missing}</span>
+                  <span className="min">
+                    {item.video ? mmss(item.video.durationMs ? item.video.durationMs * item.repeats : null) : '—'}
+                  </span>
+                  <span className="ops">
+                    <button type="button" disabled={pending || i === 0} onClick={() => onRun(() => moveInDay(item.id, 'up'))} aria-label={c.aUp} title={c.aUp}>↑</button>
+                    <button type="button" disabled={pending || i === day!.items.length - 1} onClick={() => onRun(() => moveInDay(item.id, 'down'))} aria-label={c.aDown} title={c.aDown}>↓</button>
+                    <button type="button" disabled={pending} onClick={() => onRun(() => removeFromDay(item.id))} aria-label={c.aRemove} title={c.aRemove}>×</button>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="dacts">
+            <button className="more" type="button" disabled={pending} onClick={onAdd}>
+              <i>+</i>
+              {c.addEx}
             </button>
-            {day!.routineId && (
+            {day?.routineId && (
               <button className="more" type="button" disabled={pending} onClick={() => onRun(() => resetDay(weekday))}>
                 {c.resetDay}
               </button>
             )}
-            <button
-              className="more"
-              type="button"
-              disabled={pending}
-              onClick={() => {
-                if (confirm(c.confirmClear)) onRun(() => clearDay(weekday));
-              }}
-            >
-              {c.clearDay}
-            </button>
-          </>
-        )}
-      </div>
+            {!empty && (
+              <button
+                className="more"
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  if (confirm(c.confirmClear)) onRun(() => clearDay(weekday));
+                }}
+              >
+                {c.clearDay}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </article>
   );
 }
@@ -423,6 +446,8 @@ function Library({
           </span>
         </div>
       )}
+      {/* In the sheet its title says which day; the row would only repeat it. */}
+      {!inSheet && (
       <div className="target" role="group" aria-label={c.addTo}>
         <span>{c.addTo}</span>
         {DAY_SHORT.map((d, di) => (
@@ -431,6 +456,7 @@ function Library({
           </button>
         ))}
       </div>
+      )}
       <input
         type="search"
         className="search"

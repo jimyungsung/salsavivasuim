@@ -41,6 +41,7 @@ type Key =
   | 'loading' | 'signInT' | 'signInGo' | 'focus' | 'keys'
   | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror' | 'aFull' | 'aExitFull' | 'aCounts'
   | 'aLoop8' | 'aLoopAB' | 'aRepeat' | 'aSeek'
+  | 'lLoop' | 'lMirror' | 'lCounts' | 'aBack8' | 'aBack5' | 'aNext' | 'loadFail'
   | 'footer' | 'signout';
 
 const C: Copy<Key> = {
@@ -55,7 +56,10 @@ const C: Copy<Key> = {
     aFull: 'Full screen', aExitFull: 'Exit full screen', aCounts: 'Counts',
     aLoop8: 'Loop eight counts', aLoopAB: 'Loop the marked section', aRepeat: 'Repeat this video',
     aSeek: 'Position in the video',
-    footer: 'Solo salsa training · Built around practice', signout: 'Sign out',
+    lLoop: 'Loop', lMirror: 'Mirror', lCounts: 'Counts',
+    aBack8: 'Back eight counts', aBack5: 'Back five seconds', aNext: 'Next exercise',
+    loadFail: 'This video did not load. Check your connection and try again.',
+    footer: 'Solo salsa training · A routine a day', signout: 'Sign out',
   },
   ko: {
     total: '분량',
@@ -68,7 +72,10 @@ const C: Copy<Key> = {
     aFull: '전체 화면', aExitFull: '전체 화면 종료', aCounts: '카운트',
     aLoop8: '8카운트 반복', aLoopAB: '표시된 구간 반복', aRepeat: '이 영상 반복',
     aSeek: '영상 위치',
-    footer: '연습을 중심으로 설계한 솔로 살사 트레이닝', signout: '로그아웃',
+    lLoop: '반복', lMirror: '반전', lCounts: '카운트',
+    aBack8: '8카운트 뒤로', aBack5: '5초 뒤로', aNext: '다음 운동',
+    loadFail: '영상을 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요.',
+    footer: '솔로 살사 트레이닝 · 하루 한 루틴', signout: '로그아웃',
   },
 };
 
@@ -236,9 +243,10 @@ export default function Player({
     } catch {
       /* private mode: the default it is */
     }
-    /* An entry's own speed first; otherwise what the dancer last chose;
-       otherwise a little slow, which is how you meet a new exercise. */
-    setSpeed(entry.speed ?? stored ?? 0.75);
+    /* What the dancer chose wins: a routine's speed for an exercise is a
+       starting suggestion, used until the dancer has picked a speed of their
+       own; then a little slow, which is how you meet a new exercise. */
+    setSpeed(stored ?? entry.speed ?? 0.75);
     setStarted(false);
     setFinished(false);
     setRegion(null);
@@ -422,6 +430,15 @@ export default function Player({
     setMirrored(m => !m);
   }, []);
 
+  /* Back eight counts: the phrase you just missed. Without a beat grid there
+     are no counts to go back by, so five seconds. */
+  const back8 = useCallback(() => {
+    const el = videoRef.current;
+    if (!el || !current) return;
+    const b = beatMs(current);
+    el.currentTime = Math.max(0, el.currentTime - (b ? (b * 8) / 1000 : 5));
+  }, [current]);
+
   const pick = useCallback((i: number) => {
     autoplayRef.current = Boolean(videoRef.current && !videoRef.current.paused);
     setIndex(i);
@@ -576,10 +593,12 @@ export default function Player({
         {above}
         {empty ?? (
           <div className="sp-empty">
-            <Link className="crumb" href={playlist.back.href}>
-              <span aria-hidden="true">←</span>
-              <span>{T(playlist.back.label)}</span>
-            </Link>
+            {playlist.back && (
+              <Link className="crumb" href={playlist.back.href}>
+                <span aria-hidden="true">←</span>
+                <span>{T(playlist.back.label)}</span>
+              </Link>
+            )}
             <h1>{T(playlist.title)}</h1>
             {signedIn ? (
               <p>{entries.length ? c.notReady : c.nothing}</p>
@@ -606,13 +625,13 @@ export default function Player({
     current.loopStartMs != null && current.loopEndMs != null ? c.aLoopAB : grid ? c.aLoop8 : c.aRepeat;
   const listTitle = playlist.kind === 'routine' ? c.listRoutine : c.listDay;
 
-  /* Where each part sits in the whole, summed from the videos' own lengths. */
-  let at = 0;
-  const spans = entries.map(e => {
-    const from = at;
-    at += ((e.video.durationMs ?? 0) * e.repeats) / 1000;
-    return { from, to: at, known: e.video.durationMs != null };
-  });
+  const cues = [...playlist.notes.map(T), T(current.description)].filter(
+    (text, i, all) => text && all.indexOf(text) === i,
+  );
+  const nextReady = (() => {
+    const offset = entries.slice(index + 1).findIndex(e => e.video.status === 'ready');
+    return offset >= 0 ? index + 1 + offset : -1;
+  })();
 
   const onwards = playlist.next ?? playlist.back;
 
@@ -621,16 +640,21 @@ export default function Player({
       {above}
       <div className="subnav">
         <div className="wrap subin">
-          <Link className="crumb" href={playlist.back.href}>
-            <span aria-hidden="true">←</span>
-            <span>{T(playlist.back.label)}</span>
-          </Link>
+          {playlist.back && (
+            <Link className="crumb" href={playlist.back.href}>
+              <span aria-hidden="true">←</span>
+              <span>{T(playlist.back.label)}</span>
+            </Link>
+          )}
           <div className="where">
             <span className="lv">{T(playlist.kicker)}</span>
             <h1>{T(playlist.title)}</h1>
-            <span className="len">
-              {mmss(playlistLengthMs(entries))} {c.total}
-            </span>
+            {/* A day's page says its minutes in the greeting above; once is enough. */}
+            {playlist.kind !== 'day' && (
+              <span className="len">
+                {mmss(playlistLengthMs(entries))} {c.total}
+              </span>
+            )}
           </div>
           <nav className="hop">
             {playlist.prev && <Link href={playlist.prev.href}>{T(playlist.prev.label)}</Link>}
@@ -704,7 +728,11 @@ export default function Player({
               />
 
               {loading && <p className="sp-status">{c.loading}</p>}
-              {playback && !playback.ok && <p className="sp-status">{playback.error}</p>}
+              {playback && !playback.ok && (
+                <p className="sp-status" title={playback.error}>
+                  {c.loadFail}
+                </p>
+              )}
 
               {/* Before the first play: what this part is for, and one big button. */}
               {!started && playback?.ok && (
@@ -777,9 +805,28 @@ export default function Player({
                       <path d={playing ? 'M7 5h3.5v14H7zM13.5 5H17v14h-3.5z' : 'M8 5v14l11-7z'} />
                     </svg>
                   </button>
+                  <button className="ic back8" type="button" onClick={back8} aria-label={grid ? c.aBack8 : c.aBack5} title={grid ? c.aBack8 : c.aBack5}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M4 12a8 8 0 1 0 2.3-5.6" />
+                      <path d="M4 4v4h4" />
+                    </svg>
+                    <b>{grid ? 8 : 5}</b>
+                  </button>
+                  {nextReady >= 0 && (
+                    <button className="ic next" type="button" onClick={() => pick(nextReady)} aria-label={c.aNext} title={c.aNext}>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M6 5v14l9-7zM16 5h2.5v14H16z" />
+                      </svg>
+                    </button>
+                  )}
                   <span className="time" ref={timeRef}>
                     0:00 / {clock(durationMs / 1000)}
                   </span>
+                  {entry.repeats > 1 && (
+                    <span className="lap">
+                      {lap}/{entry.repeats}
+                    </span>
+                  )}
                   <span className="sp-flex" />
                   <div className="spwrap" ref={speedRef}>
                     <button
@@ -839,6 +886,7 @@ export default function Player({
                       <path d="M7 22l-4-4 4-4" />
                       <path d="M21 12v2a4 4 0 0 1-4 4H3" />
                     </svg>
+                    <span className="lbl">{c.lLoop}</span>
                   </button>
                   <button
                     className="ic"
@@ -853,6 +901,7 @@ export default function Player({
                       <path d="M8.5 8.5L4 12l4.5 3.5" />
                       <path d="M15.5 8.5L20 12l-4.5 3.5" />
                     </svg>
+                    <span className="lbl">{c.lMirror}</span>
                   </button>
                   {grid && (
                     <button
@@ -869,6 +918,7 @@ export default function Player({
                         <rect x="14" y="12" width="3" height="7" rx="1.5" />
                         <rect x="19.5" y="8" width="3" height="11" rx="1.5" />
                       </svg>
+                      <span className="lbl">{c.lCounts}</span>
                     </button>
                   )}
                   <button
@@ -908,9 +958,6 @@ export default function Player({
                       {e.repeats > 1 && ` ×${e.repeats}`}
                     </span>
                     <span className="slen">{mmss((v.durationMs ?? 0) * e.repeats || null)}</span>
-                    <span className="sat">
-                      {spans[i].known ? `${clock(spans[i].from)}–${clock(spans[i].to)}` : '—'}
-                    </span>
                     {now && <span className="sfill" ref={fillRef} />}
                   </button>
                 );
@@ -918,14 +965,16 @@ export default function Player({
             </div>
 
             <div className="about">
-              <h3>{c.focus}</h3>
-              <ul className="cues">
-                {[...playlist.notes.map(T), T(current.description)]
-                  .filter((text, i, all) => text && all.indexOf(text) === i)
-                  .map(text => (
-                    <li key={text}>{text}</li>
-                  ))}
-              </ul>
+              {cues.length > 0 && (
+                <>
+                  <h3>{c.focus}</h3>
+                  <ul className="cues">
+                    {cues.map(text => (
+                      <li key={text}>{text}</li>
+                    ))}
+                  </ul>
+                </>
+              )}
               <p className="keys">{c.keys}</p>
             </div>
           </div>
@@ -972,11 +1021,13 @@ export default function Player({
               );
             })}
           </div>
-          <div className="sfoot">
-            <Link className="pill primary sm" href={onwards.href}>
-              {T(onwards.label)}
-            </Link>
-          </div>
+          {onwards && (
+            <div className="sfoot">
+              <Link className="pill primary sm" href={onwards.href}>
+                {T(onwards.label)}
+              </Link>
+            </div>
+          )}
         </aside>
       </main>
 

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import type { PublishStatus } from '@/lib/db';
+import { DAY_SHORT } from '@/lib/i18n';
 
 export interface NavRoutine {
   id: string;
@@ -30,7 +31,8 @@ export interface NavStage {
   menus: NavMenu[];
 }
 
-const DAY = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+/* The back office is English; the names live once, in lib/i18n. */
+const DAY = DAY_SHORT.map(d => d.en);
 
 export default function Sidebar({ tree, exerciseCount }: { tree: NavStage[]; exerciseCount: number }) {
   const pathname = usePathname();

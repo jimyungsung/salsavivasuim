@@ -23,17 +23,17 @@ import {
   movePosition,
   removeRoutineItem,
   setRoutineItem,
-  setRoutineLevels,
   setRoutineWeekday,
   setStatus,
   type Result,
 } from '../../actions';
-import { LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
-import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
+import { mmss, type ExerciseTag } from '@/lib/db';
+import { DAY_NAMES, TAG_LABELS } from '@/lib/i18n';
 import type { EditorItem, EditorRoutine, PickVideo } from './page';
 import Picker from '../../Picker';
 
-const DAY = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+/* The back office is English; the names live once, in lib/i18n. */
+const DAY = DAY_NAMES.map(d => d.en);
 const SPEEDS = [0.5, 0.75, 1, 1.25];
 
 export default function RoutineEditor({
@@ -161,21 +161,6 @@ export default function RoutineEditor({
                 </select>
               </div>
 
-              <div className="fieldset" style={{ maxWidth: 'none' }}>
-                <span className="lf-label">Level</span>
-                <div className="levels">
-                  {LEVEL_KEYS.map(key => {
-                    const on = routine.levels.includes(key);
-                    const next = on ? routine.levels.filter(k => k !== key) : [...routine.levels, key];
-                    return (
-                      <button key={key} type="button" className={`chip${on ? ' open' : ''}`} aria-pressed={on} disabled={pending}
-                        onClick={() => run(() => setRoutineLevels(routine.id, next))}>
-                        {LEVEL_LABELS[key].en}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           </section>
         </div>

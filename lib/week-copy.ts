@@ -15,11 +15,11 @@ export interface RoutineForCopy {
   weekday: number | null;
   title_t: { en: string; ko?: string | null };
   routine_items:
-    | { video_id: string; position: number; loop_start_ms: number | null; loop_end_ms: number | null; speed: number | null; repeats: number }[]
+    | { video_id: string; position: number; speed: number | null; repeats: number }[]
     | null;
 }
 
-export const ROUTINE_FOR_COPY = 'id, weekday, title_t, routine_items ( video_id, position, loop_start_ms, loop_end_ms, speed, repeats )';
+export const ROUTINE_FOR_COPY = 'id, weekday, title_t, routine_items ( video_id, position, speed, repeats )';
 
 /* What a member reads when copying fails. The database's own message goes to
    the log; it means nothing to a dancer. */
@@ -65,8 +65,6 @@ export async function copyRoutine(
         drill_id: drill.id,
         video_id: i.video_id,
         position: k + 1,
-        loop_start_ms: i.loop_start_ms,
-        loop_end_ms: i.loop_end_ms,
         speed: i.speed,
         repeats: i.repeats,
       })),
