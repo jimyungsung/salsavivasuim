@@ -22,7 +22,7 @@ type Key =
   | 's1' | 's1h' | 's1p' | 'signInH' | 'signInP'
   | 'lblEmail' | 'phEmail' | 'or' | 'alt1'
   | 's2' | 's2h' | 's2p'
-  | 'cta' | 'ctaIn' | 'sending' | 'legal'
+  | 'cta' | 'ctaIn' | 'sending' | 'legal' | 'legalTerms' | 'legalPrivacy'
   | 'sentH' | 'sentP' | 'again' | 'otherEmail' | 'noAccountH' | 'noAccountP'
   | 'failH' | 'setupH' | 'setupP'
   | 'noEmailH' | 'noEmailP' | 'toSignIn' | 'toRegister' | 'toSignInQ' | 'toRegisterQ'
@@ -44,7 +44,7 @@ const C: Copy<Key> = {
     s2p: 'Optional. It picks your first week.',
     cta: 'Create account and start today',
     ctaIn: 'Send the sign-in link ↗', sending: 'Sending…',
-    legal: 'By continuing you agree to the terms and privacy policy.',
+    legal: 'By continuing you agree to the {terms} and the {privacy}.', legalTerms: 'terms of use', legalPrivacy: 'privacy policy',
     sentH: 'Check your email', sentP: 'We sent a link to {email}. Open it on this device and you are in.',
     again: 'Send it again', otherEmail: 'Use a different email',
     noAccountH: 'No account for this email yet',
@@ -71,7 +71,7 @@ const C: Copy<Key> = {
     s2p: '선택 사항이에요. 첫 주를 고르는 데 써요.',
     cta: '계정 만들고 오늘 시작하기',
     ctaIn: '로그인 링크 받기 ↗', sending: '보내는 중…',
-    legal: '계속하면 이용약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다.',
+    legal: '계속하면 {terms}과 {privacy}에 동의하는 것으로 간주됩니다.', legalTerms: '이용약관', legalPrivacy: '개인정보 처리방침',
     sentH: '이메일을 확인하세요', sentP: '{email}로 링크를 보냈습니다. 이 기기에서 열면 로그인됩니다.',
     again: '다시 보내기', otherEmail: '다른 이메일 쓰기',
     noAccountH: '이 이메일로 된 계정이 아직 없어요',
@@ -314,7 +314,17 @@ export default function AuthPanel({
                 </div>
               )}
 
-              <p className="legal">{c.legal}</p>
+              <p className="legal">
+                {c.legal.split(/(\{terms\}|\{privacy\})/).map((part, i) =>
+                  part === '{terms}' ? (
+                    <Link key={i} href="/terms" target="_blank">{c.legalTerms}</Link>
+                  ) : part === '{privacy}' ? (
+                    <Link key={i} href="/privacy" target="_blank">{c.legalPrivacy}</Link>
+                  ) : (
+                    part
+                  ),
+                )}
+              </p>
 
               <p className="swap">
                 {registering ? c.toSignInQ : c.toRegisterQ}{' '}

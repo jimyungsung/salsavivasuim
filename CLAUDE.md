@@ -107,6 +107,8 @@ home; `Playlist.back` can be null).
                           zone (a cookie TimeZoneSync sets; Seoul until then).
                           Never new Date() for "today" on the server: it is UTC
     lib/safe-next.ts      the one check on a `next` return path; signInHref()
+    lib/operator.ts       who runs the service, for /privacy and /terms. Still
+                          placeholders: the pages show a draft notice until filled
     supabase/migrations/  the schema, RLS and the entitlement function
     supabase/seed.sql     a starting catalogue for a fresh database
     public/mockups/       the three static mockups the screens were built from
@@ -195,6 +197,14 @@ signed in `lib/playback.ts` after an ordinary RLS select. Never use
 `routine_items.video_id` is ON DELETE RESTRICT: an exercise a routine still
 uses cannot be deleted, so a routine members are on is never quietly
 shortened. `drill_items` cascades, as members' own rows always did.
+
+**Legal pages and account deletion.** `/privacy` and `/terms` (both
+languages, `app/(app)/legal/LegalDoc.tsx`) describe what the code actually
+collects; a new kind of data or a new processor means a line there before it
+ships. `/account` deletes the member's own account through
+`app/api/account/delete` — the secret key's second and only other caller,
+reached only after the member's own session identifies them; every member
+table cascades from `auth.users`.
 
 ## Not built yet
 

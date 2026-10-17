@@ -18,7 +18,7 @@ type Key =
   | 'whatK' | 'whatT' | 'whatP' | 'whatNote'
   | 'whoK' | 'whoT' | 'w1' | 'w1p' | 'w2' | 'w2p' | 'w3' | 'w3p'
   | 'priceK' | 'priceT' | 'priceP' | 'plan' | 'amount' | 'per' | 'f1' | 'f2' | 'f3' | 'f4' | 'f5' | 'priceFine'
-  | 'finalT' | 'finalP' | 'footPrograms' | 'footHelp' | 'footPrivacy';
+  | 'finalT' | 'finalP' | 'footPrograms' | 'footHelp' | 'footPrivacy' | 'footTerms' | 'deleted';
 
 const C: Copy<Key> = {
   en: {
@@ -51,7 +51,8 @@ const C: Copy<Key> = {
     f1: 'A new routine every day', f2: 'The practice player: speed, loop, mirror, counts', f3: 'Quick 5-minute drills for busy days', f4: 'A week planned for you, yours to change', f5: 'In English and Korean',
     priceFine: 'Free for now. No card needed.',
     finalT: 'Fourteen minutes. Tonight.', finalP: 'The first routine is the count and the basic step. You’ll have it by the end of the song.',
-    footPrograms: 'Solo salsa training', footHelp: 'Help', footPrivacy: 'Privacy',
+    footPrograms: 'Solo salsa training', footHelp: 'Help', footPrivacy: 'Privacy', footTerms: 'Terms',
+    deleted: 'Your account and its data have been deleted.',
   },
   ko: {
     navHow: '이용 방법', navWhat: '무엇을 연습하나', navPrice: '가격', signIn: '로그인', start: '무료로 시작', today: '오늘로 가기',
@@ -83,7 +84,8 @@ const C: Copy<Key> = {
     f1: '매일 새 루틴', f2: '연습 플레이어: 속도, 반복, 반전, 카운트', f3: '바쁜 날을 위한 5분 드릴', f4: '나를 위해 짜인 한 주, 바꾸는 건 자유', f5: '영어와 한국어',
     priceFine: '지금은 무료. 카드가 필요 없습니다.',
     finalT: '14분. 오늘 밤.', finalP: '첫 루틴은 카운트와 기본 스텝입니다. 노래가 끝날 즈음엔 몸에 들어와 있을 거예요.',
-    footPrograms: '솔로 살사 트레이닝', footHelp: '도움말', footPrivacy: '개인정보',
+    footPrograms: '솔로 살사 트레이닝', footHelp: '도움말', footPrivacy: '개인정보 처리방침', footTerms: '이용약관',
+    deleted: '계정과 데이터가 삭제되었습니다.',
   },
 };
 
@@ -114,7 +116,7 @@ const TAGS = [
   { en: 'Shines', ko: '샤인' }, { en: 'Styling', ko: '스타일링' }, { en: 'Musicality', ko: '뮤지컬리티' },
 ];
 
-export default function LandingView({ signedIn }: { signedIn: boolean }) {
+export default function LandingView({ signedIn, deleted = false }: { signedIn: boolean; deleted?: boolean }) {
   const { lang, setLang, T } = useLang();
   const c = useCopy(C);
   const go = signedIn ? '/today' : '/register';
@@ -142,6 +144,7 @@ export default function LandingView({ signedIn }: { signedIn: boolean }) {
         </div>
       </header>
 
+      {deleted && <p className="deleted" role="status">{c.deleted}</p>}
       <main>
         <section className="wrap hero">
           <div>
@@ -341,9 +344,9 @@ export default function LandingView({ signedIn }: { signedIn: boolean }) {
           <span>
             Everyday Salsa<span className="dot">.</span> {c.footPrograms}
           </span>
-          {/* Help and Privacy come back as links when their pages exist; as
-              plain text they looked like links that did nothing. */}
           <div className="fl">
+            <Link href="/privacy">{c.footPrivacy}</Link>
+            <Link href="/terms">{c.footTerms}</Link>
             {!signedIn && <Link href="/signin">{c.signIn}</Link>}
           </div>
         </footer>
