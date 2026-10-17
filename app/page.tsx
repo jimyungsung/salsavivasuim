@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 /* The front door. Static apart from one question: is someone signed in, in
    which case the buttons lead to Today rather than to registration. */
-export default async function LandingPage() {
-  const member = await getMember();
-  return <LandingView signedIn={Boolean(member)} />;
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
+  const [member, { deleted }] = await Promise.all([getMember(), searchParams]);
+  return <LandingView signedIn={Boolean(member)} deleted={deleted === '1'} />;
 }

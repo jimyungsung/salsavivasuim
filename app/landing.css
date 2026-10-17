@@ -186,3 +186,7 @@
   .ld .pcard{padding:26px 22px}
   .ld .final{padding-block:56px}
 }
+
+/* after an account is deleted (?deleted=1) */
+.ld .deleted{margin:0;padding:12px 20px;background:#f4fbdf;border-bottom:1px solid #d7e9a3;color:#3d4d00;font-size:14px;font-weight:600;text-align:center}
+.ld .fl{display:flex;gap:16px;flex-wrap:wrap}
