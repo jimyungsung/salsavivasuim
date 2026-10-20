@@ -20,8 +20,10 @@ import {
   type Result,
 } from '../../actions';
 import type { Readiness } from '../../readiness';
+import { track } from '../../saving';
 import type { PickVideo } from '../../routines/[id]/page';
 import WeekBuilder from './WeekBuilder';
+import SaveState from './SaveState';
 import type { EditorMenu } from './page';
 
 
@@ -48,7 +50,7 @@ export default function MenuEditor({
 
   const run = (fn: () => Promise<Result>, after?: () => void) =>
     start(async () => {
-      const result = await fn();
+      const result = await track(fn());
       if (result.ok) {
         setError(null);
         after?.();
@@ -79,9 +81,7 @@ export default function MenuEditor({
           </p>
         </div>
         <div className="acts">
-          <Link className="btn" href="/week" target="_blank" title="Admins see drafts too, so this is not exactly what a member sees.">
-            Preview in the planner (admin view) ↗
-          </Link>
+          <SaveState status={menu.status} />
         </div>
       </div>
 
@@ -90,7 +90,12 @@ export default function MenuEditor({
       <section className="panel">
         <div className="ph">
           <h2>The week</h2>
-          <span className="aside-note">Pick a day, then tap exercises in the library to add them.</span>
+          {/* This week, in the member's player: the preview the planner link
+              never was (it opened the admin's own week). */}
+          <Link className="btn tiny" href={`/preview/${menu.id}`} target="_blank">
+            Preview the week ↗
+          </Link>
+          <span className="aside-note">Tap a library card, drag it onto a day, or use a day&rsquo;s &ldquo;Add exercises&rdquo;.</span>
         </div>
         <WeekBuilder menuId={menu.id} routines={menu.routines} library={library} posters={posters} onError={setError} />
       </section>

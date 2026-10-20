@@ -599,3 +599,42 @@
 .bo .n-add .go:disabled { opacity: .4; cursor: default; }
 .bo .n-add .x { padding: 4px 6px; border: 0; background: none; color: var(--bo-dim); cursor: pointer; }
 .bo .n-add .err { flex-basis: 100%; font-size: 12px; color: #a2482a; }
+
+/* ---- the week's save state ("Draft · All changes saved") ---- */
+.bo .savestate { display: inline-flex; align-items: center; gap: 10px; padding: 6px 8px 6px 10px; border: 1px solid var(--bo-line); border-radius: 12px; background: #fff; font-size: 13px; }
+.bo .savestate .ss { color: var(--bo-dim); font-weight: 600; }
+.bo .savestate.busy .ss { color: var(--ink); }
+.bo .savestate.bad { border-color: #d9a08a; }
+.bo .savestate.bad .ss { color: #a2482a; }
+.bo .ph .btn.tiny { margin-left: 4px; }
+
+/* ---- taller cards: footage is mostly filmed upright, so a portrait frame
+   anchored to the top keeps the dancer's head in ---- */
+.bo .wcard { width: 132px; }
+.bo .wthumb { aspect-ratio: 3 / 4; }
+.bo .wthumb img { object-position: 50% 12%; }
+
+/* a day lit up while a library card is dragged over it */
+.bo .wrow.drop { border-color: var(--ink); box-shadow: 0 0 0 4px var(--lime); background: #fbfff0; }
+.bo .wcard.add { padding: 0; }
+.bo .wcard.add button { flex: 1; width: 100%; display: grid; place-content: center; justify-items: center; gap: 8px; padding: 10px; border: 0; background: none; font: inherit; font-size: 12.5px; font-weight: 700; color: inherit; cursor: pointer; border-radius: 10px; }
+.bo .wcard.add button:hover { background: #f6f7f2; color: var(--ink); }
+.bo .wcard.add i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--lime); font-style: normal; font-size: 20px; }
+.bo .wrow.drop .wcard.add { border-color: var(--ink); color: var(--ink); }
+
+/* library cards can be dragged; ticked ones in the window carry their number */
+.bo .pdrag { margin: -4px 0 10px; }
+.bo .pcard[draggable="true"] { cursor: grab; }
+.bo .pcard.picked { border-color: var(--ink); box-shadow: 0 0 0 3px var(--lime); }
+.bo .pthumb .padd.tick { background: var(--ink); color: var(--lime); font-size: 12px; }
+
+/* the library window */
+.bo .libwin, dialog.libwin { width: min(1000px, calc(100vw - 40px)); max-height: calc(100vh - 60px); padding: 0; border: 0; border-radius: 18px; box-shadow: 0 30px 80px #0b0f0e55; }
+dialog.libwin::backdrop { background: #0b0f0e88; }
+.libwin .lwin { display: flex; flex-direction: column; max-height: calc(100vh - 60px); }
+.libwin header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 18px 22px 12px; border-bottom: 1px solid var(--bo-line, #d9dcd3); }
+.libwin header h2 { margin: 0; font-size: 20px; font-weight: 800; }
+.libwin header .hint { font-size: 13px; color: var(--bo-dim, #6b716c); }
+.libwin header .x { margin-left: auto; border: 0; background: none; font-size: 18px; cursor: pointer; }
+.libwin .lbody { overflow: auto; padding: 16px 22px; }
+.libwin footer { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 22px 16px; border-top: 1px solid var(--bo-line, #d9dcd3); }

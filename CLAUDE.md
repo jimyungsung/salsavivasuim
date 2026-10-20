@@ -164,8 +164,14 @@ card with nothing to start. "+ New week" lays out one routine per chosen day,
 named after it; whatever you create opens straight away. The media library
 edits a ticked selection together (tags, difficulty, mirror, open/draft). A menu's page is
 a **week builder**: its days as rows, each day's exercises running left to
-right as cards, the library (`app/admin/Picker.tsx`, shared with a routine's
-page) beside them; pick a day, tap exercises to append. Titles (a menu's, a
+right as cards (portrait thumbnails, footage is filmed upright), the library
+(`app/admin/Picker.tsx`, shared with a routine's page) beside them. Three ways
+to add: tap a card (to the day picked), drag a card onto any day, or a day's
+"Add exercises" card, which opens the library in a window to tick several.
+"Preview the week" (`/preview/[menuId]`, admins only, no practice logged)
+plays the week being built in the member's player. The heading's save state
+("Draft · All changes saved", `SaveState.tsx` over `app/admin/saving.ts`)
+shows every edit landing; writes go through `track()`. Titles (a menu's, a
 routine's, a stage's, a day's theme) are edited in place with a pencil
 (`EditableTitle.tsx`, both languages). The sidebar adds a stage ("+ New stage")
 or a week inside one ("+ New week", Mon–Sat), and opens what it made.
