@@ -1,15 +1,16 @@
 'use client';
 
-/* A whole week on one page: its days as columns, the library beside them.
-   Pick a day, then tap exercises in the library to append them to it — the
-   same optimistic, queued add as a routine's own page — and order or take
-   them out right in the column. What only some days need (speed, repeats, a
-   title of its own) stays on the day's page, one link away. Before this, a
-   week of six days was six routine pages. */
+/* A whole week on one page: its days as rows, each day's exercises running
+   left to right, the library beside them. Three ways to add, all the same
+   optimistic, queued add underneath: tap a library card (it goes to the day
+   picked), drag a card onto any day, or open a day's library window from its
+   empty card and tick several at once. Order and remove in the row; what only
+   some days need (speed, repeats) stays on the day's page, one link away. */
 
 import Link from 'next/link';
-import { useRef, useState, useTransition } from 'react';
-import Picker from '../../Picker';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import Picker, { DRAG_TYPE } from '../../Picker';
+import { track } from '../../saving';
 import EditableTitle from '../../EditableTitle';
 import {
   addRoutineItem,
@@ -47,21 +48,40 @@ export default function WeekBuilder({
 
   const run = (fn: () => Promise<Result>) =>
     start(async () => {
-      const r = await fn();
+      const r = await track(fn());
       onError(r.ok ? null : r.error);
     });
 
   /* Appends shown at once; saved one after another (positions are max + 1). */
-  const pick = (video: PickVideo) => {
-    if (!target) return;
+  const pick = (video: PickVideo, routineId: string | null = target) => {
+    if (!routineId) return;
     const key = Date.now() + Math.random();
-    const routineId = target;
     setAdding(a => [...a, { key, routineId, video }]);
     queue.current = queue.current.then(async () => {
-      const r = await addRoutineItem(routineId, video.id);
+      const r = await track(addRoutineItem(routineId, video.id));
       if (!r.ok) onError(r.error);
       setAdding(a => a.filter(x => x.key !== key));
     });
+  };
+
+  /* Dragging a library card onto a day. */
+  const [dropOn, setDropOn] = useState<string | null>(null);
+  const byId = (id: string) => library.find(v => v.id === id) ?? null;
+
+  /* The library window for one day: tick several, add them in that order. */
+  const [windowFor, setWindowFor] = useState<string | null>(null);
+  const [ticked, setTicked] = useState<string[]>([]);
+  const openWindow = (routineId: string) => {
+    setTarget(routineId);
+    setTicked([]);
+    setWindowFor(routineId);
+  };
+  const addTicked = () => {
+    for (const id of ticked) {
+      const v = byId(id);
+      if (v && windowFor) pick(v, windowFor);
+    }
+    setWindowFor(null);
   };
 
   const current = routines.find(r => r.id === target) ?? null;
@@ -82,9 +102,26 @@ export default function WeekBuilder({
               return (
                 <section
                   key={r.id}
-                  className={`wrow${on ? ' on' : ''}`}
+                  className={`wrow${on ? ' on' : ''}${dropOn === r.id ? ' drop' : ''}`}
                   onClick={() => setTarget(r.id)}
                   aria-label={dayName(r)}
+                  onDragOver={e => {
+                    if (!e.dataTransfer.types.includes(DRAG_TYPE)) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'copy';
+                    if (dropOn !== r.id) setDropOn(r.id);
+                  }}
+                  onDragLeave={e => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) setDropOn(null);
+                  }}
+                  onDrop={e => {
+                    const v = byId(e.dataTransfer.getData(DRAG_TYPE));
+                    setDropOn(null);
+                    if (!v) return;
+                    e.preventDefault();
+                    setTarget(r.id);
+                    pick(v, r.id);
+                  }}
                 >
                   <header>
                     <b>{dayName(r)}</b>
@@ -143,8 +180,17 @@ export default function WeekBuilder({
                         <span className="ops">adding…</span>
                       </li>
                     ))}
-                    <li className={`wcard add${on ? ' on' : ''}`} aria-hidden={!on}>
-                      <span>{on ? 'Tap an exercise in the library →' : 'Click to add here'}</span>
+                    <li className={`wcard add${on ? ' on' : ''}`}>
+                      <button
+                        type="button"
+                        onClick={e => {
+                          e.stopPropagation();
+                          openWindow(r.id);
+                        }}
+                      >
+                        <i aria-hidden="true">+</i>
+                        {dropOn === r.id ? 'Drop to add' : 'Add exercises'}
+                      </button>
                     </li>
                   </ol>
                 </section>
@@ -164,7 +210,29 @@ export default function WeekBuilder({
         </div>
       </div>
 
+      {windowFor && (
+        <LibraryWindow
+          title={`Add to ${dayName(routines.find(r => r.id === windowFor)!)}`}
+          count={ticked.length}
+          onAdd={addTicked}
+          onClose={() => setWindowFor(null)}
+        >
+          <Picker
+            bare
+            library={library}
+            posters={posters}
+            selected={ticked}
+            inRoutine={[
+              ...(routines.find(r => r.id === windowFor)?.routine_items.map(i => i.video?.id) ?? []),
+              ...adding.filter(a => a.routineId === windowFor).map(a => a.video.id),
+            ].filter((id): id is string => Boolean(id))}
+            onPick={v => setTicked(t => (t.includes(v.id) ? t.filter(x => x !== v.id) : [...t, v.id]))}
+          />
+        </LibraryWindow>
+      )}
+
       <Picker
+        draggable
         heading={current ? `Add to ${dayName(current)}` : 'Pick a day first'}
         library={library}
         posters={posters}
@@ -172,5 +240,53 @@ export default function WeekBuilder({
         onPick={pick}
       />
     </div>
+  );
+}
+
+/* The media library in a window over the week (a native <dialog>, so Escape,
+   focus and the backdrop come free). Tick exercises, then add them all. */
+function LibraryWindow({
+  title,
+  count,
+  onAdd,
+  onClose,
+  children,
+}: {
+  title: string;
+  count: number;
+  onAdd: () => void;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!el.open) el.showModal();
+    const cancel = (e: Event) => {
+      e.preventDefault();
+      onClose();
+    };
+    el.addEventListener('cancel', cancel);
+    return () => el.removeEventListener('cancel', cancel);
+  }, [onClose]);
+
+  return (
+    <dialog ref={ref} className="libwin" onClick={e => e.target === ref.current && onClose()}>
+      <div className="lwin">
+        <header>
+          <h2>{title}</h2>
+          <span className="hint">Tick the exercises for this day, in the order you want them.</span>
+          <button type="button" className="x" onClick={onClose} aria-label="Close">✕</button>
+        </header>
+        <div className="lbody">{children}</div>
+        <footer>
+          <button className="btn" type="button" onClick={onClose}>Cancel</button>
+          <button className="btn primary" type="button" disabled={count === 0} onClick={onAdd}>
+            {count === 0 ? 'Add' : `Add ${count} exercise${count === 1 ? '' : 's'}`}
+          </button>
+        </footer>
+      </div>
+    </dialog>
   );
 }

@@ -1,0 +1,12 @@
+/* The week preview: the days as tabs over the player. Scoped under .pv. */
+.pv{background:#fff;padding:88px 0 10px;border-bottom:1px solid var(--line)}
+.pv .pvk{margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--red)}
+.pv h1{margin:6px 0 14px;font-size:clamp(26px,3.4vw,36px);letter-spacing:-.03em;font-weight:800}
+.pv .pvdays{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.pv .pvdays a{flex:none;display:grid;gap:2px;min-width:130px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.pv .pvdays a:hover{border-color:var(--ink)}
+.pv .pvdays a[aria-current]{border-color:var(--ink);background:var(--ink);color:#fff}
+.pv .pvdays b{font-size:13px}
+.pv .pvdays span{font-size:12.5px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv .pvdays i{font-style:normal;font-size:11px;opacity:.6}
+.pvnone{padding:40px 0;color:var(--muted)}

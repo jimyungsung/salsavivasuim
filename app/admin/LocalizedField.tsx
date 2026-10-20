@@ -11,6 +11,7 @@
 
 import { useState, useTransition } from 'react';
 import { setLocalized, type CatalogueTable, type Result } from './actions';
+import { track } from './saving';
 import type { LocalizedRow } from '@/lib/db';
 
 export default function LocalizedField({
@@ -43,7 +44,7 @@ export default function LocalizedField({
   const commit = () => {
     if (en === (value.en ?? '') && ko === (value.ko ?? '')) return;
     start(async () => {
-      const result: Result = await setLocalized(table, id, column, { en, ko });
+      const result: Result = await track(setLocalized(table, id, column, { en, ko }));
       if (result.ok) {
         setSaved('saved');
         onError(null);

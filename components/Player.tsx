@@ -163,7 +163,10 @@ export default function Player({
   below,
   empty,
   finish,
+  logPractice = true,
 }: {
+  /** False where watching is not practising: the back office's week preview. */
+  logPractice?: boolean;
   playlist: Playlist;
   /** Which entry opens, or null when nothing in the list is playable. */
   initialIndex: number | null;
@@ -378,7 +381,7 @@ export default function Player({
 
   /* Practice, reported as it happens (usePracticeLog): wall-clock time while
      playing, each lap, and 90% watched once per time through an exercise. */
-  const log = usePracticeLog({ enabled: signedIn, videoId: current?.id ?? null, playing, speed });
+  const log = usePracticeLog({ enabled: signedIn && logPractice, videoId: current?.id ?? null, playing, speed });
   const logRef = useRef(log);
   logRef.current = log;
   const completedRef = useRef(false);

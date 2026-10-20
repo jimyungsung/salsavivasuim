@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { setLocalized, type CatalogueTable } from './actions';
+import { track } from './saving';
 
 export default function EditableTitle({
   table,
@@ -55,7 +56,7 @@ export default function EditableTitle({
     if (en.trim() === value.en && ko.trim() === (value.ko ?? '')) return;
     setShown(en.trim());
     start(async () => {
-      const r = await setLocalized(table, id, column, { en, ko });
+      const r = await track(setLocalized(table, id, column, { en, ko }));
       onError(r.ok ? null : r.error);
       if (!r.ok) setShown(value.en);
     });
