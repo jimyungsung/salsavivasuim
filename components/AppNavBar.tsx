@@ -110,6 +110,7 @@ export default function AppNavBar({ member }: { member: Member | null }) {
                 </summary>
                 <div className="mepop">
                   <Link href="/week">{label({ en: 'My week', ko: '나의 주간' })}</Link>
+                  <Link href="/account">{label({ en: 'Account', ko: '계정' })}</Link>
                   <form action="/auth/signout" method="post">
                     <button type="submit">{label({ en: 'Sign out', ko: '로그아웃' })}</button>
                   </form>
