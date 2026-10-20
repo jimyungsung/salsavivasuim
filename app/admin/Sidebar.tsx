@@ -7,8 +7,9 @@
    highlighted. A search box filters every menu and routine by title. */
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { createMenu, createStage } from './actions';
 import type { PublishStatus } from '@/lib/db';
 import { DAY_SHORT } from '@/lib/i18n';
 
@@ -57,6 +58,58 @@ export default function Sidebar({ tree, exerciseCount }: { tree: NavStage[]; exe
   const [openStages, setOpenStages] = useState<Set<string>>(() => new Set(here.stage != null ? [here.stage] : []));
   const [openMenus, setOpenMenus] = useState<Set<string>>(() => new Set(here.menu ? [here.menu] : []));
   const [query, setQuery] = useState('');
+  /* Adding from the sidebar: a stage, or a week inside a stage. One small
+     input at a time, in place; Enter makes it, Escape closes it. */
+  const [adding, setAdding] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const router = useRouter();
+  const openAdd = (key: string) => {
+    setAdding(key);
+    setName('');
+    setError(null);
+  };
+  const submit = () => {
+    const title = name.trim();
+    if (!title || !adding) return;
+    const where = adding;
+    start(async () => {
+      if (where === 'stage') {
+        const r = await createStage(title);
+        if (!r.ok) return setError(r.error);
+        setOpenStages(s => new Set(s).add(r.id));
+        setAdding(null);
+        router.push(`/admin/stages/${r.id}`);
+      } else {
+        /* A new week comes with its days, Monday to Saturday, like "+ New
+           week" on the overview; it opens straight into the week builder. */
+        const r = await createMenu(where === 'none' ? null : where, title, [0, 1, 2, 3, 4, 5]);
+        if (!r.ok) return setError(r.error);
+        setAdding(null);
+        router.push(`/admin/menus/${r.id}`);
+      }
+    });
+  };
+  const addInput = (placeholder: string) => (
+    <div className="n-add">
+      <input
+        autoFocus
+        value={name}
+        placeholder={placeholder}
+        disabled={pending}
+        onChange={e => setName(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') submit();
+          if (e.key === 'Escape') setAdding(null);
+        }}
+        aria-label={placeholder}
+      />
+      <button type="button" className="go" disabled={pending || !name.trim()} onClick={submit}>Add</button>
+      <button type="button" className="x" onClick={() => setAdding(null)} aria-label="Cancel">✕</button>
+      {error && <span className="err">{error}</span>}
+    </div>
+  );
 
   /* Following a link in the page opens the branch it leads to. */
   useEffect(() => {
@@ -153,9 +206,31 @@ export default function Sidebar({ tree, exerciseCount }: { tree: NavStage[]; exe
                     </div>
                   );
                 })}
+
+              {stageOpen && !q && stage.id && (
+                adding === stage.id ? (
+                  addInput('Week title, e.g. Turns & spotting')
+                ) : (
+                  <button type="button" className="n-addbtn" onClick={() => openAdd(stage.id)}>
+                    + New week
+                  </button>
+                )
+              )}
             </div>
           );
         })}
+
+        {!q && (
+          <div className="n-addstage">
+            {adding === 'stage' ? (
+              addInput('Stage name, e.g. Foundations 2')
+            ) : (
+              <button type="button" className="n-addbtn" onClick={() => openAdd('stage')}>
+                + New stage
+              </button>
+            )}
+          </div>
+        )}
       </nav>
 
       <div className="n-key" aria-hidden="true">

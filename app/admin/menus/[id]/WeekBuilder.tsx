@@ -10,6 +10,7 @@
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 import Picker from '../../Picker';
+import EditableTitle from '../../EditableTitle';
 import {
   addRoutineItem,
   createRoutine,
@@ -72,62 +73,80 @@ export default function WeekBuilder({
         {routines.length === 0 ? (
           <p className="empty">No days yet. Add one, or make the week again with a day pattern.</p>
         ) : (
-          <div className="wcols">
+          <div className="wrows">
             {routines.map(r => {
               const items = r.routine_items;
               const extra = adding.filter(a => a.routineId === r.id);
               const ms = items.reduce((n, i) => n + (i.video?.duration_ms ?? 0) * i.repeats, 0);
-              const own = r.title_t.en.trim() && r.title_t.en.trim() !== dayName(r) ? r.title_t.en : null;
               const on = r.id === target;
               return (
                 <section
                   key={r.id}
-                  className={`wcol${on ? ' on' : ''}`}
+                  className={`wrow${on ? ' on' : ''}`}
                   onClick={() => setTarget(r.id)}
                   aria-label={dayName(r)}
                 >
                   <header>
                     <b>{dayName(r)}</b>
-                    {own && <span className="own">{own}</span>}
-                    <span className="len">{ms ? mmss(ms) : '0:00'}</span>
-                    <span className={`chip ${r.status}`}>{r.status}</span>
+                    <EditableTitle as="span" table="routines" id={r.id} value={r.title_t} placeholder={dayName(r)} onError={onError} />
+                    <span className="meta">
+                      <span className="len">{ms ? mmss(ms) : '0:00'}</span>
+                      <span className={`chip ${r.status}`}>{r.status}</span>
+                    </span>
+                    <span className="links" onClick={e => e.stopPropagation()}>
+                      <Link href={`/admin/routines/${r.id}`} title="Speed, repeats and a line under the title">Details →</Link>
+                      <button
+                        type="button"
+                        className="del"
+                        disabled={pending}
+                        onClick={() => {
+                          if (confirm(`Delete ${dayName(r)}? Its exercises stay in the library.`)) run(() => deleteRoutine(r.id));
+                        }}
+                      >
+                        Delete day
+                      </button>
+                    </span>
                   </header>
-                  <ol>
+
+                  {/* The day's exercises, in order, left to right. */}
+                  <ol className="wstrip">
                     {items.map((item, i) => (
-                      <li key={item.id} className={item.video?.status === 'ready' ? undefined : 'nofootage'}>
-                        <span className="t">{item.video?.title_t.en || 'Missing exercise'}</span>
-                        <span className="m">
-                          {item.video?.duration_ms ? mmss(item.video.duration_ms) : '—'}
-                          {item.repeats > 1 && ` ×${item.repeats}`}
+                      <li key={item.id} className={`wcard${item.video?.status === 'ready' ? '' : ' nofootage'}`}>
+                        <span className="wthumb">
+                          {item.video && posters[item.video.id] && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={posters[item.video.id]} alt="" loading="lazy" />
+                          )}
+                          <span className="n">{i + 1}</span>
+                          <span className="d">
+                            {item.video?.duration_ms ? mmss(item.video.duration_ms) : '—'}
+                            {item.repeats > 1 && ` ×${item.repeats}`}
+                          </span>
                         </span>
+                        <span className="t">{item.video?.title_t.en || 'Missing exercise'}</span>
                         <span className="ops" onClick={e => e.stopPropagation()}>
-                          <button type="button" disabled={pending || i === 0} onClick={() => run(() => movePosition('routine_items', item.id, 'up'))} aria-label="Earlier">↑</button>
-                          <button type="button" disabled={pending || i === items.length - 1} onClick={() => run(() => movePosition('routine_items', item.id, 'down'))} aria-label="Later">↓</button>
-                          <button type="button" disabled={pending} onClick={() => run(() => removeRoutineItem(item.id))} aria-label="Take out">✕</button>
+                          <button type="button" disabled={pending || i === 0} onClick={() => run(() => movePosition('routine_items', item.id, 'up'))} aria-label="Earlier" title="Earlier">←</button>
+                          <button type="button" disabled={pending || i === items.length - 1} onClick={() => run(() => movePosition('routine_items', item.id, 'down'))} aria-label="Later" title="Later">→</button>
+                          <button type="button" disabled={pending} onClick={() => run(() => removeRoutineItem(item.id))} aria-label="Take out" title="Take out">✕</button>
                         </span>
                       </li>
                     ))}
                     {extra.map(a => (
-                      <li key={a.key} className="saving">
+                      <li key={a.key} className="wcard saving">
+                        <span className="wthumb">
+                          {posters[a.video.id] && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={posters[a.video.id]} alt="" />
+                          )}
+                        </span>
                         <span className="t">{a.video.title_t.en || 'Untitled'}</span>
-                        <span className="m">adding…</span>
+                        <span className="ops">adding…</span>
                       </li>
                     ))}
-                    {items.length + extra.length === 0 && <li className="none">{on ? 'Tap an exercise on the right →' : 'Empty'}</li>}
+                    <li className={`wcard add${on ? ' on' : ''}`} aria-hidden={!on}>
+                      <span>{on ? 'Tap an exercise in the library →' : 'Click to add here'}</span>
+                    </li>
                   </ol>
-                  <footer onClick={e => e.stopPropagation()}>
-                    <Link href={`/admin/routines/${r.id}`} title="Speed, repeats and a title of its own">Details →</Link>
-                    <button
-                      type="button"
-                      className="del"
-                      disabled={pending}
-                      onClick={() => {
-                        if (confirm(`Delete ${dayName(r)}? Its exercises stay in the library.`)) run(() => deleteRoutine(r.id));
-                      }}
-                    >
-                      Delete day
-                    </button>
-                  </footer>
                 </section>
               );
             })}

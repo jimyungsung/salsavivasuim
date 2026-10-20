@@ -15,6 +15,7 @@
 import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
+import EditableTitle from '../../EditableTitle';
 import LocalizedField from '../../LocalizedField';
 import PublishSwitch, { publishMeaning } from '../../PublishSwitch';
 import { STATUS_WORDS } from '../../LengthStrip';
@@ -86,7 +87,7 @@ export default function RoutineEditor({
 
       <div className="head">
         <div>
-          <h1>{title}</h1>
+          <EditableTitle table="routines" id={routine.id} value={routine.title_t} placeholder="Untitled routine" onError={setError} />
           <p>
             {routine.weekday == null ? 'No weekday' : DAY[routine.weekday]}
             {menu ? ` · ${menu.title_t.en}` : ''} · {items.length} exercise{items.length === 1 ? '' : 's'} · {mmss(totalMs)}
@@ -146,7 +147,6 @@ export default function RoutineEditor({
 
           <section className="panel">
             <h2>Details</h2>
-            <LocalizedField table="routines" id={routine.id} column="title_t" label="Title" value={routine.title_t} onError={setError} />
             <LocalizedField table="routines" id={routine.id} column="blurb_t" label="One line under the title" value={routine.blurb_t} onError={setError} />
 
             <div className="fields" style={{ marginTop: 18, alignItems: 'center' }}>

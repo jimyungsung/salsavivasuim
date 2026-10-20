@@ -6,7 +6,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
-import LocalizedField from '../../LocalizedField';
+import EditableTitle from '../../EditableTitle';
 import { deleteStage, type Result } from '../../actions';
 import type { EditorStage } from './page';
 
@@ -32,7 +32,7 @@ export default function StageEditor({ stage }: { stage: EditorStage }) {
 
       <div className="head">
         <div>
-          <h1>{stage.name_t.en || 'Untitled stage'}</h1>
+          <EditableTitle table="stages" id={stage.id} column="name_t" value={stage.name_t} placeholder="Untitled stage" onError={setError} />
           <p>Stage {String(stage.position).padStart(2, '0')}. Its menus are the weeks a member works through, in order.</p>
         </div>
         <div className="tally">
@@ -47,11 +47,6 @@ export default function StageEditor({ stage }: { stage: EditorStage }) {
           {error}
         </p>
       )}
-
-      <section className="panel">
-        <h2>Copy</h2>
-        <LocalizedField table="stages" id={stage.id} column="name_t" label="Name" value={stage.name_t} onError={setError} />
-      </section>
 
       <section className="panel">
         <h2>Danger</h2>
