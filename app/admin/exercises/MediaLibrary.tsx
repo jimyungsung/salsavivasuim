@@ -389,7 +389,8 @@ function MediaCard({
     }
     onRun(() => setLocalized('videos', v.id, 'title_t', { en, ko: v.title_t.ko ?? '' }));
   };
-  const trouble = v.status !== 'ready' ? STATUS_WORDS[v.status] : v.publish !== 'open' ? `Not open (${v.publish})` : null;
+  /* A front view's publish follows its exercise, so "not open" says nothing about it. */
+  const trouble = v.status !== 'ready' ? STATUS_WORDS[v.status] : v.publish !== 'open' && !v.view_of ? `Not open (${v.publish})` : null;
 
   return (
     <article className={`mcard${picked ? ' picked' : ''}`}>
@@ -403,6 +404,7 @@ function MediaCard({
         )}
         {v.duration_ms ? <span className="len">{mmss(v.duration_ms)}</span> : null}
         {trouble && <span className="flag">{trouble}</span>}
+        {v.view_of && <span className="flag fv">Front view</span>}
       </Link>
 
       <div className="mbody">

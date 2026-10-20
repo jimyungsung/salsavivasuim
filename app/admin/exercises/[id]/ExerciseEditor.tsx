@@ -24,7 +24,8 @@ import BeatTapper from './BeatTapper';
 import { deleteExercise, setVideoFields, type Result } from '../../actions';
 import { EXERCISE_TAGS, LEVEL_KEYS, mmss, type ExerciseTag } from '@/lib/db';
 import { LEVEL_LABELS, TAG_LABELS } from '@/lib/i18n';
-import type { EditorVideo } from './page';
+import type { EditorVideo, FrontCandidate } from './page';
+import FrontViewPanel from './FrontViewPanel';
 
 const toNum = (s: string): number | null => {
   const t = s.trim();
@@ -37,11 +38,17 @@ export default function ExerciseEditor({
   video,
   streamConfigured,
   posterUrl,
+  frontPoster,
+  parent,
+  candidates,
 }: {
   video: EditorVideo;
   streamConfigured: boolean;
   /** Signed on the server. videos.poster_url is unsigned and answers 401. */
   posterUrl: string | null;
+  frontPoster: string | null;
+  parent: { id: string; title: string } | null;
+  candidates: FrontCandidate[];
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -110,6 +117,15 @@ export default function ExerciseEditor({
               onError={setError}
             />
           </section>
+
+          <FrontViewPanel
+            video={video}
+            frontPoster={frontPoster}
+            parent={parent}
+            candidates={candidates}
+            streamConfigured={streamConfigured}
+            onError={setError}
+          />
 
           {/* Optional, and folded until used: only counts, phrase marks and
               "loop eight counts" in the player need it. Open when set. */}

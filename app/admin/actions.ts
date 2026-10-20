@@ -791,3 +791,68 @@ export async function bulkVideos(
   revalidateCatalogue();
   return ok;
 }
+
+/* ------------------------------------------------------------ front view ---- */
+
+/** A new clip for an exercise's front view, already linked to it, ready for
+    its footage. Named after the exercise; its publish follows the exercise
+    (the database sees to that), and it mirrors by default, as footage filmed
+    facing the dancer should. */
+export async function createFrontView(exerciseId: string): Promise<Created> {
+  await requireAdmin();
+  if (!UUID.test(exerciseId)) return { ok: false, error: 'Not an exercise.' };
+  const supabase = await createClient();
+  const { data: main } = await supabase
+    .from('videos').select('title_t, tags, difficulty, view_of').eq('id', exerciseId).maybeSingle();
+  if (!main) return { ok: false, error: 'No such exercise.' };
+  if ((main as { view_of: string | null }).view_of) return { ok: false, error: 'That clip is itself a front view.' };
+  const title = (main as { title_t: { en: string; ko?: string } }).title_t;
+
+  const { data, error } = await supabase
+    .from('videos')
+    .insert({
+      title_t: { en: `${title.en} (front)`, ...(title.ko ? { ko: `${title.ko} (앞)` } : {}) },
+      description_t: { en: '' },
+      tags: (main as { tags: string[] }).tags,
+      difficulty: (main as { difficulty: string }).difficulty,
+      publish: 'draft',
+      mirror_default: true,
+      status: 'uploading',
+      view_of: exerciseId,
+    })
+    .select('id')
+    .single();
+  if (error || !data) {
+    return { ok: false, error: error?.code === '23505' ? 'This exercise already has a front view.' : error?.message ?? 'Could not create the front view.' };
+  }
+  revalidateCatalogue();
+  return { ok: true, id: data.id };
+}
+
+/** Makes an existing clip the front view of an exercise, or (frontId null)
+    unlinks the one it has. A clip that is an exercise in a routine, or has a
+    front view of its own, cannot become one. */
+export async function linkFrontView(exerciseId: string, frontId: string | null): Promise<Result> {
+  await requireAdmin();
+  if (!UUID.test(exerciseId) || (frontId && !UUID.test(frontId))) return fail('Not an exercise.');
+  if (frontId === exerciseId) return fail('A clip cannot be its own front view.');
+  const supabase = await createClient();
+
+  if (frontId) {
+    const [{ count: uses }, { count: ownFront }] = await Promise.all([
+      supabase.from('routine_items').select('id', { count: 'exact', head: true }).eq('video_id', frontId),
+      supabase.from('videos').select('id', { count: 'exact', head: true }).eq('view_of', frontId),
+    ]);
+    if (uses) return fail('That clip is used as an exercise in a routine. Take it out of its routines first.');
+    if (ownFront) return fail('That clip has a front view of its own.');
+  }
+
+  const { error: unlinkError } = await supabase.from('videos').update({ view_of: null }).eq('view_of', exerciseId);
+  if (unlinkError) return fail(unlinkError.message);
+  if (frontId) {
+    const { error } = await supabase.from('videos').update({ view_of: exerciseId }).eq('id', frontId);
+    if (error) return fail(error.message);
+  }
+  revalidateCatalogue();
+  return ok;
+}

@@ -15,6 +15,17 @@ export interface EditorVideo extends VideoRow {
         routine: { id: string; title_t: LocalizedRow; status: string; menu: { title_t: LocalizedRow; status: string } | null } | null;
       }[]
     | null;
+  /** Set when this clip is itself a front view: the exercise it belongs to. */
+  view_of: string | null;
+  /** This exercise's front view, if it has one (at most one). */
+  front: { id: string; title_t: LocalizedRow; status: VideoRow['status']; duration_ms: number | null; provider_uid: string | null }[] | null;
+}
+
+/** A clip that could become this exercise's front view. */
+export interface FrontCandidate {
+  id: string;
+  title: string;
+  status: VideoRow['status'];
 }
 
 export default async function ExercisePage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +40,8 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
       `id, title_t, description_t, tags, difficulty, publish, angle, duration_ms,
        provider, provider_uid, hls_playback_id, mp4_url, poster_url, status, width, height,
        bpm, first_beat_ms, beats_per_phrase,
-       default_loop_start_ms, default_loop_end_ms, mirror_default,
+       default_loop_start_ms, default_loop_end_ms, mirror_default, view_of,
+       front:videos!view_of ( id, title_t, status, duration_ms, provider_uid ),
        routine_items ( id, routine:routines ( id, title_t, status, menu:menus ( title_t, status ) ) )`,
     )
     .eq('id', id)
@@ -45,13 +57,32 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
   }
   if (!data) notFound();
 
-  const posters = await signedPosters([id]);
+  const video = data as unknown as EditorVideo;
+  const front = video.front?.[0] ?? null;
+
+  /* What it is the front view of, or which clips could be its front view:
+     not itself, not in a routine as an exercise, not already linked. */
+  const [{ data: parent }, { data: others }, posters] = await Promise.all([
+    video.view_of
+      ? supabase.from('videos').select('id, title_t').eq('id', video.view_of).maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.from('videos').select('id, title_t, status, view_of, front:videos!view_of ( id ), routine_items ( id )').neq('id', id),
+    signedPosters(front ? [id, front.id] : [id]),
+  ]);
+  const candidates: FrontCandidate[] = ((others ?? []) as unknown as {
+    id: string; title_t: LocalizedRow; status: VideoRow['status']; view_of: string | null; front: { id: string }[] | null; routine_items: { id: string }[] | null;
+  }[])
+    .filter(v => !v.view_of && !(v.front ?? []).length && !(v.routine_items ?? []).length)
+    .map(v => ({ id: v.id, title: v.title_t.en || 'Untitled', status: v.status }));
 
   return (
     <ExerciseEditor
-      video={data as unknown as EditorVideo}
+      video={video}
       streamConfigured={isStreamConfigured()}
       posterUrl={posters[id] ?? null}
+      frontPoster={front ? posters[front.id] ?? null : null}
+      parent={parent ? { id: (parent as { id: string }).id, title: (parent as { title_t: LocalizedRow }).title_t.en } : null}
+      candidates={candidates}
     />
   );
 }

@@ -41,6 +41,19 @@ An exercise carries **tags** (`text[]`: what it works, from `EXERCISE_TAGS` in
 gone from the data; every exercise is something you repeat. **Levels** describe
 the material, not the dancer, and are not a ladder.
 
+**An exercise can have a front view.** The main clip is filmed from behind;
+a second clip, filmed from the front, points at it with `videos.view_of` (one
+per exercise). It is an ordinary row — uploaded, encoded, signed, gated like
+any clip — whose publish always follows its exercise (two triggers), so it
+opens with the week and never needs publishing alone. It is not an exercise
+of its own: the pickers and the member library leave out rows with a
+`view_of`. `Exercise.front` comes from the embed `front:videos!view_of(…)` in
+`VIDEO_COLUMNS` (RLS still decides whether the member may play it). The
+player shows a Front/Back button (and V) when there is one: same moment, same
+speed and loop, the angle's own mirror default; practice is still logged
+against the exercise. The exercise page's "Front view" panel uploads one,
+links an existing clip, or unlinks.
+
 **A new member starts on a week, not a choice.** Onboarding asks one
 question, stored as `profiles.start_point` (the old experience/timing/goal are
 kept as data, no longer asked). The first sign-in copies the starting menu

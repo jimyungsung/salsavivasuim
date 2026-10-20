@@ -20,6 +20,8 @@ export interface ListVideo {
   created_at: string;
   /** How many routines borrow it. */
   uses: number;
+  /** Set on a front-view clip: the exercise it is the other angle of. */
+  view_of: string | null;
 }
 
 export const metadata = { title: 'Media library · Back office' };
@@ -31,7 +33,7 @@ export default async function ExercisesPage() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('videos')
-    .select('id, title_t, tags, difficulty, publish, status, duration_ms, bpm, created_at, routine_items ( id )')
+    .select('id, title_t, tags, difficulty, publish, status, duration_ms, bpm, created_at, view_of, routine_items ( id )')
     .order('created_at', { ascending: false });
 
   if (error) {
