@@ -209,3 +209,18 @@
 .sp.wide .step .slen{font-size:12px;color:var(--muted)}
 .sp.wide .step[aria-current="true"] .sn{color:var(--lime)}
 .sp.wide .wfoot{margin-top:16px}
+
+/* front ⇄ back: says which angle is on screen, so it reads at a glance
+   (a word beside the icon, not only on touch) */
+.sp .ic.angle{width:auto;min-width:36px;padding:0 10px 0 8px;border-radius:18px;gap:5px;grid-auto-flow:column}
+.sp .ic.angle .vlbl{font-size:11.5px;font-weight:800;letter-spacing:.02em}
+.sp .ic.angle[aria-pressed="true"]{background:var(--lime);color:var(--ink)}
+@media(hover:none){.sp .ic.angle{padding:0 8px 0 6px}}
+/* On a phone every control has to fit one row: the angle button goes compact
+   (its word under the icon, like Loop and Mirror), and which repeat this is
+   gives way — the list under the player still says "×2". */
+@container (max-width:420px){
+  .sp .ic.angle{width:auto;min-width:36px;height:auto;padding:4px 2px 2px;border-radius:10px;grid-auto-flow:row;gap:1px}
+  .sp .ic.angle .vlbl{font-size:9px;font-weight:700;line-height:1}
+  .sp .lap{display:none}
+}

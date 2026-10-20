@@ -43,6 +43,7 @@ type Key =
   | 'aPlay' | 'aPause' | 'aSpeed' | 'aMirror' | 'aFull' | 'aExitFull' | 'aCounts'
   | 'aLoop8' | 'aLoopAB' | 'aRepeat' | 'aSeek'
   | 'lLoop' | 'lMirror' | 'lCounts' | 'aBack8' | 'aBack5' | 'aNext' | 'loadFail'
+  | 'lFront' | 'lBack' | 'aFront' | 'aBack'
   | 'footer' | 'signout';
 
 const C: Copy<Key> = {
@@ -52,7 +53,8 @@ const C: Copy<Key> = {
     notReady: 'Being filmed', nothing: 'Nothing to play here yet.', loading: 'Loading…',
     signInT: 'Sign in to watch.', signInGo: 'Sign in ↗',
     focus: 'What to focus on',
-    keys: 'Space play · ← → 5 s · , . one frame · L loop · M mirror · 1–4 speed · F full screen',
+    keys: 'Space play · ← → 5 s · , . one frame · L loop · M mirror · V front/back · 1–4 speed · F full screen',
+    lFront: 'Front', lBack: 'Back', aFront: 'Show the front view', aBack: 'Show the back view',
     aPlay: 'Play', aPause: 'Pause', aSpeed: 'Playback speed', aMirror: 'Mirror the picture',
     aFull: 'Full screen', aExitFull: 'Exit full screen', aCounts: 'Counts',
     aLoop8: 'Loop eight counts', aLoopAB: 'Loop the marked section', aRepeat: 'Repeat this video',
@@ -68,7 +70,8 @@ const C: Copy<Key> = {
     notReady: '촬영 중', nothing: '아직 재생할 것이 없습니다.', loading: '불러오는 중…',
     signInT: '로그인하면 볼 수 있습니다.', signInGo: '로그인 ↗',
     focus: '이것에 집중하세요',
-    keys: 'Space 재생 · ← → 5초 · , . 한 프레임 · L 반복 · M 반전 · 1–4 속도 · F 전체 화면',
+    keys: 'Space 재생 · ← → 5초 · , . 한 프레임 · L 반복 · M 반전 · V 앞/뒤 · 1–4 속도 · F 전체 화면',
+    lFront: '앞모습', lBack: '뒷모습', aFront: '앞에서 찍은 영상 보기', aBack: '뒤에서 찍은 영상 보기',
     aPlay: '재생', aPause: '일시정지', aSpeed: '재생 속도', aMirror: '좌우 반전',
     aFull: '전체 화면', aExitFull: '전체 화면 종료', aCounts: '카운트',
     aLoop8: '8카운트 반복', aLoopAB: '표시된 구간 반복', aRepeat: '이 영상 반복',
@@ -205,6 +208,10 @@ export default function Player({
   /* An MP4 rendition only exists once downloads are enabled on the video, so a
      404 on it falls back to HLS rather than leaving a black frame. */
   const [mp4Failed, setMp4Failed] = useState<string | null>(null);
+  /* Watching the front view rather than the exercise's own (back) footage. */
+  const [onFront, setOnFront] = useState(false);
+  /* Where to pick up after switching angle: same moment, same play state. */
+  const resumeRef = useRef<{ t: number; play: boolean } | null>(null);
   const [speed, setSpeed] = useState(1);
   const [speedOpen, setSpeedOpen] = useState(false);
   const speedRef = useRef<HTMLDivElement>(null);
@@ -244,6 +251,8 @@ export default function Player({
   useEffect(() => {
     if (!entry) return;
     const video = entry.video;
+    setOnFront(false);
+    resumeRef.current = null;
     if (!overriddenMirror.current) setMirrored(video.mirrorDefault);
     let stored: number | null = null;
     try {
@@ -308,21 +317,36 @@ export default function Player({
 
   /* ---- signed source ------------------------------------------------------ */
 
+  /* Which clip is on screen: the exercise, or its front view. The exercise
+     stays what practice is logged against; only the picture changes. */
   const currentId = current?.id ?? null;
-  const playback = signed && signed.videoId === currentId ? signed.result : null;
-  const loading = Boolean(currentId) && !playback;
+  const sourceId = onFront && current?.front ? current.front.id : currentId;
+  const playback = signed && signed.videoId === sourceId ? signed.result : null;
+  const loading = Boolean(sourceId) && !playback;
+  /* Signed URLs already in hand, by clip, so going back to an angle (or an
+     exercise) just watched does not ask the server again. A URL lasts two
+     hours; one about to lapse is asked for afresh. */
+  const signedCache = useRef<Record<string, PlaybackResult>>(
+    initialVideoId && initialPlayback ? { [initialVideoId]: initialPlayback } : {},
+  );
   useEffect(() => {
-    if (!currentId || signed?.videoId === currentId) return;
+    if (!sourceId || signed?.videoId === sourceId) return;
+    const cached = signedCache.current[sourceId];
+    if (cached?.ok && cached.expiresAt - Date.now() > 5 * 60_000) {
+      setSigned({ videoId: sourceId, result: cached });
+      return;
+    }
     let cancelled = false;
-    getPlayback(currentId).then(result => {
-      if (!cancelled) setSigned({ videoId: currentId, result });
+    getPlayback(sourceId).then(result => {
+      if (result.ok) signedCache.current[sourceId] = result;
+      if (!cancelled) setSigned({ videoId: sourceId, result });
     });
     return () => {
       cancelled = true;
     };
-  }, [currentId, signed]);
+  }, [sourceId, signed]);
 
-  const viaHls = Boolean(current) && (!usesMp4(current!) || mp4Failed === current!.id);
+  const viaHls = Boolean(current) && (!usesMp4(current!) || mp4Failed === sourceId);
 
   useEffect(() => {
     const el = videoRef.current;
@@ -464,6 +488,18 @@ export default function Player({
     el.currentTime = Math.max(0, el.currentTime - (b ? (b * 8) / 1000 : 5));
   }, [current]);
 
+  /* Front ⇄ back. The new clip starts where the old one was, playing if it
+     was; each angle opens with its own mirror default unless the dancer has
+     set the mirror themselves. Loop, speed and counts carry over. */
+  const switchView = useCallback(() => {
+    const el = videoRef.current;
+    if (!current?.front) return;
+    resumeRef.current = el ? { t: el.currentTime, play: !el.paused } : null;
+    const next = !onFront;
+    setOnFront(next);
+    if (!overriddenMirror.current) setMirrored(next ? current.front.mirrorDefault : current.mirrorDefault);
+  }, [current, onFront]);
+
   const pick = useCallback((i: number) => {
     autoplayRef.current = Boolean(videoRef.current && !videoRef.current.paused);
     setIndex(i);
@@ -521,7 +557,7 @@ export default function Player({
     };
   }, []);
 
-  const aspect = (current && (measured[current.id] ?? current.aspect)) || 16 / 9;
+  const aspect = (current && sourceId && (measured[sourceId] ?? (sourceId === current.id ? current.aspect : null))) || 16 / 9;
   const orientation: 'portrait' | 'landscape' = aspect < 1 ? 'portrait' : 'landscape';
 
   /* The whole player goes full screen, not just the <video>, so the mirror and
@@ -571,13 +607,14 @@ export default function Player({
         paint();
       } else if (k === 'l') toggleLoop();
       else if (k === 'm') toggleMirror();
+      else if (k === 'v') switchView();
       else if (k === 'f') toggleFullscreen();
       else if (k === 'c' && grid) setCountsOn(o => !o);
       else if (['1', '2', '3', '4'].includes(k)) chooseSpeed(SPEEDS[Number(k) - 1]);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleLoop, toggleMirror, toggleFullscreen, chooseSpeed, paint, grid]);
+  }, [togglePlay, toggleLoop, toggleMirror, toggleFullscreen, chooseSpeed, paint, grid, switchView]);
 
   /* ---- a phone that sleeps mid-drill is the worst bug this product can ship */
 
@@ -725,12 +762,19 @@ export default function Player({
                 onDoubleClick={toggleFullscreen}
                 onLoadedMetadata={e => {
                   const el = e.currentTarget;
-                  if (el.videoWidth && el.videoHeight) {
-                    const id = current.id;
+                  if (el.videoWidth && el.videoHeight && sourceId) {
+                    const id = sourceId;
                     const r = el.videoWidth / el.videoHeight;
                     setMeasured(m => (Math.abs((m[id] ?? 0) - r) < 0.01 ? m : { ...m, [id]: r }));
                   }
                   if (Number.isFinite(el.duration)) setDurationS(el.duration);
+                  /* Switched angle: carry on from the same moment. */
+                  const resume = resumeRef.current;
+                  if (resume) {
+                    resumeRef.current = null;
+                    el.currentTime = Math.min(resume.t, Math.max(0, el.duration - 0.1) || resume.t);
+                    if (resume.play) el.play().catch(() => {});
+                  }
                   paint();
                 }}
                 onTimeUpdate={e => {
@@ -754,7 +798,7 @@ export default function Player({
                 onPause={() => setPlaying(false)}
                 onEnded={onEnded}
                 onError={() => {
-                  if (!viaHls) setMp4Failed(current.id);
+                  if (!viaHls) setMp4Failed(sourceId);
                 }}
               />
 
@@ -919,6 +963,23 @@ export default function Player({
                     </svg>
                     <span className="lbl">{c.lLoop}</span>
                   </button>
+                  {current.front && (
+                    <button
+                      className="ic angle"
+                      type="button"
+                      aria-pressed={onFront}
+                      onClick={switchView}
+                      aria-label={onFront ? c.aBack : c.aFront}
+                      title={onFront ? c.aBack : c.aFront}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+                        <path d="M9.5 13.5a2.5 2.5 0 0 1 4.6-1.4M14.5 13.5a2.5 2.5 0 0 1-4.6 1.4" />
+                        <path d="M14.4 10.6l-.3 1.5-1.5-.3M9.6 16.4l.3-1.5 1.5.3" />
+                      </svg>
+                      <span className="vlbl">{onFront ? c.lFront : c.lBack}</span>
+                    </button>
+                  )}
                   <button
                     className="ic"
                     type="button"

@@ -44,7 +44,8 @@ export default async function MenuPage({ params }: { params: Promise<{ id: strin
     /* Members whose week was copied from this menu: they keep their copy, so
        an edit here reaches them only if they reset. Admins read all profiles. */
     supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('menu_id', id),
-    supabase.from('videos').select(PICK).order('created_at'),
+    /* A front view is another angle of an exercise, not one to pick. */
+    supabase.from('videos').select(PICK).is('view_of', null).order('created_at'),
   ]);
 
   if (error) {

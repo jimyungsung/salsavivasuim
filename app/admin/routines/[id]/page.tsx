@@ -62,7 +62,8 @@ export default async function RoutinePage({ params }: { params: Promise<{ id: st
       )
       .eq('id', id)
       .maybeSingle(),
-    supabase.from('videos').select(PICK).order('created_at'),
+    /* A front view is another angle of an exercise, not one to pick. */
+    supabase.from('videos').select(PICK).is('view_of', null).order('created_at'),
   ]);
 
   if (error) {

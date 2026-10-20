@@ -56,13 +56,18 @@ export interface Exercise {
   /** The loop a member gets before touching anything, set in the back office. */
   loopStartMs: number | null;
   loopEndMs: number | null;
+  /** The same exercise filmed from the front, when there is one the viewer
+      may play (its publish follows this exercise; RLS still decides). The
+      player switches between the two. */
+  front: { id: string; mirrorDefault: boolean } | null;
 }
 
 /** The columns the player needs from `videos`, and the row they come back as.
     Shared by every reader of the table. */
 export const VIDEO_COLUMNS = `id, title_t, description_t, tags, difficulty, publish, duration_ms, angle,
   mirror_default, status, width, height,
-  bpm, first_beat_ms, beats_per_phrase, default_loop_start_ms, default_loop_end_ms`;
+  bpm, first_beat_ms, beats_per_phrase, default_loop_start_ms, default_loop_end_ms,
+  front:videos!view_of ( id, mirror_default )`;
 
 export interface VideoSummaryRow {
   id: string;
@@ -82,6 +87,8 @@ export interface VideoSummaryRow {
   beats_per_phrase: number;
   default_loop_start_ms: number | null;
   default_loop_end_ms: number | null;
+  /** The clips whose view_of is this one: its front view, at most one. */
+  front?: { id: string; mirror_default: boolean }[] | null;
 }
 
 export const toExercise = (v: VideoSummaryRow): Exercise => ({
@@ -101,6 +108,7 @@ export const toExercise = (v: VideoSummaryRow): Exercise => ({
   beatsPerPhrase: v.beats_per_phrase,
   loopStartMs: v.default_loop_start_ms,
   loopEndMs: v.default_loop_end_ms,
+  front: v.front?.[0] ? { id: v.front[0].id, mirrorDefault: v.front[0].mirror_default } : null,
 });
 
 /** Every exercise members may play: open and ready. The library of the week
@@ -113,6 +121,8 @@ export async function getLibrary(): Promise<Exercise[]> {
     .select(VIDEO_COLUMNS)
     .eq('publish', 'open')
     .eq('status', 'ready')
+    /* A front view is another angle of an exercise, not one of its own. */
+    .is('view_of', null)
     .order('created_at');
   if (error) {
     console.error('[menus] library failed:', error.message);
