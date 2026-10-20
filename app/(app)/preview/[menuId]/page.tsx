@@ -84,6 +84,7 @@ export default async function PreviewWeek({
       posters={posters}
       signedIn
       logPractice={false}
+      wide
       above={strip}
     />
   );

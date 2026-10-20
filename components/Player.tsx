@@ -164,7 +164,11 @@ export default function Player({
   empty,
   finish,
   logPractice = true,
+  wide = false,
 }: {
+  /** No side column: the player takes the full width, and the exercises sit
+      in the strip under it as thumbnail cards. The week preview uses it. */
+  wide?: boolean;
   /** False where watching is not practising: the back office's week preview. */
   logPractice?: boolean;
   playlist: Playlist;
@@ -660,7 +664,7 @@ export default function Player({
   const onwards = playlist.next ?? playlist.back;
 
   return (
-    <div className="sp">
+    <div className={`sp${wide ? ' wide' : ''}`}>
       {above}
       <div className="subnav">
         <div className="wrap subin">
@@ -979,17 +983,34 @@ export default function Player({
                     disabled={v.status !== 'ready'}
                     onClick={() => pick(i)}
                   >
-                    <span className="sn">{i + 1}</span>
+                    {wide && (
+                      <span className="sthumb">
+                        {posters[v.id] && <img src={posters[v.id]} alt="" loading="lazy" />}
+                        <span className="g" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d={now && playing ? 'M7 5h3.5v14H7zM13.5 5H17v14h-3.5z' : 'M8 5v14l11-7z'} />
+                          </svg>
+                        </span>
+                      </span>
+                    )}
+                    <span className="sn">{wide ? T(kindOf(v)) : i + 1}</span>
                     <span className="st">
                       {T(v.title)}
                       {e.repeats > 1 && ` ×${e.repeats}`}
                     </span>
-                    <span className="slen">{mmss((v.durationMs ?? 0) * e.repeats || null)}</span>
+                    <span className="slen">{v.status === 'ready' ? mmss((v.durationMs ?? 0) * e.repeats || null) : c.notReady}</span>
                     {now && <span className="sfill" ref={fillRef} />}
                   </button>
                 );
               })}
             </div>
+            {wide && onwards && (
+              <div className="wfoot">
+                <Link className="pill primary sm" href={onwards.href}>
+                  {T(onwards.label)}
+                </Link>
+              </div>
+            )}
 
             <div className="about">
               {cues.length > 0 && (
@@ -1007,6 +1028,7 @@ export default function Player({
           </div>
         </div>
 
+        {!wide && (
         <aside className="side">
           <div className="shead">
             <b>{listTitle}</b>
@@ -1056,6 +1078,7 @@ export default function Player({
             </div>
           )}
         </aside>
+        )}
       </main>
 
       {below}
