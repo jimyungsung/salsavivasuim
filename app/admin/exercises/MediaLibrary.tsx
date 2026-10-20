@@ -206,13 +206,31 @@ export default function MediaLibrary({
             setOver(false);
             send(e.dataTransfer.files);
           }}
+          /* The whole area is the target: a click anywhere in it opens the
+             file picker, not only the button. */
+          onClick={() => input.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              input.current?.click();
+            }
+          }}
+          aria-label="Drop videos here, or choose files"
         >
           <input ref={input} type="file" accept="video/*" multiple hidden onChange={e => e.target.files && send(e.target.files)} />
+          <span className="dz-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 16V4M7 9l5-5 5 5" />
+              <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+            </svg>
+          </span>
           <div>
-            <b>Drop videos here</b>
+            <b>{over ? 'Let go to upload' : 'Drop videos here'}</b>
             <span>Each file becomes an exercise named after the file. Any size; several at once.</span>
           </div>
-          <button className="btn primary" type="button" onClick={() => input.current?.click()}>
+          <button className="btn primary" type="button" onClick={e => { e.stopPropagation(); input.current?.click(); }}>
             Choose files
           </button>
         </div>

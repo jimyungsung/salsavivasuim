@@ -272,13 +272,18 @@
 
 /* ---- the media library ---- */
 .bo .dropzone {
-  display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
-  margin-bottom: 14px; padding: 22px 24px; border: 2px dashed var(--bo-line); border-radius: 16px; background: #fff;
-  transition: .16s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center;
+  min-height: 240px; margin-bottom: 16px; padding: 36px 28px; border: 2.5px dashed var(--bo-line); border-radius: 20px; background: #fff;
+  cursor: pointer; transition: .16s;
 }
-.bo .dropzone.over { border-color: var(--ink); background: #f6fdd9; }
-.bo .dropzone b { display: block; font-size: 16px; font-weight: 800; }
-.bo .dropzone span { display: block; margin-top: 3px; font-size: 13.5px; color: var(--bo-dim); }
+.bo .dropzone:hover { border-color: #9aa09b; background: #fbfcf8; }
+.bo .dropzone.over { border-color: var(--ink); background: #f6fdd9; box-shadow: 0 0 0 4px #c6ff0066; }
+.bo .dropzone .dz-icon { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: #f1f2ec; color: var(--ink); }
+.bo .dropzone.over .dz-icon { background: var(--lime); }
+.bo .dropzone .dz-icon svg { width: 30px; height: 30px; }
+.bo .dropzone b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.bo .dropzone span { display: block; margin-top: 4px; font-size: 14.5px; color: var(--bo-dim); }
+.bo .dropzone .btn { margin-top: 4px; }
 .bo .uplist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .bo .uprow {
   position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center;
