@@ -157,25 +157,29 @@ async function freeSlug(
   return `${root}-${Date.now()}`;
 }
 
-export async function createStage(name: string): Promise<Result> {
+export async function createStage(name: string): Promise<Created> {
   await requireAdmin();
   const en = name.trim();
-  if (!en) return fail('A stage needs a name.');
+  if (!en) return { ok: false, error: 'A stage needs a name.' };
 
   const supabase = await createClient();
   const { data: last } = await supabase
     .from('stages').select('position').order('position', { ascending: false }).limit(1).maybeSingle();
 
-  const { error } = await supabase.from('stages').insert({
-    slug: await freeSlug(supabase, 'stages', en),
-    position: (last?.position ?? 0) + 1,
-    name_t: { en },
-    blurb_t: { en: '' },
-  });
-  if (error) return fail(error.message);
+  const { data, error } = await supabase
+    .from('stages')
+    .insert({
+      slug: await freeSlug(supabase, 'stages', en),
+      position: (last?.position ?? 0) + 1,
+      name_t: { en },
+      blurb_t: { en: '' },
+    })
+    .select('id')
+    .single();
+  if (error || !data) return { ok: false, error: error?.message ?? 'Could not create the stage.' };
 
   revalidateCatalogue();
-  return ok;
+  return { ok: true, id: data.id };
 }
 
 /** A menu is a week. It belongs to a stage, or to none: the quick drills are

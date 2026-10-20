@@ -535,3 +535,62 @@
 .bo .wcol footer a { font-weight: 700; }
 .bo .wcol footer .del { border: 0; background: none; padding: 0; font: inherit; color: #a2482a; cursor: pointer; }
 @media (max-width: 1100px) { .bo .builder { grid-template-columns: minmax(0, 1fr); } .bo .builder .picker { position: static; } }
+
+/* ---- the week builder as rows: a day's exercises run left to right ---- */
+.bo .wrows { display: grid; gap: 12px; }
+.bo .wrow { display: grid; grid-template-columns: 200px minmax(0, 1fr); border: 1px solid var(--bo-line); border-radius: 12px; background: #fff; cursor: pointer; transition: box-shadow .15s, border-color .15s; }
+.bo .wrow:hover { border-color: var(--ink); }
+.bo .wrow.on { border-color: var(--ink); box-shadow: 0 0 0 3px #c6ff0088; }
+.bo .wrow header { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-right: 1px solid var(--bo-line); min-width: 0; }
+.bo .wrow header > b { font-size: 15px; }
+.bo .wrow header .meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--bo-dim); font-variant-numeric: tabular-nums; }
+.bo .wrow header .links { display: flex; gap: 12px; margin-top: auto; padding-top: 6px; font-size: 12px; }
+.bo .wrow header .links a { font-weight: 700; }
+.bo .wrow header .del { border: 0; background: none; padding: 0; font: inherit; color: #a2482a; cursor: pointer; }
+.bo .wstrip { list-style: none; margin: 0; padding: 10px; display: flex; gap: 10px; overflow-x: auto; align-items: stretch; }
+.bo .wcard { flex: none; width: 150px; display: flex; flex-direction: column; gap: 6px; padding: 6px; border-radius: 10px; background: #f6f7f2; font-size: 12.5px; }
+.bo .wcard.nofootage { background: #fdf1ed; }
+.bo .wcard.saving { opacity: .55; }
+.bo .wthumb { position: relative; aspect-ratio: 16 / 10; border-radius: 7px; overflow: hidden; background: repeating-linear-gradient(135deg, #e7e8e1 0 7px, #eff0e9 7px 14px); }
+.bo .wthumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.bo .wthumb .n { position: absolute; left: 5px; top: 5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--ink); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; }
+.bo .wthumb .d { position: absolute; right: 5px; bottom: 5px; padding: 1px 6px; border-radius: 6px; background: #0b0f0ecc; color: #fff; font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bo .wcard .t { font-weight: 700; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.bo .wcard .ops { display: flex; gap: 4px; margin-top: auto; color: var(--bo-dim); font-size: 11.5px; }
+.bo .wcard .ops button { border: 1px solid var(--bo-line); background: #fff; border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.bo .wcard .ops button:disabled { opacity: .35; cursor: default; }
+.bo .wcard.add { justify-content: center; align-items: center; text-align: center; padding: 10px; background: none; border: 1.5px dashed var(--bo-line); color: var(--bo-dim); }
+.bo .wcard.add.on { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+@media (max-width: 1240px) { .bo .wrow { grid-template-columns: minmax(0, 1fr); } .bo .wrow header { border-right: 0; border-bottom: 1px solid var(--bo-line); flex-direction: row; flex-wrap: wrap; align-items: baseline; } .bo .wrow header .links { margin: 0 0 0 auto; padding: 0; } }
+
+/* ---- a title you can edit in place (EditableTitle) ---- */
+.bo .etitle { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: 100%; }
+.bo .etitle h1 { margin: 0; }
+.bo .etitle.small span:first-child, .bo .etitle.small > span { font-size: 13px; }
+.bo .etitle.saving { opacity: .6; }
+.bo .etitle .epen { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--bo-line); border-radius: 8px; background: #fff; color: var(--bo-dim); cursor: pointer; flex: none; }
+.bo .etitle.small .epen { width: 22px; height: 22px; border-radius: 6px; }
+.bo .etitle .epen:hover { color: var(--ink); border-color: var(--ink); }
+.bo .etitle .epen svg { width: 15px; height: 15px; }
+.bo .etitle.small .epen svg { width: 12px; height: 12px; }
+.bo .etitle.editing { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+.bo .etitle.editing label { display: grid; gap: 3px; flex: 1 1 200px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: var(--bo-dim); }
+.bo .etitle.editing.small label { flex-basis: 140px; }
+.bo .etitle.editing input { padding: 9px 10px; border: 1px solid var(--bo-line); border-radius: 8px; font: inherit; font-size: 15px; font-weight: 600; letter-spacing: 0; color: var(--ink); background: #fff; }
+.bo .etitle.editing.big input { font-size: 22px; font-weight: 800; }
+.bo .etitle.editing input:focus { outline: 0; border-color: var(--ink); box-shadow: 0 0 0 3px #c6ff0055; }
+.bo .etitle .eacts { display: flex; gap: 6px; }
+
+/* ---- adding from the sidebar: + New week under a stage, + New stage ---- */
+.bo .n-addbtn { display: block; width: 100%; margin: 2px 0 6px; padding: 6px 10px 6px 30px; border: 0; border-radius: 8px; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--bo-dim); text-align: left; cursor: pointer; }
+.bo .n-addbtn:hover { background: #f1f2ec; color: var(--ink); }
+.bo .n-addstage { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bo-line); }
+.bo .n-addstage .n-addbtn { padding-left: 10px; }
+.bo .n-add { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 4px 0 8px; padding-left: 22px; }
+.bo .n-addstage .n-add { padding-left: 0; }
+.bo .n-add input { flex: 1 1 140px; min-width: 0; padding: 7px 9px; border: 1px solid var(--ink); border-radius: 8px; font: inherit; font-size: 13px; background: #fff; }
+.bo .n-add input:focus { outline: 0; box-shadow: 0 0 0 3px #c6ff0055; }
+.bo .n-add .go { padding: 6px 10px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+.bo .n-add .go:disabled { opacity: .4; cursor: default; }
+.bo .n-add .x { padding: 4px 6px; border: 0; background: none; color: var(--bo-dim); cursor: pointer; }
+.bo .n-add .err { flex-basis: 100%; font-size: 12px; color: #a2482a; }

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import Crumbs from '../../Crumbs';
+import EditableTitle from '../../EditableTitle';
 import LocalizedField from '../../LocalizedField';
 import { publishMeaning } from '../../PublishSwitch';
 import { routineLength } from '../../Tree';
@@ -71,7 +72,7 @@ export default function MenuEditor({
 
       <div className="head">
         <div>
-          <h1>{menu.title_t.en || 'Untitled menu'}</h1>
+          <EditableTitle table="menus" id={menu.id} value={menu.title_t} placeholder="Untitled menu" onError={setError} />
           <p>
             {menu.stage ? menu.stage.name_t.en : 'No stage'} · {menu.routines.length} routine
             {menu.routines.length === 1 ? '' : 's'} · {minutes} min in the week · {ready}/{items.length} with footage
@@ -190,7 +191,6 @@ export default function MenuEditor({
 
           <section className="panel">
             <h2>Copy</h2>
-            <LocalizedField stacked table="menus" id={menu.id} column="title_t" label="Title" value={menu.title_t} onError={setError} />
             <LocalizedField stacked table="menus" id={menu.id} column="promise_t" label="What the week does" value={menu.promise_t} multiline onError={setError} />
           </section>
 
