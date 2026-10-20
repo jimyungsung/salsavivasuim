@@ -169,7 +169,8 @@ right as cards (portrait thumbnails, footage is filmed upright), the library
 to add: tap a card (to the day picked), drag a card onto any day, or a day's
 "Add exercises" card, which opens the library in a window to tick several.
 "Preview the week" (`/preview/[menuId]`, admins only, no practice logged)
-plays the week being built in the member's player. The heading's save state
+plays the week being built in the member's player, `wide`: no side column,
+the exercises as thumbnail cards under a full-width player. The heading's save state
 ("Draft · All changes saved", `SaveState.tsx` over `app/admin/saving.ts`)
 shows every edit landing; writes go through `track()`. Titles (a menu's, a
 routine's, a stage's, a day's theme) are edited in place with a pencil
